@@ -1,0 +1,13 @@
+20230908	14:29:03	cff32d9c-ec12-4df9-a1f9-61cda7b38bc3	OPTIONS	https://www.google.com	/
+20230908	14:29:03	fec79f31-1c9c-4753-a858-fb6951e9f6c5	GET	https://www.google.com	/
+20230908	14:31:04	1826975f-d5ad-4541-a49e-fe1545be6265	OPTIONS	https://www.google.com	/
+20230908	14:31:04	245d6c70-546b-4d1f-9349-79ac880a6648	GET	https://www.google.com	/
+20230908	14:41:00	5b22eadc-de86-4f58-8b14-e6fbaa15f545	GET	http://localhost:3000	/
+20230908	14:46:40	cfac141e-449f-423e-a6d6-8947f0756b06	OPTIONS	https://www.google.com	/
+20230908	14:46:40	341de744-43f8-4ca2-94e2-78a71d671b24	GET	https://www.google.com	/
+20230908	14:51:08	4a9c87e4-920b-4992-bb2c-728c49191bf7	GET	undefined	/sdgsgs
+20230908	14:51:08	ada0e2ca-9148-47a4-886e-d2c8f4cf499a	GET	undefined	/favicon.ico
+20230908	14:51:22	417b23b4-c890-430d-830b-164e374fb56c	GET	undefined	/sdgsgs
+20230908	14:51:22	312c5962-5de5-40f6-bb9e-7e942b612cab	GET	undefined	/favicon.ico
+20230908	14:51:29	882a7776-137e-48b8-92ea-428f8294aafb	GET	undefined	/adfsd/sdgsdg
+20230908	14:51:30	d7f2b143-b3ac-43ac-ab97-2b1a30741b28	GET	undefined	/favicon.ico
