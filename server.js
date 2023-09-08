@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const corsOptions = require('./config/corsOptions');
 const app = express();
 app.use(express.json());
 const { logger } = require('./middleware/logEvents');
@@ -14,18 +15,7 @@ const port = process.env.PORT || 8081;
 app.use(logger);
 
 // Cross Origin Resource Sharing
-const whitelist = ['https://yogeek.onrender.com', 'http://127.0.0.1:5500', 'http://localhost:3000', 'http://localhost:8081'];
-const corsOptions = {
-    origin: (origin, callback) => {
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
-            callback(null, true)
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    optionsSuccessStatus: 200
-}
-app.use(cors(corsOptions));
+app.use(cors());
 
 
 // built-in middleware to handle urlencoded data
