@@ -5,7 +5,7 @@ const app = express();
 app.use(express.json());
 const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
-const authRoutes = require('./routes/authRoutes');
+const registerRoutes = require('./routes/registerRoutes');
 const userRoutes = require('./routes/userRoutes');
 // const bodyParser = require('body-parser');
 const port = process.env.PORT || 8081;
@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 // built-in middleware for json 
 app.use(express.json());
 
-app.use('/', authRoutes);
+app.use('/', registerRoutes);
 app.use('/', userRoutes);
 
 app.get('/', (req, res) => {

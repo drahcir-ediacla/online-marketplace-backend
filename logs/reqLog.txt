@@ -87,3 +87,12 @@
 20230909	12:02:20	b1723c76-7d03-4723-8f06-1c01ec8312d0	POST	http://localhost:8081/	/api/register
 20230909	12:02:42	4c7a7619-c5a9-4bf8-8a09-bf0dca61262c	POST	http://localhost:8081/	/api/register
 20230909	12:03:56	a5fcaf83-4e65-4276-aeb8-3a98a3b39801	POST	http://localhost:8081/	/api/register
+20230910	19:23:28	bd20dca2-b482-40dd-98df-3d351e859a17	POST	http://localhost:8081/	/api/register
+20230910	19:24:07	306fb6ae-17bf-4f0a-a92b-1369cfd0c700	POST	http://localhost:8081/	/api/register
+20230910	21:35:25	b312ea72-9d8f-4649-b695-6aaa1bf7d47b	POST	http://localhost:8081/	/api/register
+20230910	21:35:38	089982dc-1d3d-4502-8e61-8e98a63e3f73	POST	http://localhost:8081/	/api/register
+20230910	21:36:40	6e596325-84f4-471c-85de-0016861a2f3a	POST	http://localhost:8081/	/api/register
+20230910	21:36:49	6d1de793-cf97-42d7-a18a-270bfe509a87	POST	http://localhost:8081/	/api/register
+20230910	21:45:30	62730ff9-7da7-4af4-898a-41cf268c0ec8	POST	http://localhost:3500/	/api/register
+20230910	21:46:26	1b05a947-b13d-403c-b47e-31c56a6593c6	POST	http://localhost:3500/	/api/register
+20230910	21:47:53	74ef0f01-3ab9-4095-b0cc-c6b7e8cbf324	POST	http://localhost:8081/	/api/register
