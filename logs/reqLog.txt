@@ -134,3 +134,5 @@
 20230911	17:41:42	19de0384-12ca-4970-915b-e564da16588b	GET	undefined	/favicon.ico
 20230911	17:41:47	2539d839-88db-4b46-82a2-8713f5886163	GET	undefined	/api/users
 20230911	17:43:18	7821e2ad-05db-4885-b10a-9e4f72e6f9e3	GET	undefined	/api/users
+20230911	19:54:53	01925ce4-25d4-4d7f-98a3-d301119ff96c	GET	undefined	/api/users
+20230911	19:54:54	5680b8a7-d576-4623-820f-a2ee2f7e7879	GET	undefined	/favicon.ico
