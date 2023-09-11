@@ -52,3 +52,4 @@
 20230908	17:50:37	5f78a87a-e225-4f16-82bf-4e46485e0c70	POST	http://localhost:8081/	/api/register
 20230908	17:51:24	516ccfc9-c7f9-47e0-9cbf-052248f68e72	POST	http://localhost:8081/	/api/register
 20230908	17:51:29	a5bdccd1-1d3b-4c38-ad72-b4b7e7be8093	POST	http://localhost:8081/	/api/register
+20230908	17:58:24	a2e7fedd-a768-43ab-8d75-5d82e6dc50cb	POST	http://localhost:8081/	/api/register
