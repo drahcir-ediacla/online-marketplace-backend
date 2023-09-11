@@ -130,3 +130,7 @@
 20230911	15:59:17	dd2074ee-fda5-4fdf-8fb6-20a8753b3beb	POST	http://localhost:8081/	/api/send-otp
 20230911	16:00:49	bf63cca1-d8a1-4a9d-bd9f-fc560fdec0ff	POST	http://localhost:8081/	/api/register
 20230911	16:00:49	bb69c56c-2691-4f0f-8767-a0842adf894e	POST	http://localhost:8081/	/api/verify-otp
+20230911	17:41:41	0e5c1f06-db63-420d-b365-e331d8e05447	GET	undefined	/
+20230911	17:41:42	19de0384-12ca-4970-915b-e564da16588b	GET	undefined	/favicon.ico
+20230911	17:41:47	2539d839-88db-4b46-82a2-8713f5886163	GET	undefined	/api/users
+20230911	17:43:18	7821e2ad-05db-4885-b10a-9e4f72e6f9e3	GET	undefined	/api/users
