@@ -11,33 +11,48 @@ exports.sendOTP = (req, res) => {
   const { email } = req.body;
   const otp = generateOTP();
 
-  // Store OTP in the database (You should implement proper storage)
-  db.query('INSERT INTO users (email, otp) VALUES (?, ?)', [email, otp], (err, result) => {
-    if (err) {
-      console.error(err);
+  // Check if the email already exists in the database
+  db.query('SELECT * FROM users WHERE email = ?', [email], (selectErr, selectResult) => {
+    if (selectErr) {
+      console.error(selectErr);
       return res.status(500).json({ message: 'Failed to send OTP' });
     }
 
-    // Configure the email content
-    const mailOptions = {
-      from: 'your-email@gmail.com',
-      to: email,
-      subject: 'OTP Verification',
-      text: `Your OTP for verification is: ${otp}`,
-    };
+    // If the email already exists, return an error response
+    if (selectResult.length > 0) {
+      return res.status(400).json({ message: 'Email already exists in the database' });
+    }
 
-    // Send the email
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Failed to send OTP' });
-      } else {
-        console.log(`Email sent: ${info.response}`);
-        res.status(200).json({ message: 'OTP sent successfully' });
+    // If the email does not exist, store OTP in the database
+    db.query('INSERT INTO users (email, otp) VALUES (?, ?)', [email, otp], (insertErr, insertResult) => {
+      if (insertErr) {
+        console.error(insertErr);
+        return res.status(500).json({ message: 'Failed to send OTP' });
       }
+
+      // Configure the email content
+      const mailOptions = {
+        from: 'your-email@gmail.com',
+        to: email,
+        subject: 'OTP Verification',
+        text: `Your OTP for verification is: ${otp}`,
+      };
+
+      // Send the email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error(error);
+          res.status(500).json({ message: 'Failed to send OTP' });
+        } else {
+          console.log(`Email sent: ${info.response}`);
+          res.status(200).json({ message: 'OTP sent successfully' });
+        }
+      });
     });
   });
 };
+
+
 
 // Verify OTP
 exports.verifyOTP = (req, res) => {
