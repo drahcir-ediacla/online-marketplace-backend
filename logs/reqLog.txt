@@ -232,3 +232,7 @@
 20230912	13:48:02	3391d270-be98-4a70-b70e-d083367b86b5	POST	http://localhost:8081/	/api/register
 20230912	13:48:16	80712952-bbb9-406b-995e-cacf2a79298f	POST	http://localhost:8081/	/api/register
 20230912	13:49:00	b4606785-a14a-4b31-8e73-a48a4dbbdf4e	POST	http://localhost:8081/	/api/register
+20230912	17:06:35	ee669db9-894b-4ea2-80ce-9fc97d7a8b35	POST	http://localhost:8081/	/api/register
+20230912	17:06:41	afcba387-f721-4dfe-8733-61d18b323a43	GET	undefined	/main.7305c99a04e006296f60.hot-update.json
+20230912	17:23:35	1100eb4e-6bf2-453c-b5a3-d577a675e8c3	GET	undefined	/main.cf961c0937f646e93c2e.hot-update.json
+20230912	17:23:37	49aa62ba-ceb5-4ae1-96a1-95fb67a621c7	GET	undefined	/main.cf961c0937f646e93c2e.hot-update.json
