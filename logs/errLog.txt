@@ -4,3 +4,8 @@
 20230908	16:35:35	b4f90fe1-e594-4c8a-b2d9-5c4c876ca396	Error: Not allowed by CORS
 20230908	16:35:48	acb973c2-e629-420b-a085-b351ab562b23	Error: Not allowed by CORS
 20230908	16:36:05	cbcd2d99-f3e4-4662-aae8-c44a2080dbe8	Error: Not allowed by CORS
+20230913	15:55:27	b3d08316-503d-4132-b574-4b3fbc528dc4	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230913	16:21:59	b938efb0-427e-43e6-aeac-f029f781081b	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230913	16:22:00	7ed55c1c-8594-46bd-97db-edc765408c7b	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230913	16:22:12	4f9927cf-280d-4bed-b6ea-be529eacc8bb	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230913	16:22:13	86cb90a0-2226-4618-a839-7092da565b71	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
