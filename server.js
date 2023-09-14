@@ -20,7 +20,7 @@ const port = process.env.PORT || 8081;
 app.use(logger);
 
 // Cross Origin Resource Sharing
-app.use(cors());
+app.use(cors(corsOptions));
 
 
 
@@ -37,6 +37,8 @@ app.use(express.urlencoded({ extended: false }));
 // built-in middleware for json 
 app.use(express.json());
 
+
+//Routes
 app.use('/', registerRoutes);
 app.use('/', userRoutes);
 app.use('/', otpRoutes);

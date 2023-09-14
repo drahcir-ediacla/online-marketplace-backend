@@ -1,5 +1,5 @@
 
-const whitelist = ['https://yogeek.onrender.com', 'http://127.0.0.1:5500', 'http://localhost:3000', 'http://localhost:8081'];
+const whitelist = ['https://yogeek-server.onrender.com'];
 const corsOptions = {
     origin: (origin, callback) => {
         if (whitelist.indexOf(origin) !== -1 || !origin) {
