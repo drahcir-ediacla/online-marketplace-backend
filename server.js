@@ -8,7 +8,8 @@ app.use(express.json());
 const bodyParser = require('body-parser');
 const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
-const registerRoutes = require('./routes/registerRoutes');
+// const registerRoutes = require('./routes/registerRoutes');
+const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const otpRoutes = require('./routes/otpRoutes')
 const passportRoutes = require('./routes/passportRoutes')
@@ -20,7 +21,7 @@ const port = process.env.PORT || 8081;
 app.use(logger);
 
 // Cross Origin Resource Sharing
-app.use(cors(corsOptions));
+app.use(cors());
 
 
 
@@ -39,7 +40,8 @@ app.use(express.json());
 
 
 //Routes
-app.use('/', registerRoutes);
+app.use('/', authRoutes);
+// app.use('/', registerRoutes);
 app.use('/', userRoutes);
 app.use('/', otpRoutes);
 app.use("/auth", passportRoutes);
