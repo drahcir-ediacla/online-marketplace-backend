@@ -59,7 +59,7 @@ const loginUser = (req, res) => {
             res.status(401).json({ message: 'Authentication failed. Incorrect password.' });
           } else {
             // If the password is correct, create and return an access token and a refresh token
-            const accessToken = generateAccessToken(user[0].id, user[0].email); // Implement this function
+            const accessToken = generateAccessToken(user[0].id); // Implement this function
             const refreshToken = generateRefreshToken(user[0].id); // Implement this function
   
             // Store the refresh token in the database
