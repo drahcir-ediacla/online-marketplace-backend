@@ -13,6 +13,9 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const otpRoutes = require('./routes/otpRoutes')
 const passportRoutes = require('./routes/passportRoutes')
+const refreshRoutes = require('./routes/refreshRoutes')
+const verifyJWT = require('./middleware/verifyJWT')
+const cookieParser = require('cookie-parser')
 const port = process.env.PORT || 8081;
 
 
@@ -38,13 +41,17 @@ app.use(express.urlencoded({ extended: false }));
 // built-in middleware for json 
 app.use(express.json());
 
+app.use(cookieParser());
+
 
 //Routes
-app.use('/', authRoutes);
-// app.use('/', registerRoutes);
-app.use('/', userRoutes);
 app.use('/', otpRoutes);
+app.use('/', authRoutes);
 app.use("/auth", passportRoutes);
+app.use('/', refreshRoutes);
+
+app.use(verifyJWT)
+app.use('/', userRoutes);
 
 app.get('/', (req, res) => {
     return res.json("From Backend Side");

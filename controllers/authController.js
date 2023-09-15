@@ -66,7 +66,8 @@ const loginUser = (req, res) => {
             const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
             const hashedRefreshToken = bcrypt.hashSync(refreshToken, 10); // Hash the refresh token
             const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
-
+            res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 });
+            
             db.query(storeRefreshTokenQuery, [user[0].id, hashedRefreshToken, expirationDate], (storeErr) => {
             if (storeErr) {
                 console.error('Error storing refresh token:', storeErr);
