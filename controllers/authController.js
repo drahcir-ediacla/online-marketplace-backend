@@ -57,6 +57,11 @@ const loginUser = (req, res) => {
             res.status(500).json({ message: 'Error comparing passwords' });
           } else if (!isMatch) {
             res.status(401).json({ message: 'Authentication failed. Incorrect password.' });
+            console.log('Password comparison result:', isMatch);
+            console.error('Error comparing passwords:', compareErr);
+            console.log('Provided password:', password);
+            console.log('Stored hashed password:', user[0].password);
+            console.log('Password comparison result:', isMatch);
           } else {
             // If the password is correct, create and return an access token and a refresh token
             const accessToken = generateAccessToken(user[0].id); // Implement this function
