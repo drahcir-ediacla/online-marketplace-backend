@@ -69,11 +69,10 @@ const loginUser = (req, res) => {
   
             // Store the refresh token in the database
             const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
-            const hashedRefreshToken = bcrypt.hashSync(refreshToken, 10); // Hash the refresh token
             const expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
-            res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 });
+            res.cookie('jwt', refreshToken, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
             
-            db.query(storeRefreshTokenQuery, [user[0].id, hashedRefreshToken, expirationDate], (storeErr) => {
+            db.query(storeRefreshTokenQuery, [user[0].id, refreshToken, expirationDate], (storeErr) => {
             if (storeErr) {
                 console.error('Error storing refresh token:', storeErr);
                 res.status(500).json({ message: 'Error storing refresh token' });
@@ -87,5 +86,48 @@ const loginUser = (req, res) => {
       }
     });
   };
+
   
-  module.exports = { registerUser, loginUser };
+  const logoutUser = (req, res) => {
+    // On the client, also delete the accessToken
+  
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(204); // No content
+    const refreshToken = cookies.jwt;
+  
+    // Check if refreshToken exists in the database
+    db.query('SELECT * FROM refresh_tokens WHERE token = ?', [refreshToken], (error, result) => {
+      if (error) {
+        console.error('Error handling logout:', error);
+        return res.sendStatus(500); // Internal server error
+      }
+  
+      // Ensure the result is an array
+      if (!Array.isArray(result)) {
+        return res.sendStatus(204); // No matching token found
+      }
+  
+      if (result.length === 0) {
+        return res.sendStatus(204);
+      }
+  
+      const [row] = result;
+  
+      // Delete refreshToken from the database
+      db.query('DELETE FROM refresh_tokens WHERE token = ?', [refreshToken], (deleteError) => {
+        if (deleteError) {
+          console.error('Error deleting refresh token:', deleteError);
+          return res.sendStatus(500); // Internal server error
+        }
+  
+        res.clearCookie('jwt', { httpOnly: true });
+        res.sendStatus(204);
+      });
+    });
+  };
+  
+  
+    
+  
+  
+  module.exports = { registerUser, loginUser, logoutUser };

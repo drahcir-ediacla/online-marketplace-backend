@@ -11,3 +11,7 @@
 20230913	16:22:13	86cb90a0-2226-4618-a839-7092da565b71	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
 20230917	21:31:53	d85213b3-bbd2-43e4-a82a-9b82629b65e7	SyntaxError: Unexpected token e in JSON at position 0
 20230917	21:32:23	fb86fa2f-79b2-4e8c-86e8-e3c5ed094b13	SyntaxError: Unexpected token e in JSON at position 0
+20230918	14:28:38	fa25ac8c-a6bd-41f6-80b6-11cd80f2b359	ReferenceError: Cannot access 'refreshToken' before initialization
+20230918	14:30:02	9e7dd390-ed03-467f-aae6-98dfc40f749b	ReferenceError: Cannot access 'refreshToken' before initialization
+20230918	14:30:14	5470ef78-0773-42f2-8468-51ee452ff55b	ReferenceError: Cannot access 'refreshToken' before initialization
+20230918	15:20:22	e9421144-c5b8-4834-ae92-70ff9fabdbfb	ReferenceError: token is not defined

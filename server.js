@@ -8,14 +8,15 @@ app.use(express.json());
 const bodyParser = require('body-parser');
 const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
+const verifyJWT = require('./middleware/verifyJWT')
+const cookieParser = require('cookie-parser')
 // const registerRoutes = require('./routes/registerRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const otpRoutes = require('./routes/otpRoutes')
 const passportRoutes = require('./routes/passportRoutes')
 const refreshRoutes = require('./routes/refreshRoutes')
-const verifyJWT = require('./middleware/verifyJWT')
-const cookieParser = require('cookie-parser')
+
 const port = process.env.PORT || 8081;
 
 
@@ -52,6 +53,8 @@ app.use('/', refreshRoutes);
 
 app.use(verifyJWT)
 app.use('/', userRoutes);
+
+
 
 app.get('/', (req, res) => {
     return res.json("From Backend Side");
