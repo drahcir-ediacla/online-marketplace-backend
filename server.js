@@ -32,6 +32,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use(passport.initialize());
+app.use(passport.session());
 
 
 // built-in middleware to handle urlencoded data

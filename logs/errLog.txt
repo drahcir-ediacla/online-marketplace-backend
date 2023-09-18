@@ -17,3 +17,5 @@
 20230918	15:20:22	e9421144-c5b8-4834-ae92-70ff9fabdbfb	ReferenceError: token is not defined
 20230918	20:02:02	ee192044-96d2-4257-9416-97f8cf3e65c8	SyntaxError: Unexpected token e in JSON at position 0
 20230918	20:02:21	8dd3c8e6-38cf-4123-8627-68b4a2736c2e	SyntaxError: Unexpected token e in JSON at position 0
+20230918	21:25:11	d4fcca3e-d598-4148-9fd1-c37e85ec8b93	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230918	21:25:25	01e4616a-e1fc-4255-a862-ecb54d74e697	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
