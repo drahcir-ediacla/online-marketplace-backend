@@ -15,3 +15,5 @@
 20230918	14:30:02	9e7dd390-ed03-467f-aae6-98dfc40f749b	ReferenceError: Cannot access 'refreshToken' before initialization
 20230918	14:30:14	5470ef78-0773-42f2-8468-51ee452ff55b	ReferenceError: Cannot access 'refreshToken' before initialization
 20230918	15:20:22	e9421144-c5b8-4834-ae92-70ff9fabdbfb	ReferenceError: token is not defined
+20230918	20:02:02	ee192044-96d2-4257-9416-97f8cf3e65c8	SyntaxError: Unexpected token e in JSON at position 0
+20230918	20:02:21	8dd3c8e6-38cf-4123-8627-68b4a2736c2e	SyntaxError: Unexpected token e in JSON at position 0
