@@ -5,7 +5,8 @@ const db = require('./dbConfig');
 
 // Configure express-session
 const sessionStore = new MySQLStore({
-    expiration: 3600000, // Session expiration time in milliseconds (1 hour)
+    checkExpirationInterval: 3600000, // Session expiration time in milliseconds (1 hour)
+    expiration: 3600000, // Maximum age of a valid session (1 hour)
     schema: {
       tableName: 'sessions', // Name of your "sessions" table
       columnNames: {
