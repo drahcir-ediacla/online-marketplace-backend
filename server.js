@@ -10,12 +10,12 @@ const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
 const verifyJWT = require('./middleware/verifyJWT')
 const cookieParser = require('cookie-parser')
-// const registerRoutes = require('./routes/registerRoutes');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const otpRoutes = require('./routes/otpRoutes')
 const passportRoutes = require('./routes/passportRoutes')
 const refreshRoutes = require('./routes/refreshRoutes')
+const credentials = require('./middleware/credentials')
 
 const port = process.env.PORT || 8081;
 
@@ -23,6 +23,10 @@ const port = process.env.PORT || 8081;
 
 // custom middleware logger
 app.use(logger);
+
+// Handle options credentials check - before CORS!
+// and fetch cookies credentials requirement
+app.use(credentials);
 
 // Cross Origin Resource Sharing
 app.use(cors());

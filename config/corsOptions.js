@@ -1,5 +1,5 @@
 
-const allowedOrigins = ['https://yogeek.onrender.com', 'http://127.0.0.1:5500', 'http://localhost:3000', 'http://localhost:8081'];
+const allowedOrigins = require('./allowedOrigins')
 const corsOptions = {
     origin: (origin, callback) => {
         if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
