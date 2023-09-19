@@ -47,11 +47,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-app.use(session({
-    secret: 'your-secret-key', // Replace with your secret key
-    resave: false,
-    saveUninitialized: false,
-  }));
 
 // built-in middleware to handle urlencoded data
 // in other words, form data:  
