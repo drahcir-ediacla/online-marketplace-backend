@@ -5,7 +5,6 @@ const passport = require("passport")
 const corsOptions = require('./config/corsOptions');
 const app = express();
 app.use(express.json());
-const session = require('express-session');
 const bodyParser = require('body-parser');
 const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
@@ -17,7 +16,6 @@ const otpRoutes = require('./routes/otpRoutes')
 const passportRoutes = require('./routes/passportRoutes')
 const refreshRoutes = require('./routes/refreshRoutes')
 const credentials = require('./middleware/credentials')
-const sessionStore = require('./config/sessionsConfig')
 
 const port = process.env.PORT || 8081;
 
@@ -36,22 +34,9 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    store: sessionStore,
-  }));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-app.use(session({
-    secret: 'your-secret-key', // Replace with your secret key
-    resave: false,
-    saveUninitialized: false,
-  }));
 
 // built-in middleware to handle urlencoded data
 // in other words, form data:  

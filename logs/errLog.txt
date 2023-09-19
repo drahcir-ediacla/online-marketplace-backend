@@ -20,3 +20,30 @@
 20230918	21:25:11	d4fcca3e-d598-4148-9fd1-c37e85ec8b93	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
 20230918	21:25:25	01e4616a-e1fc-4255-a862-ecb54d74e697	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
 20230919	10:04:03	d023f66b-2a6e-4095-ab6e-fb8af30c6ae2	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	10:15:46	9e0fe0c2-ea5d-4548-887e-ed1c1680f91c	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	10:15:46	5f1bbad7-44bb-4bf8-b527-38a503506517	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:06:15	b4c2f9e0-9896-43fe-975c-9a83e1ca3658	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:06:55	413cc717-3242-473c-a260-afdc174dea88	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:07:30	64da9dae-7073-4c94-a00c-cff34f8c9942	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:07:39	04f05844-53bf-42e1-8779-222e8c65c295	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:08:26	46b73310-88c2-4611-af10-b5abff863521	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:09:08	7f658dfc-c3ea-49b0-b438-2fcce4b12c84	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:14:46	77e8fab6-1b7d-465c-8c9b-424e335ffe47	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:16:12	afb35edf-f45f-4ba7-8803-f8ec4d79f712	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:17:33	1bc02541-94b4-4ac7-a9b9-a6e1dfe7ce6d	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:18:02	4ab07ac6-3abf-4fe1-af9e-c98440cdd2f6	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:24:24	912327bb-4df2-4c52-9266-c47e73e8371b	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:25:39	ba757203-b0b4-47a5-bd8b-375fbd08011c	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:51:26	d2a83234-29d6-4c53-abe5-e091a3ada442	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	11:51:31	1021caaa-61e8-4271-8f3e-ca8b844b485b	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	13:47:02	ae788a51-3597-44a4-9786-08daa13a75e7	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	14:01:02	ed195a5a-ab54-4b9b-a04b-cb2be0f60139	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	14:01:07	8d9340d3-554b-4c04-a76f-5759268fddf2	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	14:02:01	fb10aa54-b731-41ee-a383-fa540b34206e	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	14:02:03	35a775f9-c850-49fe-9eb6-ffef67d113bd	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	14:07:25	ba332f12-bc35-42a4-9fe1-f7c566fc5fde	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	14:07:28	65d9692b-039f-4621-a75c-148ba6065c03	Error: Login sessions require session support. Did you forget to use `express-session` middleware?
+20230919	15:00:50	3cb0db09-a2b1-4be2-8349-878c20d59161	Error: ER_BAD_FIELD_ERROR: Unknown column '1h' in 'field list'
+20230919	15:00:50	6b1febd3-229e-453b-9f00-4c360144a5db	Error: ER_BAD_FIELD_ERROR: Unknown column '1h' in 'field list'
+20230919	15:00:50	54a5b361-6faf-4a4f-914e-8a0318f2c1c5	Error: ER_BAD_FIELD_ERROR: Unknown column '1h' in 'field list'
+20230919	15:00:51	40cb3e60-3685-458b-aef6-eb8e9fa95556	Error: ER_BAD_FIELD_ERROR: Unknown column '1h' in 'field list'
