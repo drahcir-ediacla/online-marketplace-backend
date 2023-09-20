@@ -29,7 +29,7 @@ router.get("/login/success", (req, res) => {
   });
 
   
-  router.get("/google", passport.authenticate("google", { scope: ["profile"] }));
+  router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
   router.get(
     "/google/callback",
@@ -39,7 +39,7 @@ router.get("/login/success", (req, res) => {
     })
   );
 
-  router.get("/facebook", passport.authenticate("facebook", { scope: ["profile"] }));
+  router.get("/facebook", passport.authenticate("facebook", { scope: ["profile", "email"] }));
 
   router.get(
     "/facebook/callback",
