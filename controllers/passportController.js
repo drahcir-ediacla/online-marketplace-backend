@@ -84,7 +84,7 @@ passport.use(
           } else {
             // If the user doesn't exist, create a new user and store their data
             user = new userModel({
-              id: facebookId,
+              fb_id: facebookId,
               email: email,
               display_name: displayName,
               // Additional user data can be populated here

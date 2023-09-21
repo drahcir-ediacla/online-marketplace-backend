@@ -1747,3 +1747,9 @@
 20230921	15:55:11	f87c2ae6-f11c-4174-8524-694b565d921b	GET	undefined	/auth/google/callback?code=4%2F0AfJohXkxiRGqPlqwLPKFwlQ0QznDCUNlShtuDb3ctz9pa8U__ubEgzr9vJ3WX-0oYrTTZQ&scope=email+profile+openid+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&authuser=0&prompt=none
 20230921	15:59:24	a6d82dce-e1cc-4954-a34d-e49eb77d2ca9	GET	undefined	/auth/google
 20230921	15:59:24	a5a8542a-1f65-4eb5-8782-48d64eaa23fb	GET	undefined	/auth/google/callback?code=4%2F0AfJohXn9I8knqKCrr5e5H5BSI6dkO8XUnXpwGp7Cv5KfoydFlik-OmgsIKzH2HGRdG4dGA&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+openid&authuser=0&prompt=none
+20230921	16:30:57	c57d8a26-967e-4f26-bfff-67e112f169c8	GET	undefined	/auth/google
+20230921	16:30:57	35dc1085-a732-4407-a7ba-6ef317bd2993	GET	undefined	/auth/google/callback?code=4%2F0AfJohXkSJaNLGhLgfYbRXfaKFx6fn8ey1pGdeqzahO_6Wi1EY5gOH9qIs1M4OLup3dudTQ&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&prompt=none
+20230921	16:46:49	2968b4a0-4431-41fd-8531-4c3bd0121cd2	POST	undefined	/api/register
+20230921	16:48:59	5104f1d6-97f1-4046-9832-b6951a354b20	POST	undefined	/api/register
+20230921	16:53:07	3e8f3ad2-4d71-453d-a343-a579706464a8	GET	undefined	/api/logout
+20230921	16:59:46	e8299e74-701c-435c-badf-f2f96260048c	GET	undefined	/auth/facebook/callback

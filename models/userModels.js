@@ -21,6 +21,11 @@ const userModel = sequelize.define('User', { // Use 'User' as the model name
     unique: false,
     allowNull: false,
   },
+  fb_id: {
+    type: DataTypes.BIGINT,
+    unique: true,
+    allowNull: false,
+  },
   email: {
     type: DataTypes.STRING,
     unique: true,

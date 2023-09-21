@@ -11,7 +11,7 @@ const generateAccessToken = (user_id) => {
     user_id,
   };
   const options = {
-    expiresIn: '1h', // Token expires in 1 hour
+    expiresIn: '5m', // Token expires in 1 hour
   };
   return jwt.sign(payload, accessTokenSecret, options);
 };
@@ -22,7 +22,7 @@ const generateRefreshToken = (user_id) => {
     user_id,
   };
   const options = {
-    expiresIn: '7d', // Token expires in 7 days (adjust as needed)
+    expiresIn: '1d', // Token expires in 7 days (adjust as needed)
   };
   return jwt.sign(payload, refreshTokenSecret, options);
 };
