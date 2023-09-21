@@ -76,3 +76,40 @@
 20230921	10:12:27	45d3436c-052c-46e0-a416-52656cd79af9	InternalOAuthError: Failed to obtain access token
 20230921	10:12:50	05b581a8-bb5a-4947-b918-be734fbbd0c1	InternalOAuthError: Failed to obtain access token
 20230921	10:14:48	5c552285-686f-462c-b970-3571099cde16	InternalOAuthError: Failed to fetch user profile
+20230921	11:49:36	4f2ed854-0f79-4a73-bc17-2dcd6db6fdd4	SequelizeUniqueConstraintError: Validation error
+20230921	11:49:46	2722ccd8-3d9e-4b94-bec2-0f9455184526	SequelizeUniqueConstraintError: Validation error
+20230921	11:50:11	c06a2902-28a2-47f1-95e7-ac75beb84ef0	SequelizeUniqueConstraintError: Validation error
+20230921	11:51:23	ff8c98f8-1549-453d-a6b6-0f98d63b82b7	SequelizeUniqueConstraintError: Validation error
+20230921	11:51:51	c5294c12-d969-439e-ba35-34ba48be5ac3	SequelizeUniqueConstraintError: Validation error
+20230921	11:52:07	40becb2a-aa01-4676-b5c3-ea833f775afc	SequelizeUniqueConstraintError: Validation error
+20230921	11:52:14	cd26d74a-4f59-4f13-9c7a-b102ad09d82d	SequelizeUniqueConstraintError: Validation error
+20230921	11:54:54	b04f7e3b-cfd1-483d-b237-9faa5e9cfd27	SequelizeUniqueConstraintError: Validation error
+20230921	11:58:23	10f815f7-e861-443c-ae1c-144298c29e3a	SequelizeUniqueConstraintError: Validation error
+20230921	12:57:05	c439087e-85fc-437f-92c2-044d51964cd2	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	12:58:11	0daf9fe2-2a64-4d49-af63-71bee8ff1010	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	12:59:13	810d8d2e-5a49-40f8-b841-5954a8e0a597	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:02:02	e5780afa-6516-4b22-bbb6-6b2caf22eba5	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:07:16	4a9276ce-25a7-4216-bf79-468cafaf6eb4	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:08:37	250621f7-ed11-4982-ab84-f8bd495ee83b	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:16:12	5ccb8956-3ceb-4b10-9061-a44e4d8d08ef	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:21:51	ec24362c-969f-473e-8e92-63427df8eba7	SequelizeUniqueConstraintError: Validation error
+20230921	13:22:28	dd27a665-55bc-4c48-a7ca-3ef1bfbc4440	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:22:44	561e8b6c-47c6-4f6f-bfd8-64e0cf269060	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:25:32	47f5258d-8c52-4f5a-a349-89f51acd973d	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:26:08	b342ad56-0008-4e98-ad3e-75da641849a2	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:27:37	0acd2551-4231-4030-9bad-8be2337aaac0	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:29:05	7c29d8c7-8dfe-44de-be6b-a3a7d1a2d0c4	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	13:50:07	e666746e-1d54-4092-8acd-7c1191e88635	SequelizeUniqueConstraintError: Validation error
+20230921	13:50:34	ea0dba73-145e-4f5b-9c9c-0c87dd3f9750	SequelizeUniqueConstraintError: Validation error
+20230921	13:56:50	3f164800-6f0f-4b5a-a4d5-378ce446ca1c	SequelizeUniqueConstraintError: Validation error
+20230921	14:07:02	6fb6d124-8e86-4c3d-968d-3a4c87bdb032	SequelizeUniqueConstraintError: Validation error
+20230921	14:09:08	2eebda7d-8eb7-4c6d-b022-f629be9a3cab	SequelizeUniqueConstraintError: Validation error
+20230921	14:24:54	f014696a-6106-4acd-96d5-68b217150dc8	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20230921	14:32:06	5665321f-46eb-4ef1-a20d-5a9fcd17cc84	Error: ER_BAD_FIELD_ERROR: Unknown column 'data' in 'field list'
+20230921	14:48:23	7eaf17af-ae63-43b8-b65e-a5f0282a9539	Error: ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`sessions`, CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
+20230921	14:50:54	fe136619-9755-4047-b36d-7c260ce1cde3	Error: ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`sessions`, CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
+20230921	14:56:06	196ecb62-a3c2-466b-bd98-447cb2cb34f3	Error: ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`sessions`, CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
+20230921	15:18:15	fe387fe6-a9f2-46cb-a7fc-7fd9e628be3b	SequelizeUniqueConstraintError: Validation error
+20230921	15:19:47	a3695413-f343-4553-ada6-e31423b7c000	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	15:20:10	419becf5-320c-43e2-8501-f4c232dacbba	SequelizeDatabaseError: Out of range value for column 'id' at row 1
+20230921	15:25:08	f86a08a5-5851-40ff-b810-c51c9dc22df7	SequelizeDatabaseError: Out of range value for column 'id' at row 1

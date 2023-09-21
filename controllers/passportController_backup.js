@@ -17,6 +17,7 @@ passport.use(
       console.log('profile:', profile);
 
       // Access the user's email address if available in the profile
+      const googleId = profile.id; // Extract display name
       const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
       const displayName = profile.displayName; // Extract display name
 
@@ -31,6 +32,7 @@ passport.use(
           } else {
             // If the user doesn't exist, create a new user and store their data
             user = new userModel({
+              id: googleId,
               email: email,
               display_name: displayName,
               // Additional user data can be populated here

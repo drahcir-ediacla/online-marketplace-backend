@@ -12,7 +12,7 @@ const sequelize = new Sequelize({
 // Define your User model
 const userModel = sequelize.define('User', { // Use 'User' as the model name
   id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.BIGINT,
     primaryKey: true,
     autoIncrement: true,
   },
