@@ -66,6 +66,10 @@ passport.use(
       scope: ['email'], // Request email permission
     },
     async (accessToken, refreshToken, profile, done) => {
+        console.log('accessToken:', accessToken);
+      console.log('refreshToken:', refreshToken);
+      console.log('profile:', profile);
+
       // Access user data from the Facebook profile
       const facebookId = profile.id;
       const displayName = profile.displayName;
