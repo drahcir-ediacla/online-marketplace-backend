@@ -69,3 +69,10 @@
 20230920	15:46:56	ccf06805-683f-47fa-9e40-f79bfd3e0021	ReferenceError: displayName is not defined
 20230920	15:50:36	17dda512-c24c-4cb6-947c-cadc5e9e88ba	SequelizeValidationError: notNull Violation: User.name cannot be null
 20230920	16:54:40	dd1683f5-b320-4747-8193-6f3f86403b88	Error: Email not found in Facebook profile
+20230921	09:56:43	9150389c-f2aa-495d-b270-d6cd4c56ee1b	InternalOAuthError: Failed to obtain access token
+20230921	09:57:57	3a9230a5-632c-4a83-a4f3-93af3a34f9b0	InternalOAuthError: Failed to fetch user profile
+20230921	09:58:46	fc17e88d-438c-4c0e-9576-a9e2b9b8e75a	InternalOAuthError: Failed to fetch user profile
+20230921	10:00:48	be63e1d0-4d16-491e-92e4-cb5a474bbb6d	InternalOAuthError: Failed to fetch user profile
+20230921	10:12:27	45d3436c-052c-46e0-a416-52656cd79af9	InternalOAuthError: Failed to obtain access token
+20230921	10:12:50	05b581a8-bb5a-4947-b918-be734fbbd0c1	InternalOAuthError: Failed to obtain access token
+20230921	10:14:48	5c552285-686f-462c-b970-3571099cde16	InternalOAuthError: Failed to fetch user profile
