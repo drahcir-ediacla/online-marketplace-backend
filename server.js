@@ -31,7 +31,11 @@ app.use(logger);
 app.use(credentials);
 
 // Cross Origin Resource Sharing
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000",
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+}));
 
 
 app.use(bodyParser.json());

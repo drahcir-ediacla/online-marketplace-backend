@@ -24,8 +24,13 @@ router.get("/login/success", (req, res) => {
   });
   
   router.get("/logout", (req, res) => {
-    req.logout();
-    res.redirect(process.env.CLIENT_URL);
+    req.logout((err) => {
+      if (err) {
+        // Handle any error that occurred during logout
+        console.error(err);
+      }
+      res.redirect(process.env.CLIENT_URL);
+    });
   });
 
   
