@@ -19,12 +19,12 @@ const userModel = sequelize.define('User', { // Use 'User' as the model name
   display_name: {
     type: DataTypes.STRING,
     unique: false,
-    allowNull: false,
+    allowNull: true,
   },
   fb_id: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.STRING,
     unique: true,
-    allowNull: false,
+    allowNull: true,
   },
   email: {
     type: DataTypes.STRING,

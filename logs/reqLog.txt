@@ -2408,3 +2408,13 @@
 20230922	17:46:40	eead7b79-254d-468a-8b3c-283b070d0291	GET	http://localhost:3000	/auth/login/success
 20230922	17:46:40	c5b3adfa-73ba-45ae-add6-603b867fba8e	GET	http://localhost:3000	/auth/login/success
 20230922	17:46:40	18ec0225-ae2f-4ab4-bdd5-b5c320e9c0cb	GET	http://localhost:3000	/auth/login/success
+20230922	17:52:21	a68ca487-a05b-4508-ae7e-1723d04c6412	GET	undefined	/auth/google
+20230922	17:52:21	bad06c97-4d1f-4b7e-9f60-c6482cbf79b9	GET	undefined	/auth/google/callback?code=4%2F0AfJohXnm38529S3n5EuEzfERIA9gIjUnh-u3LMbujWEHBUfXKOI92LTK-lfd2y7sCiqM3Q&scope=email+profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile+openid&authuser=0&prompt=none
+20230922	17:52:22	33b9366e-8e25-4723-addd-27d5f1809100	OPTIONS	http://localhost:3000	/auth/login/success
+20230922	17:52:22	fab7f5a7-d448-40f5-b684-42a50f45a76c	OPTIONS	http://localhost:3000	/auth/login/success
+20230922	17:52:22	e099650c-7e6a-4a14-8d65-eff0bc232030	OPTIONS	http://localhost:3000	/auth/login/success
+20230922	17:52:22	bf46c370-03fd-4d15-bf24-1b0c68cf6104	OPTIONS	http://localhost:3000	/auth/login/success
+20230922	17:52:22	f0bb596b-4dbb-4f06-a54d-7e59eac9f161	GET	http://localhost:3000	/auth/login/success
+20230922	17:52:22	8e50d4f5-69e9-4fe5-97b8-d07c72777ee1	GET	http://localhost:3000	/auth/login/success
+20230922	17:52:22	7b2130c3-864e-43d5-9506-b863853de0cd	GET	http://localhost:3000	/auth/login/success
+20230922	17:52:22	1905abee-8122-4b49-ae78-a959290574ee	GET	http://localhost:3000	/auth/login/success
