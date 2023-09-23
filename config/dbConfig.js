@@ -1,21 +1,27 @@
-const mysql = require('mysql');
+const mysql = require('mysql2/promise');
 require('dotenv').config();
 
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: 3306,
+    connectionLimit: 10, // Adjust the connection limit as needed
 });
 
+
 // Check the database connection
-db.connect((err) => {
+db.getConnection((err, connection) => {
     if (err) {
-        console.error('Error connecting to the database:', err);
-        process.exit(1); // Exit the application on a database connection error
+      console.error('Error connecting to the database:', err);
+      // Handle the error here without exiting the application
+    } else {
+      console.log('Connected to the database');
+      // Release the connection when done with it
+      connection.release();
     }
-    console.log('Connected to the database');
-});
+  });
+  
 
 module.exports = db;
