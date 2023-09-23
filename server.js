@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 require("./controllers/passportController");
 const passport = require("passport")
-const corsOptions = require('./config/corsOptions');
 const app = express();
 app.use(express.json());
 const session = require('express-session');
