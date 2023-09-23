@@ -26,6 +26,12 @@ const port = process.env.PORT || 8081;
 // custom middleware logger
 app.use(logger);
 
+// Middleware to set the required header
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  next();
+});
+
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
 app.use(credentials);
