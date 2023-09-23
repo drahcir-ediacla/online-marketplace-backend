@@ -25,6 +25,14 @@ const port = process.env.PORT || 8081;
 // custom middleware logger
 app.use(logger);
 
+// Cross Origin Resource Sharing
+app.use(cors({
+  origin: ["http://localhost:3000", "https://yogeek.onrender.com"],
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
+}));
+
 // Middleware to set the required header
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Private-Network', 'true');
@@ -34,13 +42,6 @@ app.use((req, res, next) => {
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
 app.use(credentials);
-
-// Cross Origin Resource Sharing
-app.use(cors({
-  origin: ["https://yogeek.onrender.com"],
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true,
-}));
 
 
 app.use(bodyParser.json());
