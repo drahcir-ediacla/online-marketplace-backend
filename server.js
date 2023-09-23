@@ -76,7 +76,7 @@ app.use('/', authRoutes);
 app.use("/auth", passportRoutes);
 app.use('/', refreshRoutes);
 
-app.use(verifyJWT)
+
 app.use('/', userRoutes);
 
 
