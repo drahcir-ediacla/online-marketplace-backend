@@ -37,7 +37,7 @@ app.use(credentials);
 
 // Cross Origin Resource Sharing
 app.use(cors({
-  origin: ["http://localhost:3000", "https://yogeek.onrender.com"],
+  origin: ["https://yogeek.onrender.com"],
   methods: "GET,POST,PUT,DELETE",
   credentials: true,
 }));
