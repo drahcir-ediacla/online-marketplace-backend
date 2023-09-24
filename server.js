@@ -41,7 +41,7 @@ app.use((req, res, next) => {
 
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
-app.use(credentials);
+// app.use(credentials);
 
 
 app.use(bodyParser.json());
