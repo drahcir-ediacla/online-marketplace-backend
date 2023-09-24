@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const corsOptions = require('./config/corsOptions')
 require("./controllers/passportController");
 const passport = require("passport")
 const app = express();
@@ -15,7 +16,6 @@ const userRoutes = require('./routes/userRoutes');
 const otpRoutes = require('./routes/otpRoutes')
 const passportRoutes = require('./routes/passportRoutes')
 const refreshRoutes = require('./routes/refreshRoutes')
-const credentials = require('./middleware/credentials')
 const sessionStore = require('./config/sessionsConfig')
 
 const port = process.env.PORT || 8081;
@@ -25,23 +25,9 @@ const port = process.env.PORT || 8081;
 // custom middleware logger
 app.use(logger);
 
-// Cross Origin Resource Sharing
-app.use(cors({
-  origin: ["https://yogeek.onrender.com", "http://localhost:3000", "https://yogeek-server.onrender.com"],
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-}));
 
-// Middleware to set the required header
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Private-Network', 'true');
-  next();
-});
 
-// Handle options credentials check - before CORS!
-// and fetch cookies credentials requirement
-// app.use(credentials);
+app.use(cors(corsOptions));
 
 
 app.use(bodyParser.json());
