@@ -27,7 +27,7 @@ app.use(logger);
 
 // Cross Origin Resource Sharing
 app.use(cors({
-  origin: ["http://localhost:3000", "https://yogeek.onrender.com"],
+  origin: ["http://localhost:3000", "https://yogeek.onrender.com", "https://yogeek-server.onrender.com"],
   methods: "GET,POST,PUT,DELETE",
   credentials: true,
   optionsSuccessStatus: 204,
@@ -76,7 +76,7 @@ app.use('/', authRoutes);
 app.use("/auth", passportRoutes);
 app.use('/', refreshRoutes);
 
-
+app.use(verifyJWT)
 app.use('/', userRoutes);
 
 
