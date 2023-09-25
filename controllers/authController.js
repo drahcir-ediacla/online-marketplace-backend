@@ -1,3 +1,4 @@
+const passport = require('passport');
 const db = require('../config/dbConfig');
 const bcrypt = require('bcrypt');
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils'); // You need to implement token utility functions
@@ -39,53 +40,51 @@ const registerUser = (req, res) => {
 
 // Function to authenticate and login a user
 const loginUser = (req, res) => {
-    const { email, password } = req.body;
-  
-    // Retrieve user with the provided email
-    const getUserQuery = 'SELECT * FROM users WHERE email = ?';
-    db.query(getUserQuery, [email], (getUserErr, user) => {
-      if (getUserErr) {
-        console.error('Error retrieving user:', getUserErr);
-        res.status(500).json({ message: 'Error retrieving user' });
-      } else if (user.length === 0) {
-        res.status(401).json({ message: 'Authentication failed. User not found.' });
-      } else {
-        // Compare the provided password with the stored hashed password
-        bcrypt.compare(password, user[0].password, (compareErr, isMatch) => {
-          if (compareErr) {
-            console.error('Error comparing passwords:', compareErr);
-            res.status(500).json({ message: 'Error comparing passwords' });
-          } else if (!isMatch) {
-            res.status(401).json({ message: 'Authentication failed. Incorrect password.' });
-            console.log('Password comparison result:', isMatch);
-            console.error('Error comparing passwords:', compareErr);
-            console.log('Provided password:', password);
-            console.log('Stored hashed password:', user[0].password);
-            console.log('Password comparison result:', isMatch);
-          } else {
-            // If the password is correct, create and return an access token and a refresh token
-            const accessToken = generateAccessToken(user[0].id); // Implement this function
-            const refreshToken = generateRefreshToken(user[0].id); // Implement this function
-  
-            // Store the refresh token in the database
-            const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
-            const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-            res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
-            
-            db.query(storeRefreshTokenQuery, [user[0].id, refreshToken, expirationDate], (storeErr) => {
-            if (storeErr) {
-                console.error('Error storing refresh token:', storeErr);
-                res.status(500).json({ message: 'Error storing refresh token' });
-            } else {
-                // Return the access token and refresh token
-                res.status(200).json({ accessToken, refreshToken });
-            }
-            });
-          }
-        });
+  passport.authenticate('local', (authErr, user, info) => {
+    if (authErr) {
+      console.error('Error during authentication:', authErr);
+      return res.status(500).json({ message: 'Internal server error' });
+    }
+
+    if (!user) {
+      // Authentication failed
+      return res.status(401).json({ message: 'Authentication failed. ' + info.message });
+    }
+
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
+        console.error('Error during login:', loginErr);
+        return res.status(500).json({ message: 'Internal server error' });
       }
+
+      // If the login is successful, create and return an access token and a refresh token
+      const accessToken = generateAccessToken(user.id); // Implement this function
+      const refreshToken = generateRefreshToken(user.id); // Implement this function
+
+      // Store the refresh token in the database
+      const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
+      const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
+
+      db.query(storeRefreshTokenQuery, [user.id, refreshToken, expirationDate], (storeErr) => {
+        if (storeErr) {
+          console.error('Error storing refresh token:', storeErr);
+          return res.status(500).json({ message: 'Error storing refresh token' });
+        }
+
+        // Authentication succeeded, return success response
+        res.status(200).json({
+          success: true,
+          message: 'Successfully authenticated',
+          user,
+          accessToken,
+          refreshToken,
+        });
+      });
     });
-  };
+  })(req, res); // Authenticate using the local strategy
+};
+
 
   
   const logoutUser = (req, res) => {

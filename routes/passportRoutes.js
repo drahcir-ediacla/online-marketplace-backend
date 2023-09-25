@@ -55,4 +55,9 @@ router.get("/login/success", (req, res) => {
     })
   );
 
+  router.post("/local", passport.authenticate("local", {
+    successRedirect: process.env.CLIENT_URL, // Redirect on success
+    failureRedirect: "/login/failed", // Redirect on failure
+  }));
+
 module.exports = router

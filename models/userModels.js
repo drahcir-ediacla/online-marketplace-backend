@@ -34,6 +34,10 @@ const userModel = sequelize.define('User', { // Use 'User' as the model name
       isEmail: true,
     },
   },
+  password: {
+    type: DataTypes.STRING, // You can choose an appropriate data type for passwords
+    allowNull: false,
+  },
   // You can add more fields here as needed
 }, {
   tableName: 'users', // Specify the actual table name in your database

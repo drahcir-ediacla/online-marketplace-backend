@@ -1,8 +1,46 @@
+const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
-const passport = require("passport");
+const LocalStrategy = require('passport-local').Strategy;
 const userModel = require('../models/userModels')
+const bcrypt = require('bcrypt');
 require('dotenv').config();
+
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'email', // Field in the request body for the username (email)
+      passwordField: 'password', // Field in the request body for the password
+    },
+    async (email, password, done) => {
+      try {
+        // Find the user with the provided email
+        const user = await userModel.findOne({ where: { email } });
+
+        if (!user) {
+          // User not found
+          return done(null, false, { message: 'User not found' });
+        }
+
+        // Compare the provided password with the stored hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+          // Incorrect password
+          return done(null, false, { message: 'Incorrect password' });
+        }
+
+        // Authentication successful, return the user
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+
 
 passport.use(
   new GoogleStrategy(
@@ -52,8 +90,6 @@ passport.use(
     }
   )
 );
-
-
   
 
 passport.use(
