@@ -488,3 +488,11 @@
 20230924	21:25:54	ae8e5161-73c4-4168-a72b-452922045c25	GET	http://localhost:3000	/auth/login/success
 20230924	21:25:54	87ca35c3-df3f-4bb4-9909-6c3f0e9e8063	GET	http://localhost:3000	/auth/login/success
 20230924	21:25:54	f120344e-f1c4-4654-943f-c5388a3fc595	GET	http://localhost:3000	/auth/login/success
+20230925	13:59:11	d3d8b354-960f-4606-9283-28dddeabef8c	POST	undefined	/api/login
+20230925	13:59:56	a7ac8705-438b-454c-9608-1db372447991	POST	undefined	/api/login
+20230925	14:00:00	1bede11f-8153-4e92-b2a9-96ee7c2dfc5b	POST	undefined	/api/login
+20230925	14:00:12	0b960d61-119c-4f54-9a12-df6e374db06b	GET	undefined	/api/refresh
+20230925	14:00:23	851d2a50-9bd3-427d-bc6d-b0f0ecba8458	GET	undefined	/api/users
+20230925	14:00:27	aaf1041e-eb5d-4c85-81c3-f091a839ad11	GET	undefined	/api/users
+20230925	14:00:30	3570a1f8-96f3-40b9-b410-decd742fddef	GET	undefined	/api/users
+20230925	14:00:35	e40c0562-3e66-4b30-9ead-4b86c7235f68	GET	undefined	/api/logout
