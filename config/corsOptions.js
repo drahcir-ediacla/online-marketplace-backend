@@ -3,7 +3,7 @@ const corsOptions = {
     methods: 'GET,POST,PUT,DELETE',
     credentials: true, // Allow credentials (cookies)
     optionsSuccessStatus: 204,
-    allowedHeaders: 'Content-Type,Authorization,Access-Control-Allow-Private-Network,Access-Control-Allow-Headers,Access-Control-Allow-Credentials',
+    allowedHeaders: 'Content-Type,Authorization,Access-Control-Allow-Private-Network,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Access-Control-Allow-Origin',
   };
 
   module.exports = corsOptions
