@@ -6,4 +6,6 @@ const UserController = require('../controllers/userController');
 // Define the '/users' route
 router.get('/api/users', UserController.getUsers);
 
+
+
 module.exports = router;

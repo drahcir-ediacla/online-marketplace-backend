@@ -6,6 +6,24 @@ require('dotenv').config();
 // const CLIENT_URL = "http://localhost:3000/";
 
 
+// Route for checking if the user is authenticated and returning user information
+router.get("/check-auth", (req, res) => {
+  if (req.isAuthenticated()) {
+    // If the user is authenticated, send user data
+    res.status(200).json({
+      success: true,
+      user: req.user,
+    });
+  } else {
+    // If not authenticated, send an error or an empty response
+    res.status(401).json({
+      success: false,
+      message: "User not authenticated",
+    });
+  }
+});
+
+
 router.get("/login/success", (req, res) => {
     if (req.user) {
       res.status(200).json({
