@@ -13,6 +13,7 @@ router.get("/check-auth", (req, res) => {
     res.status(200).json({
       success: true,
       user: req.user,
+      cookies: req.cookies
     });
   } else {
     // If not authenticated, send an error or an empty response

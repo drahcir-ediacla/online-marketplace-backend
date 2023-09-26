@@ -1,5 +1,5 @@
 const corsOptions = {
-    origin: ["http://localhost:3000", "https://yogeek.onrender.com"], // Specify the exact origin of your frontend
+    origin: ["http://localhost:3000", "https://yogeek.onrender.com", "http://localhost:8081", "https://yogeek-server.onrender.com"], // Specify the exact origin of your frontend
     methods: 'GET,POST,PUT,DELETE',
     credentials: true, // Allow credentials (cookies)
     optionsSuccessStatus: 204,
