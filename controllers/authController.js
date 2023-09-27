@@ -76,6 +76,7 @@ const loginUser = (req, res) => {
         res.status(200).json({
           success: true,
           message: 'Successfully authenticated',
+          cookies: res.cookie,
           user,
           accessToken,
           refreshToken,
