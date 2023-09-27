@@ -32,6 +32,15 @@ app.use(cors(corsOptions));
 
 app.use(bodyParser.json());
 
+// built-in middleware for json 
+app.use(express.json());
+
+// built-in middleware to handle urlencoded data
+// in other words, form data:  
+// ‘content-type: application/x-www-form-urlencoded’
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -42,18 +51,6 @@ app.use(session({
 
 app.use(passport.initialize());
 app.use(passport.session());
-
-
-
-// built-in middleware to handle urlencoded data
-// in other words, form data:  
-// ‘content-type: application/x-www-form-urlencoded’
-app.use(express.urlencoded({ extended: false }));
-
-// built-in middleware for json 
-app.use(express.json());
-
-app.use(cookieParser());
 
 
 //Routes

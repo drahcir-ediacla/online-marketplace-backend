@@ -33,6 +33,12 @@ router.get("/login/success", (req, res) => {
         user: req.user,
         //   cookies: req.cookies
       });
+    } else {
+      // If not authenticated, send an error or an empty response
+      res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
     }
   });
   
@@ -54,6 +60,8 @@ router.get("/login/success", (req, res) => {
   });
 
   
+
+  // PASSPORT GOOGLE
   router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 
   router.get(
@@ -64,6 +72,9 @@ router.get("/login/success", (req, res) => {
     })
   );
 
+
+
+    // PASSPORT FACEBOOK
   router.get("/facebook", passport.authenticate("facebook", { scope: ["profile", "email"] }));
 
   router.get(
@@ -74,9 +85,30 @@ router.get("/login/success", (req, res) => {
     })
   );
 
-  router.post("/local", passport.authenticate("local", {
-    successRedirect: process.env.CLIENT_URL, // Redirect on success
-    failureRedirect: "/login/failed", // Redirect on failure
-  }));
+
+  // PASSPORT LOCAL
+  router.post("/local", (req, res, next) => {
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        // Handle errors here
+        return next(err);
+      }
+      if (!user) {
+        // Authentication failed, you can log this
+        console.log("Authentication failed");
+        return res.redirect("/login/failed");
+      }
+      
+      // If authentication is successful, you can log and redirect to success URL
+      console.log("Authentication successful");
+      req.logIn(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        return res.redirect(process.env.CLIENT_URL);
+      });
+    })(req, res, next);
+  });
+  
 
 module.exports = router
