@@ -4,7 +4,6 @@ const corsOptions = require('./config/corsOptions')
 require("./controllers/passportController");
 const passport = require("passport")
 const app = express();
-app.use(express.json());
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const { logger } = require('./middleware/logEvents');
@@ -46,7 +45,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite: 'lax', secure: true, maxAge: 3600000 },
+    cookie: { httpOnly: true, secure: false, maxAge: 3600000 },
   }));
 
 app.use(passport.initialize());
@@ -58,6 +57,7 @@ app.use('/', otpRoutes);
 app.use('/', authRoutes);
 app.use("/auth", passportRoutes);
 app.use('/', refreshRoutes);
+
 
 app.use(verifyJWT)
 app.use('/', userRoutes);
