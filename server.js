@@ -46,7 +46,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { secure: false, maxAge: 3600000 },
+    cookie: { httpOnly: false, sameSite: 'lax', secure: false, maxAge: 3600000 },
   }));
 
 app.use(passport.initialize());
