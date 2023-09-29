@@ -4738,3 +4738,15 @@
 20230929	14:22:16	68ad2351-fc6c-4644-bc8e-61109505ea04	GET	http://localhost:3000	/auth/check-auth
 20230929	14:22:16	c929ca27-4c7a-4abf-b491-2debcf5585b9	GET	http://localhost:3000	/auth/check-auth
 20230929	14:22:16	df7c8ef1-f2ab-4709-aa87-907a83eb0d17	GET	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	7bfb282e-6106-48e3-be69-6c2fd9111e8e	OPTIONS	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	fdd1684d-46c8-4679-a9fb-4e56ca3f4991	OPTIONS	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	9640473e-6d38-4d6a-9704-32b39e70abad	OPTIONS	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	33c2c093-b12a-4468-8187-a994d1645687	OPTIONS	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	3c8bec92-9369-49c3-9e25-20050cb33b01	OPTIONS	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	037f74e1-7d40-4207-bd4b-560b5022f1e5	OPTIONS	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	6137b28d-c53b-48a4-b173-3cf459d0d52d	GET	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	bf253c20-6b3d-44ec-9988-d08340f2a201	GET	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	14447633-ad93-4ab4-ac97-575e7dcb5bfa	GET	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	abf7e7b7-cc41-4346-99ea-3d91bdd880a7	GET	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	f69771d7-e027-44d9-9096-3d7e3fc35b6c	GET	http://localhost:3000	/auth/check-auth
+20230929	14:24:14	76beef57-2751-442d-bb87-edfa2f1fce5a	GET	http://localhost:3000	/auth/check-auth
