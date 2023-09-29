@@ -43,7 +43,7 @@ const loginUser = (req, res) => {
   passport.authenticate('local', (authErr, user, info) => {
     if (authErr) {
       console.error('Error during authentication:', authErr);
-      return res.status(500).json({ message: 'Internal server error' });
+      return res.status(500).json({ message: 'Internal server error Passport' });
     }
 
     if (!user) {
@@ -54,7 +54,7 @@ const loginUser = (req, res) => {
     req.logIn(user, (loginErr) => {
       if (loginErr) {
         console.error('Error during login:', loginErr);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error Local' });
       }
 
       // If the login is successful, create and return an access token and a refresh token
