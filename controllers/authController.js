@@ -64,7 +64,7 @@ const loginUser = (req, res) => {
       // Store the refresh token in the database
       const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
       const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000 });
+      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'lax', maxAge: 24 * 60 * 60 * 1000 });
 
       db.query(storeRefreshTokenQuery, [user.id, refreshToken, expirationDate], (storeErr) => {
         if (storeErr) {
@@ -87,47 +87,64 @@ const loginUser = (req, res) => {
 };
 
 
-  
-  const logoutUser = (req, res) => {
-    // On the client, also delete the accessToken
-  
+
+const logoutUser = (req, res) => {
+  // On the client, also delete the accessToken
+
+  if (req.isAuthenticated()) {
+    // Handle Passport session logout
+    req.logout(); // Clear Passport session
+  } else {
+    // Handle local logout (JWT or cookies)
+
     const cookies = req.cookies;
-    if (!cookies?.jwt) return res.sendStatus(204); // No content
-    const refreshToken = cookies.jwt;
-  
-    // Check if refreshToken exists in the database
-    db.query('SELECT * FROM refresh_tokens WHERE token = ?', [refreshToken], (error, result) => {
-      if (error) {
-        console.error('Error handling logout:', error);
-        return res.sendStatus(500); // Internal server error
-      }
-  
-      // Ensure the result is an array
-      if (!Array.isArray(result)) {
-        return res.sendStatus(204); // No matching token found
-      }
-  
-      if (result.length === 0) {
-        return res.sendStatus(204);
-      }
-  
-      const [row] = result;
-  
-      // Delete refreshToken from the database
-      db.query('DELETE FROM refresh_tokens WHERE token = ?', [refreshToken], (deleteError) => {
-        if (deleteError) {
-          console.error('Error deleting refresh token:', deleteError);
+    if (cookies && cookies.jwt) {
+      const refreshToken = cookies.jwt;
+
+      // Check if refreshToken exists in the database
+      db.query('SELECT * FROM refresh_tokens WHERE token = ?', [refreshToken], (error, result) => {
+        if (error) {
+          console.error('Error handling logout:', error);
           return res.sendStatus(500); // Internal server error
         }
-  
-        res.clearCookie('jwt', { httpOnly: true, sameSite: 'None' });
-        res.sendStatus(204);
+
+        // Ensure the result is an array
+        if (!Array.isArray(result)) {
+          return res.sendStatus(204); // No matching token found
+        }
+
+        if (result.length === 0) {
+          return res.sendStatus(204);
+        }
+
+        const [row] = result;
+
+        // Delete refreshToken from the database
+        db.query('DELETE FROM refresh_tokens WHERE token = ?', [refreshToken], (deleteError) => {
+          if (deleteError) {
+            console.error('Error deleting refresh token:', deleteError);
+            return res.sendStatus(500); // Internal server error
+          }
+
+          // Clear JWT cookie
+          res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true, });
+          // You can also clear other cookies if needed
+
+          res.sendStatus(204);
+        });
       });
-    });
-  };
-  
-  
-    
-  
-  
-  module.exports = { registerUser, loginUser, logoutUser };
+    } else {
+      // Handle other local logout methods if any
+    }
+  }
+
+  // Redirect to the home page or any other desired page
+  res.redirect(process.env.CLIENT_URL);
+};
+
+
+
+
+
+
+module.exports = { registerUser, loginUser, logoutUser };

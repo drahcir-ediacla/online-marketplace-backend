@@ -2,3 +2,4 @@
 20230925	17:18:31	c685bdcd-bc4b-4485-8a6f-8913bda10fc2	TypeError: next is not a function
 20230925	17:18:48	8e5b22b8-9949-48a3-8397-a2bbc8235ad1	TypeError: next is not a function
 20230925	20:46:38	22c34693-64ce-4817-bfd7-69ccdf20be05	ReferenceError: passport is not defined
+20230929	11:29:12	479a7c51-9c50-42b4-afd6-40755f37dd87	ReferenceError: db is not defined
