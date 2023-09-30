@@ -3,3 +3,5 @@
 20230925	17:18:48	8e5b22b8-9949-48a3-8397-a2bbc8235ad1	TypeError: next is not a function
 20230925	20:46:38	22c34693-64ce-4817-bfd7-69ccdf20be05	ReferenceError: passport is not defined
 20230929	11:29:12	479a7c51-9c50-42b4-afd6-40755f37dd87	ReferenceError: db is not defined
+20230930	23:45:48	f646f379-2666-4555-9218-175b57bb8a33	Error: req#logout requires a callback function
+20230930	23:49:37	e2357b25-ed19-4b61-8279-5e4aabebd474	Error: req#logout requires a callback function
