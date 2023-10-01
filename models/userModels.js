@@ -36,7 +36,7 @@ const userModel = sequelize.define('User', { // Use 'User' as the model name
   },
   password: {
     type: DataTypes.STRING, 
-    allowNull: false,
+    allowNull: true,
   },
   // You can add more fields here as needed
 }, {
