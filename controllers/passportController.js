@@ -57,6 +57,7 @@ passport.use(
       // Access the user's email address if available in the profile
       const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
       const displayName = profile.displayName; // Extract display name
+      const photos = profile.photos[0].value; // Extract display name
 
       try {
         if (email) {
@@ -71,6 +72,7 @@ passport.use(
             user = new userModel({
               email: email,
               display_name: displayName,
+              profile_pic: photos,
               // Additional user data can be populated here
             });
 
