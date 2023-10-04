@@ -30,6 +30,7 @@ const userModel = sequelize.define('User', { // Use 'User' as the model name
     type: DataTypes.STRING,
     unique: true,
     allowNull: false,
+    trim: true,
     validate: {
       isEmail: true,
     },
