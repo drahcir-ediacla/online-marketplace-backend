@@ -7,3 +7,9 @@
 20230930	23:49:37	e2357b25-ed19-4b61-8279-5e4aabebd474	Error: req#logout requires a callback function
 20231002	15:07:22	3fa061fa-072e-4d6a-88d8-3577cacbcf13	ReferenceError: photos is not defined
 20231002	15:13:27	3b40a21b-36f1-4717-ad57-f30327c05289	SequelizeValidationError: string violation: profile_pic cannot be an array or an object
+20231009	16:04:20	320b997a-eea4-44ba-a23d-2f22d4b559a8	TypeError: currentUser.save is not a function
+20231009	16:04:37	6e0a7bdb-a4ff-4c77-a8a5-a297a0fbe886	TypeError: currentUser.save is not a function
+20231009	16:29:14	3c79f659-dc61-445b-942b-7574884d9b9f	SyntaxError: Unexpected string in JSON at position 61
+20231009	17:44:01	e504ec2a-099c-4b4f-9e70-7c0b30f9033e	Error: ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`sessions`, CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
+20231009	17:49:13	0e51edcf-30a9-47ad-a40e-5475b22dba0c	Error: ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`sessions`, CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
+20231009	17:53:02	465315b3-d85b-466c-94f2-f8f31a9f96be	Error: ER_NO_REFERENCED_ROW_2: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`sessions`, CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
