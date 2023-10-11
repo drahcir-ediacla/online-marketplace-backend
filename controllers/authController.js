@@ -64,7 +64,7 @@ const loginUser = (req, res) => {
       // Store the refresh token in the database
       const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
       const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', secure: false, maxAge: 24 * 60 * 60 * 1000 });
+      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000 });
 
       db.query(storeRefreshTokenQuery, [user.id, refreshToken, expirationDate], (storeErr) => {
         if (storeErr) {

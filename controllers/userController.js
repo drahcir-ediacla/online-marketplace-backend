@@ -39,9 +39,19 @@ const updateUser = async (req, res) => {
 
       // Update the user's profile data
       await user.update({
-        display_name: updatedUserData.display_name,
         email: updatedUserData.email,
-        // Add more fields here as needed
+        display_name: updatedUserData.display_name,
+        bio: updatedUserData.bio,
+        first_name: updatedUserData.first_name,
+        last_name: updatedUserData.last_name,
+        country: updatedUserData.country,
+        region: updatedUserData.region,
+        city: updatedUserData.city,
+        phone: updatedUserData.phone,
+        gender: updatedUserData.gender,
+        birthday: updatedUserData.birthday,
+        password: updatedUserData.password,
+        profile_pic: updatedUserData.profile_pic,
       });
 
       // Send a success response with the updated user data
