@@ -154,10 +154,21 @@ passport.use(
 
   // Serialize and deserialize user for sessions (if needed)
   passport.serializeUser((user, done) => {
-    done(null, user);
+    done(null, user.id);
   });
   
-  passport.deserializeUser((user, done) => {
-    
-    done(null, user);
+  
+  passport.deserializeUser(async (id, done) => {
+    try {
+      const user = await userModel.findByPk(id);
+  
+      if (!user) {
+        done(new Error('User not found'), null);
+      } else {
+        done(null, user);
+      }
+    } catch (error) {
+      done(error, null);
+    }
   });
+  
