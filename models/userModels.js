@@ -90,6 +90,11 @@ const userModel = sequelize.define('User', { // Use 'User' as the model name
     unique: false,
     allowNull: true,
   },
+  createdAt_MonthYear: {
+    type: DataTypes.STRING,
+    unique: false,
+    allowNull: true,
+  },
   // You can add more fields here as needed
 }, {
   tableName: 'users', // Specify the actual table name in your database
