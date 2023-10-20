@@ -54,22 +54,22 @@ passport.use(
       console.log('refreshToken:', refreshToken);
       console.log('profile:', profile);
 
-      // Access the user's email address if available in the profile
-      const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
-      const displayName = profile.displayName; // Extract display name
-      const photos = profile.photos[0].value; // Extract display name
-
       try {
+        // Access the user's email address if available in the profile
+        const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
+        const displayName = profile.displayName; // Extract display name
+        const photos = profile.photos[0].value; // Extract display name
+
         if (email) {
           // Check if the user already exists in the database based on their email
           let user = await userModel.findOne({ where: { email } });
 
           if (user) {
             // If the user exists, log them in
-            done(null, user);
+            return done(null, user);
           } else {
             // If the user doesn't exist, create a new user and store their data
-            user = new userModel({
+            const newUser = new userModel({
               email: email,
               display_name: displayName,
               profile_pic: photos,
@@ -77,21 +77,23 @@ passport.use(
             });
 
             // Save the new user to the database
-            await user.save();
+            await newUser.save();
 
             // Log in the new user
-            done(null, user);
+            return done(null, newUser);
           }
         } else {
           // Handle the case where the email is not available in the profile
-          done(new Error('Email not found in profile'), null);
+          return done(new Error('Email not found in profile'), null);
         }
       } catch (error) {
-        done(error, null);
+        console.error('Error in GoogleStrategy:', error);
+        return done(error, null);
       }
     }
   )
 );
+
   
 
 passport.use(

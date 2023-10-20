@@ -1,7 +1,9 @@
 const passport = require("passport");
+const db = require('../config/dbConfig')
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const LocalStrategy = require('passport-local').Strategy;
+const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils')
 const userModel = require('../models/userModels')
 const bcrypt = require('bcrypt');
 require('dotenv').config();
@@ -42,6 +44,7 @@ passport.use(
 
 
 
+// Your existing GoogleStrategy for authentication
 passport.use(
   new GoogleStrategy(
     {
@@ -57,18 +60,30 @@ passport.use(
       try {
         // Access the user's email address if available in the profile
         const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
-        const displayName = profile.displayName; // Extract display name
-        const photos = profile.photos[0].value; // Extract display name
+        const displayName = profile.displayName;
+        const photos = profile.photos[0].value;
 
         if (email) {
-          // Check if the user already exists in the database based on their email
           let user = await userModel.findOne({ where: { email } });
 
           if (user) {
-            // If the user exists, log them in
-            return done(null, user);
+            // Create and return access and refresh tokens here
+            const accessToken = generateAccessToken(user.id);
+            const refreshToken = generateRefreshToken(user.id);
+
+            // Store the refresh token in the database
+            const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
+            const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+            db.query(storeRefreshTokenQuery, [user.id, refreshToken, expirationDate], (storeErr) => {
+              if (storeErr) {
+                console.error('Error storing refresh token:', storeErr);
+                return done(storeErr, null);
+              }
+
+              return done(null, user, { accessToken, refreshToken });
+            });
           } else {
-            // If the user doesn't exist, create a new user and store their data
             const newUser = new userModel({
               email: email,
               display_name: displayName,
@@ -76,14 +91,26 @@ passport.use(
               // Additional user data can be populated here
             });
 
-            // Save the new user to the database
             await newUser.save();
 
-            // Log in the new user
-            return done(null, newUser);
+            // Create and return access and refresh tokens here
+            const accessToken = generateAccessToken(newUser.id);
+            const refreshToken = generateRefreshToken(newUser.id);
+
+            // Store the refresh token in the database
+            const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
+            const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+            db.query(storeRefreshTokenQuery, [newUser.id, refreshToken, expirationDate], (storeErr) => {
+              if (storeErr) {
+                console.error('Error storing refresh token:', storeErr);
+                return done(storeErr, null);
+              }
+
+              return done(null, newUser, { accessToken, refreshToken });
+            });
           }
         } else {
-          // Handle the case where the email is not available in the profile
           return done(new Error('Email not found in profile'), null);
         }
       } catch (error) {
@@ -93,6 +120,7 @@ passport.use(
     }
   )
 );
+
 
   
 
