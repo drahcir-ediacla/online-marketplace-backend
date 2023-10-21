@@ -23,14 +23,19 @@ const updateUser = async (req, res) => {
 
     // Log user information for debugging
     console.log('Authenticated user:', req.user);
-    console.log('User ID from session:', req.user.id);
+    console.log('User ID from session:', req.user);
 
     try {
       // You can access the updated user data from req.body
       const updatedUserData = req.body;
 
       // Find the user by their ID (assuming you have an 'id' field in your table)
-      const user = await userModel.findByPk(req.user.id); // Use findById here
+      const user = await userModel.findByPk(req.user);
+      if (!user) {
+        console.log('User not found in the database');
+        return res.status(404).json({ success: false, message: 'User not found in the database' });
+      }
+
 
       if (!user) {
         // User not found
