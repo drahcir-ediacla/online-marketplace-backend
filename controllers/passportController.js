@@ -102,7 +102,7 @@ passport.use(
             const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
             const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
 
-            db.query(storeRefreshTokenQuery, [newUser.id, refreshToken, expirationDate], (storeErr) => {
+            db.query(storeRefreshTokenQuery, [newUser.id, newUser.refreshToken, expirationDate], (storeErr) => {
               if (storeErr) {
                 console.error('Error storing refresh token:', storeErr);
                 return done(storeErr, null);
