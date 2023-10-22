@@ -64,7 +64,7 @@ const loginUser = (req, res) => {
       // Store the refresh token in the database
       const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
       const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000 });
+      res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'none', secure: false, maxAge: 24 * 60 * 60 * 1000 });
 
       db.query(storeRefreshTokenQuery, [user.id, refreshToken, expirationDate], (storeErr) => {
         if (storeErr) {
@@ -93,7 +93,7 @@ const logoutUser = (req, res) => {
 
   if (req.isAuthenticated()) {
     // Handle Passport session logout
-    req.logout(); // Clear Passport session
+    req.logout(() => {}); // Clear Passport session with an empty callback
   } else {
     // Handle local logout (JWT or cookies)
 

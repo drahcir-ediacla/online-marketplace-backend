@@ -35,7 +35,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite: 'none', secure: true, maxAge: 3600000 },
+    cookie: { httpOnly: true, secure: false, maxAge: 3600000 },
     proxy: true,
   })
 );
@@ -55,7 +55,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(verifyJWT)
+app.use(verifyJWT)
 // Authenticated routes
 app.use('/', userRoutes);
 
