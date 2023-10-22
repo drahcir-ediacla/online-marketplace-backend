@@ -62,15 +62,35 @@ router.get("/login/success", (req, res) => {
   
 
   // PASSPORT GOOGLE
-  router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+  // router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+  // router.get(
+  //   "/google/callback",
+  //   passport.authenticate("google", {
+  //     successRedirect: process.env.CLIENT_URL,
+  //     failureRedirect: "/login/failed",
+  //   })
+  // );
 
   router.get(
-    "/google/callback",
-    passport.authenticate("google", {
-      successRedirect: process.env.CLIENT_URL,
-      failureRedirect: "/login/failed",
-    })
+    "/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
   );
+  
+  router.get(
+    "/google/callback",
+    passport.authenticate("google", { session: true }),
+    (req, res) => {
+      const accessToken = req.user.accessToken;
+  
+      // Set the refresh token and access token as cookies
+      res.cookie('jwt', accessToken, { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+      console.log('jwt:', accessToken)
+  
+      res.redirect(process.env.CLIENT_URL); // Redirect to the desired page after successful login
+    }
+  );
+  
 
 
 
