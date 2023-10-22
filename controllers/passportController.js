@@ -68,34 +68,35 @@ passport.use(
 
           if (user) {
             // Create and return access and refresh tokens here
-            const accessToken = generateAccessToken(user.id);
-            const refreshToken = generateRefreshToken(user.id);
+            user.accessToken = generateAccessToken(user.id);
+            user.refreshToken = generateRefreshToken(user.id);
+            console.log('Access Token:', user.accessToken);
+            console.log('Refresh Token:', user.refreshToken);
 
             // Store the refresh token in the database
             const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
             const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
 
-            db.query(storeRefreshTokenQuery, [user.id, refreshToken, expirationDate], (storeErr) => {
+            db.query(storeRefreshTokenQuery, [user.id, user.refreshToken, expirationDate], (storeErr) => {
               if (storeErr) {
                 console.error('Error storing refresh token:', storeErr);
                 return done(storeErr, null);
               }
 
-              return done(null, user, { accessToken, refreshToken });
+              return done(null, user);
             });
           } else {
             const newUser = new userModel({
               email: email,
               display_name: displayName,
               profile_pic: photos,
-              // Additional user data can be populated here
             });
 
             await newUser.save();
 
             // Create and return access and refresh tokens here
-            const accessToken = generateAccessToken(newUser.id);
-            const refreshToken = generateRefreshToken(newUser.id);
+            newUser.accessToken = generateAccessToken(newUser.id);
+            newUser.refreshToken = generateRefreshToken(newUser.id);
 
             // Store the refresh token in the database
             const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
@@ -107,7 +108,7 @@ passport.use(
                 return done(storeErr, null);
               }
 
-              return done(null, newUser, { accessToken, refreshToken });
+              return done(null, newUser);
             });
           }
         } else {
