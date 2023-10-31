@@ -12,6 +12,7 @@ const verifyJWT = require('./middleware/verifyJWT');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
 const otpRoutes = require('./routes/otpRoutes');
 const passportRoutes = require('./routes/passportRoutes');
 const refreshRoutes = require('./routes/refreshRoutes');
@@ -35,7 +36,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite:'none', secure: true, maxAge: 3600000 },
+    cookie: { httpOnly: true, secure: false, maxAge: 3600000 },
     proxy: true,
   })
 );
@@ -48,6 +49,7 @@ app.use('/', otpRoutes);
 app.use('/', authRoutes);
 app.use('/auth', passportRoutes);
 app.use('/', refreshRoutes);
+app.use('/', productRoutes);
 
 // Middleware to set Cache-Control header
 app.use((req, res, next) => {
@@ -55,7 +57,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(verifyJWT)
+app.use(verifyJWT)
 // Authenticated routes
 app.use('/', userRoutes);
 
