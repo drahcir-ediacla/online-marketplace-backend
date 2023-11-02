@@ -17,7 +17,7 @@ const verifyJWT = (req, res, next) => {
     }
 
     // Attach the user's ID to req.user for use in other middleware or routes.
-    req.user = decoded.user_id;
+    req.user.id = decoded.user_id;
 
     // Log the decoded user ID for debugging
     console.log('Decoded User ID:', decoded.user_id);
