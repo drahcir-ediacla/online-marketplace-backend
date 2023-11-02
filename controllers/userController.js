@@ -30,7 +30,7 @@ const updateUser = async (req, res) => {
       const updatedUserData = req.body;
 
       
-      const user = await userModel.findByPk(req.user.id);
+      const user = await userModel.findByPk(req.user);
       if (!user) {
         console.log('User not found in the database');
         return res.status(404).json({ success: false, message: 'User not found in the database' });
