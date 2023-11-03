@@ -57,7 +57,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(verifyJWT)
+// app.use(verifyJWT)
 // Authenticated routes
 app.use('/', userRoutes);
 
