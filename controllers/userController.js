@@ -1,7 +1,6 @@
 
 const db = require('../config/dbConfig');
 const userModel = require('../models/userModels')
-const { generateAccessToken } = require('../utils/tokenUtils')
 
 // Fetch all users
 const getUsers = (req, res) => {
@@ -60,11 +59,7 @@ const updateUser = async (req, res) => {
         profile_pic: updatedUserData.profile_pic,
       });
 
-      // Generate and sign a JWT
-      const accessToken = generateAccessToken(user.id);
-
-      // Set the token in the response header
-      res.header('Authorization', `Bearer ${accessToken}`);
+      
 
       // Send a success response with the updated user data
       res.status(200).json({ success: true, user: user.toJSON() });
