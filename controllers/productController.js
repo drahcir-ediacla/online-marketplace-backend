@@ -42,4 +42,43 @@ const getProductCategories = (req, res) => {
   };
 
 
-module.exports = {getProductCategories};
+  const addNewProduct = (req, res) => {
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Authentication required to add a new product.' });
+    }
+
+    // The authenticated user's ID is available as req.user.id
+    const seller_id = req.user.id;
+    const { product_name, description, price, category_id } = req.body;
+
+    if (!product_name || !price) {
+        return res.status(400).json({ error: 'Name, price, and category are required fields.' });
+    }
+
+    const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id) VALUES (?, ?, ?, ?, ?)';
+
+    // Insert the new product into the database with the authenticated user's ID
+    db.query(insertProduct, [product_name, description, price, category_id, seller_id], (error, results) => {
+        if (error) {
+            console.error('Error inserting product:', error);
+            return res.status(500).json({ error: 'An error occurred while inserting the product.' });
+        }
+
+        const newProduct = {
+            id: results.insertId,
+            product_name,
+            description,
+            price,
+            category_id,
+            seller_id,
+        };
+
+        res.status(201).json(newProduct);
+    });
+};
+
+
+
+
+module.exports = {getProductCategories, addNewProduct};
