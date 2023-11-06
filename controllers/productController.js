@@ -52,7 +52,7 @@ const getProductCategories = (req, res) => {
     const seller_id = req.user.id;
     const { product_name, description, price, category_id } = req.body;
 
-    if (!product_name || !price) {
+    if (!product_name || !price || !category_id) {
         return res.status(400).json({ error: 'Name, price, and category are required fields.' });
     }
 
