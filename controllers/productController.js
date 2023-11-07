@@ -9,7 +9,7 @@ function mapCategories(rows) {
       const { id, label, value, icon, parent_id } = row;
   
       // Create a category object
-      const category = { label, value, icon, subcategories: [] };
+      const category = { id, label, value, icon, subcategories: [] };
   
       // Add the category to the map using its ID
       categoriesMap.set(id, category);
@@ -50,16 +50,16 @@ const getProductCategories = (req, res) => {
 
     // The authenticated user's ID is available as req.user.id
     const seller_id = req.user.id;
-    const { product_name, description, price, category_id } = req.body;
+    const { product_name, description, price, category_id, product_condition, youtube_link } = req.body;
 
     if (!product_name || !price || !category_id) {
         return res.status(400).json({ error: 'Name, price, and category are required fields.' });
     }
 
-    const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id) VALUES (?, ?, ?, ?, ?)';
+    const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id, product_condition, youtube_link) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
     // Insert the new product into the database with the authenticated user's ID
-    db.query(insertProduct, [product_name, description, price, category_id, seller_id], (error, results) => {
+    db.query(insertProduct, [product_name, description, price, category_id, seller_id, product_condition, youtube_link], (error, results) => {
         if (error) {
             console.error('Error inserting product:', error);
             return res.status(500).json({ error: 'An error occurred while inserting the product.' });
@@ -72,6 +72,8 @@ const getProductCategories = (req, res) => {
             price,
             category_id,
             seller_id,
+            product_condition,
+            youtube_link,
         };
 
         res.status(201).json(newProduct);
