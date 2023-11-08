@@ -1,7 +1,4 @@
 const db = require('../config/dbConfig');
-// const cloudinary = require('cloudinary').v2;
-          
-
 
 // Map database rows to the desired structure
 function mapCategories(rows) {
@@ -45,77 +42,44 @@ const getProductCategories = (req, res) => {
   };
 
 
-  // cloudinary.config({ 
-  //   cloud_name: 'yogeek-cloudinary', 
-  //   api_key: '395981683133986', 
-  //   api_secret: 'T3JkT3qm64OrcewZTden2FhYPBU'
-  // });
-
   const addNewProduct = (req, res) => {
     // Check if the user is authenticated
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Authentication required to add a new product.' });
+        return res.status(401).json({ error: 'Authentication required to add a new product.' });
     }
-  
+
     // The authenticated user's ID is available as req.user.id
     const seller_id = req.user.id;
     const { product_name, description, price, category_id, product_condition, youtube_link } = req.body;
-    // const images = req.files; // You won't need this if using Cloudinary direct upload
-  
+
     if (!product_name || !price || !category_id) {
-      return res.status(400).json({ error: 'Name, price, and category are required fields.' });
+        return res.status(400).json({ error: 'Name, price, and category are required fields.' });
     }
-  
+
     const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id, product_condition, youtube_link) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  
+
     // Insert the new product into the database with the authenticated user's ID
     db.query(insertProduct, [product_name, description, price, category_id, seller_id, product_condition, youtube_link], (error, results) => {
-      if (error) {
-        console.error('Error inserting product:', error);
-        return res.status(500).json({ error: 'An error occurred while inserting the product.' });
-      }
-  
-      const newProduct = {
-        id: results.insertId,
-        product_name,
-        description,
-        price,
-        category_id,
-        seller_id,
-        product_condition,
-        youtube_link,
-      };
-  
-      // Assuming you have image URLs from Cloudinary in your request (client-side)
-      const imageUrls = req.body.imageUrls;
-  
-      const insertImage = 'INSERT INTO product_images (product_id, image_url) VALUES (?, ?)';
-  
-      // Loop through the image URLs and insert them into the database
-      const imageInsertPromises = imageUrls.map((imageUrl) => {
-        return new Promise((resolve, reject) => {
-          db.query(insertImage, [newProduct.id, imageUrl], (imageError, imageResults) => {
-            if (imageError) {
-              reject(imageError);
-            } else {
-              resolve(imageUrl);
-            }
-          });
-        });
-      });
-  
-      Promise.all(imageInsertPromises)
-        .then(() => {
-          newProduct.image_urls = imageUrls;
-          res.status(201).json(newProduct);
-        })
-        .catch((insertError) => {
-          console.error('Error inserting image URLs:', insertError);
-          res.status(500).json({ error: 'An error occurred while inserting image URLs.' });
-        });
+        if (error) {
+            console.error('Error inserting product:', error);
+            return res.status(500).json({ error: 'An error occurred while inserting the product.' });
+        }
+
+        const newProduct = {
+            id: results.insertId,
+            product_name,
+            description,
+            price,
+            category_id,
+            seller_id,
+            product_condition,
+            youtube_link,
+        };
+
+        res.status(201).json(newProduct);
     });
-  };
-  
+};
+
 
 
 
