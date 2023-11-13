@@ -36,7 +36,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite: 'none', secure: true, maxAge: 3600000 },
+    cookie: { httpOnly: true, secure: false, maxAge: 3600000 },
     proxy: true,
   })
 );
@@ -50,6 +50,7 @@ app.use('/', authRoutes);
 app.use('/auth', passportRoutes);
 app.use('/', refreshRoutes);
 app.use('/', productRoutes);
+app.use('/', userRoutes);
 
 // Middleware to set Cache-Control header
 app.use((req, res, next) => {
@@ -59,7 +60,7 @@ app.use((req, res, next) => {
 
 app.use(verifyJWT)
 // Authenticated routes
-app.use('/', userRoutes);
+app.use('/verify', userRoutes);
 
 app.get('/', (req, res) => {
   return res.json('From Backend Side');

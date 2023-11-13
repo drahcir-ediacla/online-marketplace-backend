@@ -16,6 +16,27 @@ const getUsers = (req, res) => {
 };
 
 
+const getUsersById = (req, res) => {
+  const userID = req.params.id;
+
+  const getUserQuery = 'SELECT * FROM users WHERE id=?';
+  db.query(getUserQuery, [userID], (error, results) => {
+    if(error) {
+      console.error('Error fetching user data:', error);
+      return res.status(500).json({error: 'An error occurred while fetching user data.'})
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Usernot found.' });
+    }
+
+    const userData = results[0];
+
+    res.status(200).json(userData);
+  })
+}
+
+
 
 const updateUser = async (req, res) => {
   if (req.isAuthenticated()) {
@@ -75,4 +96,6 @@ const updateUser = async (req, res) => {
   }
 }
 
-module.exports = { getUsers, updateUser };
+
+
+module.exports = { getUsers, getUsersById, updateUser };

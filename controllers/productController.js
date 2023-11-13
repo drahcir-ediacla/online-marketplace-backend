@@ -112,7 +112,7 @@ const addNewProduct = (req, res) => {
 };
 
 
-const getAllProduct = (req, res) => {
+const getAllProducts = (req, res) => {
   const getAllProductsQuery = 'SELECT * FROM products';
   db.query(getAllProductsQuery, (err, results) => {
     if (err) {
@@ -143,6 +143,7 @@ const getProductDetails = (req, res) => {
     }
 
     const productDetails = results[0];
+    const sellerID = productDetails.seller_id;
 
     // Fetch associated images for the product
     const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
@@ -155,7 +156,23 @@ const getProductDetails = (req, res) => {
       // Add the images array to the productDetails object
       productDetails.images = imageResults;
 
-      res.status(200).json(productDetails);
+      // Fetch details of the seller (user)
+      const getSellerDetailsQuery = 'SELECT * FROM users WHERE id = ?';
+      db.query(getSellerDetailsQuery, [sellerID], (sellerError, sellerResults) => {
+        if (sellerError) {
+          console.error('Error fetching seller details:', sellerError);
+          return res.status(500).json({ error: 'An error occurred while fetching seller details.' });
+        }
+
+        if (sellerResults.length === 0) {
+          return res.status(404).json({ error: 'Seller not found.' });
+        }
+
+        const sellerDetails = sellerResults[0];
+        productDetails.seller = sellerDetails;
+
+        res.status(200).json(productDetails);
+      });
     });
   });
 }
@@ -165,4 +182,4 @@ const getProductDetails = (req, res) => {
 
 
 
-module.exports = { getProductCategories, addNewProduct, getAllProduct, getProductDetails };
+module.exports = { getProductCategories, addNewProduct, getAllProducts, getProductDetails };
