@@ -132,7 +132,7 @@ const getProductDetails = (req, res) => {
   // Validate product name if needed
 
   const getProductDetailsQuery = 'SELECT * FROM products WHERE id = ?';
-  db.query(getProductDetailsQuery, [productID, productName], (error, results) => {
+  db.query(getProductDetailsQuery, [productID], (error, results) => {
     if (error) {
       console.error('Error fetching product details:', error);
       return res.status(500).json({ error: 'An error occurred while fetching product details.' });
@@ -144,11 +144,22 @@ const getProductDetails = (req, res) => {
 
     const productDetails = results[0];
 
-    // Optionally, you can fetch associated images or other details here
+    // Fetch associated images for the product
+    const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+    db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+      if (imageError) {
+        console.error('Error fetching product images:', imageError);
+        return res.status(500).json({ error: 'An error occurred while fetching product images.' });
+      }
 
-    res.status(200).json(productDetails)
-  })
+      // Add the images array to the productDetails object
+      productDetails.images = imageResults;
+
+      res.status(200).json(productDetails);
+    });
+  });
 }
+
 
 
 
