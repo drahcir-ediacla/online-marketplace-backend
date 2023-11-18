@@ -21,9 +21,9 @@ const getUsersById = (req, res) => {
 
   const getUserQuery = 'SELECT * FROM users WHERE id=?';
   db.query(getUserQuery, [userID], (error, results) => {
-    if(error) {
+    if (error) {
       console.error('Error fetching user data:', error);
-      return res.status(500).json({error: 'An error occurred while fetching user data.'})
+      return res.status(500).json({ error: 'An error occurred while fetching user data.' })
     }
 
     if (results.length === 0) {
@@ -32,7 +32,18 @@ const getUsersById = (req, res) => {
 
     const userData = results[0];
 
-    res.status(200).json(userData);
+    const getUserProducts = 'SELECT * FROM products WHERE seller_id = ?';
+    db.query(getUserProducts, [userID], (productError, productResults) => {
+      if (productError) {
+        console.error('Error fetching products:', productError);
+        return res.status(500).json({ error: 'An error occurred while fetching user products.' })
+      }
+
+      // Add the images array to the productDetails object
+      userData.products = productResults;
+
+      res.status(200).json(userData);
+    })
   })
 }
 
@@ -50,7 +61,7 @@ const updateUser = async (req, res) => {
       // You can access the updated user data from req.body
       const updatedUserData = req.body;
 
-      
+
       const user = await userModel.findByPk(req.user.id);
       if (!user) {
         console.log('User not found in the database');
@@ -80,7 +91,7 @@ const updateUser = async (req, res) => {
         profile_pic: updatedUserData.profile_pic,
       });
 
-      
+
 
       // Send a success response with the updated user data
       res.status(200).json({ success: true, user: user.toJSON() });
