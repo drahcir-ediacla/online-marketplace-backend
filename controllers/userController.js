@@ -20,32 +20,62 @@ const getUsersById = (req, res) => {
   const userID = req.params.id;
 
   const getUserQuery = 'SELECT * FROM users WHERE id=?';
-  db.query(getUserQuery, [userID], (error, results) => {
+  db.query(getUserQuery, [userID], (error, userResults) => {
     if (error) {
       console.error('Error fetching user data:', error);
-      return res.status(500).json({ error: 'An error occurred while fetching user data.' })
+      return res.status(500).json({ error: 'An error occurred while fetching user data.' });
     }
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'Usernot found.' });
+    if (userResults.length === 0) {
+      return res.status(404).json({ error: 'User not found.' });
     }
 
-    const userData = results[0];
+    const userData = userResults[0];
 
-    const getUserProducts = 'SELECT * FROM products WHERE seller_id = ?';
-    db.query(getUserProducts, [userID], (productError, productResults) => {
+    const getUserProductsQuery = 'SELECT * FROM products WHERE seller_id = ?';
+    db.query(getUserProductsQuery, [userID], (productError, productResults) => {
       if (productError) {
         console.error('Error fetching products:', productError);
-        return res.status(500).json({ error: 'An error occurred while fetching user products.' })
+        return res.status(500).json({ error: 'An error occurred while fetching user products.' });
       }
 
-      // Add the images array to the productDetails object
+      // Add the products array to the userData object
       userData.products = productResults;
 
-      res.status(200).json(userData);
-    })
-  })
-}
+      // Fetch images for each product
+      const getProductImages = (productID) => {
+        const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+        return new Promise((resolve, reject) => {
+          db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+            if (imageError) {
+              console.error('Error fetching product images:', imageError);
+              reject(imageError);
+            } else {
+              resolve(imageResults);
+            }
+          });
+        });
+      };
+
+      // Fetch images for each product and add them to the productDetails object
+      const fetchProductImages = async () => {
+        for (const product of userData.products) {
+          try {
+            const productImages = await getProductImages(product.id);
+            product.images = productImages;
+          } catch (error) {
+            console.error('Error fetching product images:', error);
+          }
+        }
+
+        res.status(200).json(userData);
+      };
+
+      fetchProductImages();
+    });
+  });
+};
+
 
 
 
