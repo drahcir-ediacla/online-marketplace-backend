@@ -2,50 +2,6 @@ const db = require('../config/dbConfig');
 
 
 
-// Map database rows to the desired structure
-function mapCategories(rows) {
-  const categoriesMap = new Map();
-  const topLevelCategories = [];
-
-  rows.forEach((row) => {
-    const { id, label, value, icon, parent_id } = row;
-
-    // Create a category object
-    const category = { id, label, value, icon, subcategories: [] };
-
-    // Add the category to the map using its ID
-    categoriesMap.set(id, category);
-
-    if (parent_id === null) {
-      // If the category has no parent, it's top-level
-      topLevelCategories.push(category);
-    } else {
-      // If it has a parent, add it to the parent's subcategories
-      categoriesMap.get(parent_id).subcategories.push(category);
-    }
-  });
-
-  return topLevelCategories;
-}
-
-
-const getProductCategories = (req, res) => {
-  const query = 'SELECT * FROM product_categories';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching categories:', err);
-      return res.status(500).json({ message: 'Error fetching categories' });
-    } else {
-      const rows = results; // Assuming that the query result is an array of rows
-      const categories = mapCategories(rows);
-      return res.status(200).json(categories);
-    }
-  });
-};
-
-
-
-
 const addNewProduct = (req, res) => {
   // Check if the user is authenticated
   if (!req.isAuthenticated()) {
@@ -179,7 +135,131 @@ const getProductDetails = (req, res) => {
 
 
 
+// Map database rows to the desired structure
+function mapCategories(rows) {
+  const categoriesMap = new Map();
+  const topLevelCategories = [];
+
+  rows.forEach((row) => {
+    const { id, label, value, icon, parent_id } = row;
+
+    // Create a category object
+    const category = { id, label, value, icon, subcategories: [] };
+
+    // Add the category to the map using its ID
+    categoriesMap.set(id, category);
+
+    if (parent_id === null) {
+      // If the category has no parent, it's top-level
+      topLevelCategories.push(category);
+    } else {
+      // If it has a parent, add it to the parent's subcategories
+      categoriesMap.get(parent_id).subcategories.push(category);
+    }
+  });
+
+  return topLevelCategories;
+}
+
+
+const getAllCategories = (req, res) => {
+  const query = 'SELECT * FROM product_categories';
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('Error fetching categories:', err);
+      return res.status(500).json({ message: 'Error fetching categories' });
+    } else {
+      const rows = results; // Assuming that the query result is an array of rows
+      const categories = mapCategories(rows);
+      return res.status(200).json(categories);
+    }
+  });
+};
+
+
+const getCategoryById = (req, res) => {
+  const categoryId = req.params.id;
+
+  const getCategoryQuery = 'SELECT * FROM product_categories WHERE id = ?';
+  db.query(getCategoryQuery, [categoryId], (categoryError, categoryResults) => {
+    if (categoryError) {
+      console.error('Error fetching category:', categoryError);
+      return res.status(500).json({ error: 'An error occurred while fetching category.' });
+    }
+
+    if (categoryResults.length === 0) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    const categoryData = categoryResults[0];
+
+    const getCategoryProductQuery = 'SELECT * FROM products WHERE category_id = ?';
+    db.query(getCategoryProductQuery, [categoryId], (productError, productResults) => {
+      if (productError) {
+        console.error('Error fetching products:', productError);
+        return res.status(500).json({ error: 'An error occurred while fetching category products.' });
+      }
+
+      // Add the products array to the categoryData object
+      categoryData.products = productResults;
+
+      // Fetch parent category's products
+      const getParentCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
+      db.query(getParentCategoryProductsQuery, [categoryId], (parentProductError, parentProductResults) => {
+        if (parentProductError) {
+          console.error('Error fetching parent category products:', parentProductError);
+          return res.status(500).json({ error: 'An error occurred while fetching parent category products.' });
+        }
+
+        // Add parent category's products to the categoryData object
+        categoryData.parentCategoryProducts = parentProductResults;
+
+        // Fetch images for each product
+        const getProductImages = (productID) => {
+          const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+          return new Promise((resolve, reject) => {
+            db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+              if (imageError) {
+                console.error('Error fetching product images:', imageError);
+                reject(imageError);
+              } else {
+                resolve(imageResults);
+              }
+            });
+          });
+        };
+
+        // Fetch images for each product and add them to the productDetails object
+        const fetchProductImages = async () => {
+          for (const product of categoryData.products) {
+            try {
+              const productImages = await getProductImages(product.id);
+              product.images = productImages;
+            } catch (error) {
+              console.error('Error fetching product images:', error);
+            }
+          }
+
+          for (const parentProduct of categoryData.parentCategoryProducts) {
+            try {
+              const parentProductImages = await getProductImages(parentProduct.id);
+              parentProduct.images = parentProductImages;
+            } catch (error) {
+              console.error('Error fetching parent product images:', error);
+            }
+          }
+
+          res.status(200).json(categoryData);
+        };
+
+        fetchProductImages();
+      });
+    });
+  });
+};
 
 
 
-module.exports = { getProductCategories, addNewProduct, getAllProducts, getProductDetails };
+
+
+module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails };
