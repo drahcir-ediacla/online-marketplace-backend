@@ -83,7 +83,6 @@ const getAllProducts = (req, res) => {
 
 const getProductDetails = (req, res) => {
   const productID = req.params.id;
-  const productName = req.params.name;
 
   // Validate product name if needed
 
@@ -203,6 +202,7 @@ const getCategoryById = (req, res) => {
       // Add the products array to the categoryData object
       categoryData.products = productResults;
 
+
       // Fetch parent category's products
       const getParentCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
       db.query(getParentCategoryProductsQuery, [categoryId], (parentProductError, parentProductResults) => {
@@ -213,6 +213,38 @@ const getCategoryById = (req, res) => {
 
         // Add parent category's products to the categoryData object
         categoryData.parentCategoryProducts = parentProductResults;
+
+
+        // Fetch users for each product
+        const getProductSeller = (sellerID) => {
+          const getSellerQuery = 'SELECT * FROM users WHERE id = ?';
+          return new Promise((resolve, reject) => {
+            db.query(getSellerQuery, [sellerID], (sellerError, sellerResults) => {
+              if (sellerError) {
+                console.error('Error fetching product seller:', sellerError);
+                reject(sellerError);
+              } else {
+                resolve(sellerResults[0]);
+              }
+            });
+          });
+        };
+
+        // Fetch users for each product and add them to the productDetails object
+        const fetchProductSellers = async () => {
+          for (const product of categoryData.products) {
+            try {
+              const productSeller = await getProductSeller(product.seller_id);
+              product.seller = productSeller;
+            } catch (error) {
+              console.error('Error fetching product seller:', error);
+            }
+          }
+        };
+
+        
+        fetchProductSellers();
+
 
         // Fetch images for each product
         const getProductImages = (productID) => {

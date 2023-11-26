@@ -7,6 +7,6 @@ router.post('/api/addnewproduct', ProductController.addNewProduct);
 router.get('/api/getallproducts', ProductController.getAllProducts);
 router.get('/api/getproductdetails/:id/:name', ProductController.getProductDetails);
 router.get('/api/getallcategories', ProductController.getAllCategories);
-router.get('/api/getcategory/:id', ProductController.getCategoryById);
+router.get('/api/getcategory/:id/:label', ProductController.getCategoryById);
 
 module.exports = router;
