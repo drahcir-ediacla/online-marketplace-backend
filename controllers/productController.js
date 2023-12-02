@@ -1,4 +1,5 @@
 const db = require('../config/dbConfig');
+const redisClient = require('../config/redisClient')
 
 
 
@@ -168,6 +169,8 @@ const getAllCategories = (req, res) => {
       console.error('Error fetching categories:', err);
       return res.status(500).json({ message: 'Error fetching categories' });
     } else {
+      const key = req.originalUrl || req.url;
+      redisClient.setex(key, 60 * 60, JSON.stringify(results)); // Cache for 10 minutes
       const rows = results; // Assuming that the query result is an array of rows
       const categories = mapCategories(rows);
       return res.status(200).json(categories);

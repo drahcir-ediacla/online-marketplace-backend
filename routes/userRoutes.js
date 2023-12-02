@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/userController');
+const cacheMiddleware = require('../middleware/cacheMiddleware')
 
 
 // Define the '/users' route
-router.get('/api/users', UserController.getUsers);
+router.get('/api/users', cacheMiddleware, UserController.getUsers);
 router.get('/api/user/:id', UserController.getUsersById);
 
 

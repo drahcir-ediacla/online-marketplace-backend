@@ -1,6 +1,7 @@
 
 const db = require('../config/dbConfig');
 const userModel = require('../models/userModels')
+const redisClient = require('../config/redisClient')
 
 // Fetch all users
 const getUsers = (req, res) => {
@@ -10,6 +11,8 @@ const getUsers = (req, res) => {
       console.error('Error fetching users:', err);
       res.status(500).json({ message: 'Error fetching users' });
     } else {
+      const key = req.originalUrl || req.url;
+      redisClient.setex(key, 10 * 1, JSON.stringify(results)); // Cache for 10 minutes
       res.status(200).json(results);
     }
   });
