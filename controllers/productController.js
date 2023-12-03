@@ -174,7 +174,7 @@ const getAllCategories = (req, res) => {
       const key = req.originalUrl || req.url;
       
       // Cache the processed categories array instead of row results
-      redisClient.setex(key, 60 * 60, JSON.stringify(categories)); // Cache for 10 minutes
+      redisClient.setex(key, JSON.stringify(categories)); // Cache for 10 minutes
       return res.status(200).json(categories);
     }
   });
