@@ -70,16 +70,40 @@ const addNewProduct = (req, res) => {
 
 
 const getAllProducts = (req, res) => {
-  const getAllProductsQuery = 'SELECT * FROM products';
+  const getAllProductsQuery = 'SELECT products.*, users.city, users.region FROM products JOIN users ON products.seller_id = users.id';
+
   db.query(getAllProductsQuery, (err, results) => {
     if (err) {
       console.error('Error fetching products:', err);
       return res.status(500).json({ error: 'An error occurred while fetching products.' });
     } else {
-      res.status(200).json(results)
+      const productDetails = results;
+
+      // Loop through each product and fetch associated images
+      productDetails.forEach((product, index) => {
+        const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+        const productID = product.id;
+
+        db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+          if (imageError) {
+            console.error('Error fetching product images:', imageError);
+            return res.status(500).json({ error: 'An error occurred while fetching product images.' });
+          }
+
+          // Add the images array to the productDetails object
+          productDetails[index].images = imageResults;
+
+          // Check if this is the last iteration before sending the response
+          if (index === productDetails.length - 1) {
+            res.status(200).json(productDetails);
+          }
+        });
+      });
     }
-  })
-}
+  });
+};
+
+
 
 
 const getProductDetails = (req, res) => {
@@ -172,7 +196,7 @@ const getAllCategories = (req, res) => {
       const rows = results; // Assuming that the query result is an array of rows
       const categories = mapCategories(rows);
       const key = req.originalUrl || req.url;
-      
+
       // Cache the processed categories array instead of row results
       redisClient.setex(key, JSON.stringify(categories)); // Cache for 10 minutes
       return res.status(200).json(categories);
@@ -248,7 +272,7 @@ const getCategoryById = (req, res) => {
           }
         };
 
-        
+
         fetchSubProductSellers();
 
         // Fetch users for each product and add them to the productDetails object
@@ -263,7 +287,7 @@ const getCategoryById = (req, res) => {
           }
         };
 
-        
+
         fetchProductSellers();
 
 
