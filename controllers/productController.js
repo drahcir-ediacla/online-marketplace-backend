@@ -209,15 +209,15 @@ const getCategoryById = (req, res) => {
 
 
       // Fetch parent category's products
-      const getParentCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
-      db.query(getParentCategoryProductsQuery, [categoryId], (parentProductError, parentProductResults) => {
-        if (parentProductError) {
-          console.error('Error fetching parent category products:', parentProductError);
+      const getSubCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
+      db.query(getSubCategoryProductsQuery, [categoryId], (subProductError, subProductResults) => {
+        if (subProductError) {
+          console.error('Error fetching parent category products:', subProductError);
           return res.status(500).json({ error: 'An error occurred while fetching parent category products.' });
         }
 
         // Add parent category's products to the categoryData object
-        categoryData.parentCategoryProducts = parentProductResults;
+        categoryData.subCategoryProducts = subProductResults;
 
 
         // Fetch users for each product
@@ -234,6 +234,22 @@ const getCategoryById = (req, res) => {
             });
           });
         };
+
+
+        // Fetch users for each product and add them to the subCategoryProducts object
+        const fetchSubProductSellers = async () => {
+          for (const product of categoryData.subCategoryProducts) {
+            try {
+              const productSeller = await getProductSeller(product.seller_id);
+              product.seller = productSeller;
+            } catch (error) {
+              console.error('Error fetching product seller:', error);
+            }
+          }
+        };
+
+        
+        fetchSubProductSellers();
 
         // Fetch users for each product and add them to the productDetails object
         const fetchProductSellers = async () => {
@@ -277,10 +293,10 @@ const getCategoryById = (req, res) => {
             }
           }
 
-          for (const parentProduct of categoryData.parentCategoryProducts) {
+          for (const subProduct of categoryData.subCategoryProducts) {
             try {
-              const parentProductImages = await getProductImages(parentProduct.id);
-              parentProduct.images = parentProductImages;
+              const subProductImages = await getProductImages(subProduct.id);
+              subProduct.images = subProductImages;
             } catch (error) {
               console.error('Error fetching parent product images:', error);
             }
