@@ -1,8 +1,8 @@
-// My Existing Database config
 const mysql = require('mysql');
 require('dotenv').config();
 
-const db = mysql.createConnection({
+// Create a connection pool
+const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -15,21 +15,23 @@ const db = mysql.createConnection({
 });
 
 // Check the database connection
-db.connect((err) => {
+pool.getConnection((err, connection) => {
     if (err) {
         console.error('Error connecting to the database:', err);
         process.exit(1); // Exit the application on a database connection error
     }
-    console.log('Connected to the database');
+
+    // Perform a test query
+    connection.query('SELECT 1 + 1 AS solution', (error, results, fields) => {
+        // Release the connection back to the pool
+        connection.release();
+
+        if (error) {
+            console.error('Error performing the test query:', error);
+        } else {
+            console.log('The solution is: ', results[0].solution);
+        }
+    });
 });
 
-// Perform a test query
-db.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-    if (error) {
-        console.error('Error performing the test query:', error);
-    } else {
-        console.log('The solution is: ', results[0].solution);
-    }
-});
-
-module.exports = db;
+module.exports = pool;
