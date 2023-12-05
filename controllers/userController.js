@@ -3,7 +3,9 @@ const db = require('../config/dbConfig');
 const userModel = require('../models/userModels')
 const redisClient = require('../config/redisClient')
 
-// Fetch all users
+
+
+// --------------- FETCH ALL USERS  --------------- //
 const getUsers = (req, res) => {
   const sql = 'SELECT * FROM users';
   db.query(sql, (err, results) => {
@@ -19,6 +21,8 @@ const getUsers = (req, res) => {
 };
 
 
+
+// --------------- GET USERS BY ID  --------------- //
 const getUsersById = (req, res) => {
   const userID = req.params.id;
 
@@ -35,7 +39,7 @@ const getUsersById = (req, res) => {
 
     const userData = userResults[0];
 
-    const getUserProductsQuery = 'SELECT * FROM products WHERE seller_id = ?';
+    const getUserProductsQuery = 'SELECT * FROM products WHERE seller_id = ? ORDER BY products.created_at DESC';
     db.query(getUserProductsQuery, [userID], (productError, productResults) => {
       if (productError) {
         console.error('Error fetching products:', productError);
@@ -81,7 +85,7 @@ const getUsersById = (req, res) => {
 
 
 
-
+// --------------- UPDATE USER  --------------- //
 const updateUser = async (req, res) => {
   if (req.isAuthenticated()) {
     // The user is authenticated, so you can access req.user to get the current user

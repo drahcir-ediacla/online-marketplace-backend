@@ -2,7 +2,7 @@ const db = require('../config/dbConfig');
 const redisClient = require('../config/redisClient')
 
 
-
+// --------------- GET ADD NEW PRODUCT  --------------- //
 const addNewProduct = (req, res) => {
   // Check if the user is authenticated
   if (!req.isAuthenticated()) {
@@ -69,8 +69,11 @@ const addNewProduct = (req, res) => {
 };
 
 
+
+
+// --------------- GET ALL PRODUCTS  --------------- //
 const getAllProducts = (req, res) => {
-  const getAllProductsQuery = 'SELECT products.*, users.city, users.region FROM products JOIN users ON products.seller_id = users.id';
+  const getAllProductsQuery = 'SELECT products.*, users.city, users.region FROM products JOIN users ON products.seller_id = users.id ORDER BY products.created_at DESC';
 
   db.query(getAllProductsQuery, (err, results) => {
     if (err) {
@@ -106,6 +109,7 @@ const getAllProducts = (req, res) => {
 
 
 
+// --------------- GET PRODUCT BY ID --------------- //
 const getProductDetails = (req, res) => {
   const productID = req.params.id;
 
@@ -158,7 +162,7 @@ const getProductDetails = (req, res) => {
 }
 
 
-
+//------------------- GET ALL CATEGORIES --------------- //
 // Map database rows to the desired structure
 function mapCategories(rows) {
   const categoriesMap = new Map();
@@ -205,6 +209,8 @@ const getAllCategories = (req, res) => {
 };
 
 
+
+//------------------- GET CATEGORY BY ID --------------- //
 const getCategoryById = (req, res) => {
   const categoryId = req.params.id;
 
