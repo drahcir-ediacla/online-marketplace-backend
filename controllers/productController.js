@@ -325,7 +325,7 @@ const getCategoryById = (req, res) => {
 
       const categoryData = categoryResults[0];
 
-      const getCategoryProductQuery = 'SELECT * FROM products WHERE category_id = ?';
+      const getCategoryProductQuery = 'SELECT * FROM products WHERE category_id = ? ORDER BY products.created_at DESC';
       // Use pool.getConnection to obtain a connection for the product query
       pool.getConnection((getProductConnectionError, productConnection) => {
         if (getProductConnectionError) {
@@ -347,7 +347,7 @@ const getCategoryById = (req, res) => {
           categoryData.products = productResults;
 
           // Fetch parent category's products
-          const getSubCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
+          const getSubCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ? ORDER BY products.created_at DESC';
           // Use pool.getConnection to obtain a connection for the sub-category product query
           pool.getConnection((getSubProductConnectionError, subProductConnection) => {
             if (getSubProductConnectionError) {
