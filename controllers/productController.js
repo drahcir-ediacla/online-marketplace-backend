@@ -13,61 +13,73 @@ const addNewProduct = (req, res) => {
   // The authenticated user's ID is available as req.user.id
   const seller_id = req.user.id;
   const { product_name, description, price, category_id, product_condition, youtube_link } = req.body;
-  // const images = req.files; // You won't need this if using Cloudinary direct upload
 
   if (!product_name || !price || !category_id) {
     return res.status(400).json({ error: 'Name, price, and category are required fields.' });
   }
 
-  const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id, product_condition, youtube_link) VALUES (?, ?, ?, ?, ?, ?, ?)';
-
-  // Insert the new product into the database with the authenticated user's ID
-  db.query(insertProduct, [product_name, description, price, category_id, seller_id, product_condition, youtube_link], (error, results) => {
-    if (error) {
-      console.error('Error inserting product:', error);
-      return res.status(500).json({ error: 'An error occurred while inserting the product.' });
+  // Use pool.getConnection to obtain a connection from the pool
+  pool.getConnection((getConnectionError, connection) => {
+    if (getConnectionError) {
+      console.error('Error getting connection:', getConnectionError);
+      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
     }
 
-    const newProduct = {
-      id: results.insertId,
-      product_name,
-      description,
-      price,
-      category_id,
-      seller_id,
-      product_condition,
-      youtube_link,
-    };
+    const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id, product_condition, youtube_link) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
-    // Assuming you have image URLs from Cloudinary in your request (client-side)
-    const imageUrls = req.body.imageUrls;
+    // Use the obtained connection to execute the product insertion query
+    connection.query(insertProduct, [product_name, description, price, category_id, seller_id, product_condition, youtube_link], (error, results) => {
+      // Release the connection back to the pool
+      connection.release();
 
-    const insertImage = 'INSERT INTO product_images (product_id, image_url) VALUES (?, ?)';
+      if (error) {
+        console.error('Error inserting product:', error);
+        return res.status(500).json({ error: 'An error occurred while inserting the product.' });
+      }
 
-    // Loop through the image URLs and insert them into the database
-    const imageInsertPromises = imageUrls.map((imageUrl) => {
-      return new Promise((resolve, reject) => {
-        db.query(insertImage, [newProduct.id, imageUrl], (imageError, imageResults) => {
-          if (imageError) {
-            reject(imageError);
-          } else {
-            resolve(imageUrl);
-          }
+      const newProduct = {
+        id: results.insertId,
+        product_name,
+        description,
+        price,
+        category_id,
+        seller_id,
+        product_condition,
+        youtube_link,
+      };
+
+      // Assuming you have image URLs from Cloudinary in your request (client-side)
+      const imageUrls = req.body.imageUrls;
+
+      const insertImage = 'INSERT INTO product_images (product_id, image_url) VALUES (?, ?)';
+
+      // Loop through the image URLs and insert them into the database
+      const imageInsertPromises = imageUrls.map((imageUrl) => {
+        return new Promise((resolve, reject) => {
+          // Use the obtained connection to execute the image insertion query
+          connection.query(insertImage, [newProduct.id, imageUrl], (imageError, imageResults) => {
+            if (imageError) {
+              reject(imageError);
+            } else {
+              resolve(imageUrl);
+            }
+          });
         });
       });
-    });
 
-    Promise.all(imageInsertPromises)
-      .then(() => {
-        newProduct.image_urls = imageUrls;
-        res.status(201).json(newProduct);
-      })
-      .catch((insertError) => {
-        console.error('Error inserting image URLs:', insertError);
-        res.status(500).json({ error: 'An error occurred while inserting image URLs.' });
-      });
+      Promise.all(imageInsertPromises)
+        .then(() => {
+          newProduct.image_urls = imageUrls;
+          res.status(201).json(newProduct);
+        })
+        .catch((insertError) => {
+          console.error('Error inserting image URLs:', insertError);
+          res.status(500).json({ error: 'An error occurred while inserting image URLs.' });
+        });
+    });
   });
 };
+
 
 
 
@@ -225,7 +237,7 @@ const getProductDetails = (req, res) => {
 };
 
 
-//------------------- GET ALL CATEGORIES --------------- //
+// ------------------- GET ALL CATEGORIES ------------------- //
 // Map database rows to the desired structure
 function mapCategories(rows) {
   const categoriesMap = new Map();
@@ -252,157 +264,203 @@ function mapCategories(rows) {
   return topLevelCategories;
 }
 
-
 const getAllCategories = (req, res) => {
-  const query = 'SELECT * FROM product_categories';
-  db.query(query, (err, results) => {
-    if (err) {
-      console.error('Error fetching categories:', err);
-      return res.status(500).json({ message: 'Error fetching categories' });
-    } else {
-      const rows = results; // Assuming that the query result is an array of rows
-      const categories = mapCategories(rows);
-      const key = req.originalUrl || req.url;
-
-      // Cache the processed categories array instead of row results
-      redisClient.setex(key, JSON.stringify(categories)); // Cache for 10 minutes
-      return res.status(200).json(categories);
+  // Use pool.getConnection to obtain a connection from the pool
+  pool.getConnection((getConnectionError, connection) => {
+    if (getConnectionError) {
+      console.error('Error getting connection:', getConnectionError);
+      return res.status(500).json({ message: 'Error getting a database connection.' });
     }
+
+    const query = 'SELECT * FROM product_categories';
+    // Use the obtained connection to execute the query
+    connection.query(query, (err, results) => {
+      // Release the connection back to the pool
+      connection.release();
+
+      if (err) {
+        console.error('Error fetching categories:', err);
+        return res.status(500).json({ message: 'Error fetching categories' });
+      } else {
+        const rows = results; // Assuming that the query result is an array of rows
+        const categories = mapCategories(rows);
+        const key = req.originalUrl || req.url;
+
+        // Cache the processed categories array instead of row results
+        redisClient.setex(key, 600, JSON.stringify(categories)); // Cache for 10 minutes (600 seconds)
+        return res.status(200).json(categories);
+      }
+    });
   });
 };
 
 
 
-//------------------- GET CATEGORY BY ID --------------- //
+
+// ------------------- GET CATEGORY BY ID ------------------- //
 const getCategoryById = (req, res) => {
   const categoryId = req.params.id;
 
-  const getCategoryQuery = 'SELECT * FROM product_categories WHERE id = ?';
-  db.query(getCategoryQuery, [categoryId], (categoryError, categoryResults) => {
-    if (categoryError) {
-      console.error('Error fetching category:', categoryError);
-      return res.status(500).json({ error: 'An error occurred while fetching category.' });
+  // Use pool.getConnection to obtain a connection from the pool
+  pool.getConnection((getConnectionError, connection) => {
+    if (getConnectionError) {
+      console.error('Error getting connection:', getConnectionError);
+      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
     }
 
-    if (categoryResults.length === 0) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
+    const getCategoryQuery = 'SELECT * FROM product_categories WHERE id = ?';
+    // Use the obtained connection to execute the main query
+    connection.query(getCategoryQuery, [categoryId], (categoryError, categoryResults) => {
+      // Release the connection back to the pool
+      connection.release();
 
-    const categoryData = categoryResults[0];
-
-    const getCategoryProductQuery = 'SELECT * FROM products WHERE category_id = ?';
-    db.query(getCategoryProductQuery, [categoryId], (productError, productResults) => {
-      if (productError) {
-        console.error('Error fetching products:', productError);
-        return res.status(500).json({ error: 'An error occurred while fetching category products.' });
+      if (categoryError) {
+        console.error('Error fetching category:', categoryError);
+        return res.status(500).json({ error: 'An error occurred while fetching category.' });
       }
 
-      // Add the products array to the categoryData object
-      categoryData.products = productResults;
+      if (categoryResults.length === 0) {
+        return res.status(404).json({ error: 'Category not found' });
+      }
 
+      const categoryData = categoryResults[0];
 
-      // Fetch parent category's products
-      const getSubCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
-      db.query(getSubCategoryProductsQuery, [categoryId], (subProductError, subProductResults) => {
-        if (subProductError) {
-          console.error('Error fetching parent category products:', subProductError);
-          return res.status(500).json({ error: 'An error occurred while fetching parent category products.' });
+      const getCategoryProductQuery = 'SELECT * FROM products WHERE category_id = ?';
+      // Use pool.getConnection to obtain a connection for the product query
+      pool.getConnection((getProductConnectionError, productConnection) => {
+        if (getProductConnectionError) {
+          console.error('Error getting product connection:', getProductConnectionError);
+          return res.status(500).json({ error: 'An error occurred while getting a database connection for products.' });
         }
 
-        // Add parent category's products to the categoryData object
-        categoryData.subCategoryProducts = subProductResults;
+        // Use the obtained connection to execute the product query
+        productConnection.query(getCategoryProductQuery, [categoryId], (productError, productResults) => {
+          // Release the product connection back to the pool
+          productConnection.release();
 
+          if (productError) {
+            console.error('Error fetching products:', productError);
+            return res.status(500).json({ error: 'An error occurred while fetching category products.' });
+          }
 
-        // Fetch users for each product
-        const getProductSeller = (sellerID) => {
-          const getSellerQuery = 'SELECT * FROM users WHERE id = ?';
-          return new Promise((resolve, reject) => {
-            db.query(getSellerQuery, [sellerID], (sellerError, sellerResults) => {
-              if (sellerError) {
-                console.error('Error fetching product seller:', sellerError);
-                reject(sellerError);
-              } else {
-                resolve(sellerResults[0]);
+          // Add the products array to the categoryData object
+          categoryData.products = productResults;
+
+          // Fetch parent category's products
+          const getSubCategoryProductsQuery = 'SELECT products.* FROM products INNER JOIN product_categories ON products.category_id = product_categories.id WHERE product_categories.parent_id = ?';
+          // Use pool.getConnection to obtain a connection for the sub-category product query
+          pool.getConnection((getSubProductConnectionError, subProductConnection) => {
+            if (getSubProductConnectionError) {
+              console.error('Error getting sub-category product connection:', getSubProductConnectionError);
+              return res.status(500).json({ error: 'An error occurred while getting a database connection for sub-category products.' });
+            }
+
+            // Use the obtained connection to execute the sub-category product query
+            subProductConnection.query(getSubCategoryProductsQuery, [categoryId], (subProductError, subProductResults) => {
+              // Release the sub-category product connection back to the pool
+              subProductConnection.release();
+
+              if (subProductError) {
+                console.error('Error fetching parent category products:', subProductError);
+                return res.status(500).json({ error: 'An error occurred while fetching parent category products.' });
               }
+
+              // Add parent category's products to the categoryData object
+              categoryData.subCategoryProducts = subProductResults;
+
+              // Fetch users for each product
+              const getProductSeller = (sellerID, connection) => {
+                const getSellerQuery = 'SELECT * FROM users WHERE id = ?';
+                return new Promise((resolve, reject) => {
+                  // Use the provided connection to execute the seller query
+                  connection.query(getSellerQuery, [sellerID], (sellerError, sellerResults) => {
+                    if (sellerError) {
+                      console.error('Error fetching product seller:', sellerError);
+                      reject(sellerError);
+                    } else {
+                      resolve(sellerResults[0]);
+                    }
+                  });
+                });
+              };
+
+              // Fetch users for each product and add them to the subCategoryProducts object
+              const fetchSubProductSellers = async () => {
+                for (const subProduct of categoryData.subCategoryProducts) {
+                  try {
+                    const productSeller = await getProductSeller(subProduct.seller_id, subProductConnection);
+                    subProduct.seller = productSeller;
+                  } catch (error) {
+                    console.error('Error fetching product seller:', error);
+                  }
+                }
+              };
+
+              fetchSubProductSellers();
+
+              // Fetch users for each product and add them to the productDetails object
+              const fetchProductSellers = async () => {
+                for (const product of categoryData.products) {
+                  try {
+                    const productSeller = await getProductSeller(product.seller_id, productConnection);
+                    product.seller = productSeller;
+                  } catch (error) {
+                    console.error('Error fetching product seller:', error);
+                  }
+                }
+              };
+
+              fetchProductSellers();
+
+              // Fetch images for each product
+              const getProductImages = (productID, connection) => {
+                const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+                return new Promise((resolve, reject) => {
+                  // Use the provided connection to execute the image query
+                  connection.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+                    if (imageError) {
+                      console.error('Error fetching product images:', imageError);
+                      reject(imageError);
+                    } else {
+                      resolve(imageResults);
+                    }
+                  });
+                });
+              };
+
+              // Fetch images for each product and add them to the productDetails object
+              const fetchProductImages = async () => {
+                for (const product of categoryData.products) {
+                  try {
+                    const productImages = await getProductImages(product.id, productConnection);
+                    product.images = productImages;
+                  } catch (error) {
+                    console.error('Error fetching product images:', error);
+                  }
+                }
+
+                for (const subProduct of categoryData.subCategoryProducts) {
+                  try {
+                    const subProductImages = await getProductImages(subProduct.id, subProductConnection);
+                    subProduct.images = subProductImages;
+                  } catch (error) {
+                    console.error('Error fetching parent product images:', error);
+                  }
+                }
+
+                // Release the main response
+                res.status(200).json(categoryData);
+              };
+
+              fetchProductImages();
             });
           });
-        };
-
-
-        // Fetch users for each product and add them to the subCategoryProducts object
-        const fetchSubProductSellers = async () => {
-          for (const product of categoryData.subCategoryProducts) {
-            try {
-              const productSeller = await getProductSeller(product.seller_id);
-              product.seller = productSeller;
-            } catch (error) {
-              console.error('Error fetching product seller:', error);
-            }
-          }
-        };
-
-
-        fetchSubProductSellers();
-
-        // Fetch users for each product and add them to the productDetails object
-        const fetchProductSellers = async () => {
-          for (const product of categoryData.products) {
-            try {
-              const productSeller = await getProductSeller(product.seller_id);
-              product.seller = productSeller;
-            } catch (error) {
-              console.error('Error fetching product seller:', error);
-            }
-          }
-        };
-
-
-        fetchProductSellers();
-
-
-        // Fetch images for each product
-        const getProductImages = (productID) => {
-          const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
-          return new Promise((resolve, reject) => {
-            db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
-              if (imageError) {
-                console.error('Error fetching product images:', imageError);
-                reject(imageError);
-              } else {
-                resolve(imageResults);
-              }
-            });
-          });
-        };
-
-        // Fetch images for each product and add them to the productDetails object
-        const fetchProductImages = async () => {
-          for (const product of categoryData.products) {
-            try {
-              const productImages = await getProductImages(product.id);
-              product.images = productImages;
-            } catch (error) {
-              console.error('Error fetching product images:', error);
-            }
-          }
-
-          for (const subProduct of categoryData.subCategoryProducts) {
-            try {
-              const subProductImages = await getProductImages(subProduct.id);
-              subProduct.images = subProductImages;
-            } catch (error) {
-              console.error('Error fetching parent product images:', error);
-            }
-          }
-
-          res.status(200).json(categoryData);
-        };
-
-        fetchProductImages();
+        });
       });
     });
   });
 };
+
 
 
 
