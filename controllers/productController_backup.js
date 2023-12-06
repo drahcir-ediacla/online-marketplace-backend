@@ -1,4 +1,3 @@
-const pool = require('../config/dbConfig');
 const db = require('../config/dbConfig');
 const redisClient = require('../config/redisClient')
 
@@ -72,66 +71,40 @@ const addNewProduct = (req, res) => {
 
 
 
-
-// --------------- GET ALL PRODUCTS --------------- //
+// --------------- GET ALL PRODUCTS  --------------- //
 const getAllProducts = (req, res) => {
-  // Use pool.getConnection to obtain a connection from the pool
-  pool.getConnection((getConnectionError, connection) => {
-    if (getConnectionError) {
-      console.error('Error getting connection:', getConnectionError);
-      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
-    }
+  const getAllProductsQuery = 'SELECT products.*, users.city, users.region FROM products JOIN users ON products.seller_id = users.id ORDER BY products.created_at DESC';
 
-    const getAllProductsQuery = 'SELECT products.*, users.city, users.region FROM products JOIN users ON products.seller_id = users.id ORDER BY products.created_at DESC';
+  db.query(getAllProductsQuery, (err, results) => {
+    if (err) {
+      console.error('Error fetching products:', err);
+      return res.status(500).json({ error: 'An error occurred while fetching products.' });
+    } else {
+      const productDetails = results;
 
-    // Use the obtained connection to execute the main query
-    connection.query(getAllProductsQuery, (err, results) => {
-      // Release the connection back to the pool
-      connection.release();
+      // Loop through each product and fetch associated images
+      productDetails.forEach((product, index) => {
+        const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+        const productID = product.id;
 
-      if (err) {
-        console.error('Error fetching products:', err);
-        return res.status(500).json({ error: 'An error occurred while fetching products.' });
-      } else {
-        const productDetails = results;
+        db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+          if (imageError) {
+            console.error('Error fetching product images:', imageError);
+            return res.status(500).json({ error: 'An error occurred while fetching product images.' });
+          }
 
-        // Loop through each product and fetch associated images
-        productDetails.forEach((product, index) => {
-          const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
-          const productID = product.id;
+          // Add the images array to the productDetails object
+          productDetails[index].images = imageResults;
 
-          // Use pool.getConnection to obtain a connection for the image query
-          pool.getConnection((getImageConnectionError, imageConnection) => {
-            if (getImageConnectionError) {
-              console.error('Error getting image connection:', getImageConnectionError);
-              return res.status(500).json({ error: 'An error occurred while getting a database connection for images.' });
-            }
-
-            // Use the obtained connection to execute the image query
-            imageConnection.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
-              // Release the image connection back to the pool
-              imageConnection.release();
-
-              if (imageError) {
-                console.error('Error fetching product images:', imageError);
-                return res.status(500).json({ error: 'An error occurred while fetching product images.' });
-              }
-
-              // Add the images array to the productDetails object
-              productDetails[index].images = imageResults;
-
-              // Check if this is the last iteration before sending the response
-              if (index === productDetails.length - 1) {
-                res.status(200).json(productDetails);
-              }
-            });
-          });
+          // Check if this is the last iteration before sending the response
+          if (index === productDetails.length - 1) {
+            res.status(200).json(productDetails);
+          }
         });
-      }
-    });
+      });
+    }
   });
 };
-
 
 
 
@@ -140,89 +113,53 @@ const getAllProducts = (req, res) => {
 const getProductDetails = (req, res) => {
   const productID = req.params.id;
 
-  // Use pool.getConnection to obtain a connection from the pool
-  pool.getConnection((getConnectionError, connection) => {
-    if (getConnectionError) {
-      console.error('Error getting connection:', getConnectionError);
-      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
+  // Validate product name if needed
+
+  const getProductDetailsQuery = 'SELECT * FROM products WHERE id = ?';
+  db.query(getProductDetailsQuery, [productID], (error, results) => {
+    if (error) {
+      console.error('Error fetching product details:', error);
+      return res.status(500).json({ error: 'An error occurred while fetching product details.' });
     }
 
-    // Validate product name if needed
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
 
-    const getProductDetailsQuery = 'SELECT * FROM products WHERE id = ?';
-    // Use the obtained connection to execute the main query
-    connection.query(getProductDetailsQuery, [productID], (error, results) => {
-      // Release the connection back to the pool
-      connection.release();
+    const productDetails = results[0];
+    const sellerID = productDetails.seller_id;
 
-      if (error) {
-        console.error('Error fetching product details:', error);
-        return res.status(500).json({ error: 'An error occurred while fetching product details.' });
+    // Fetch associated images for the product
+    const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
+    db.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
+      if (imageError) {
+        console.error('Error fetching product images:', imageError);
+        return res.status(500).json({ error: 'An error occurred while fetching product images.' });
       }
 
-      if (results.length === 0) {
-        return res.status(404).json({ error: 'Product not found.' });
-      }
+      // Add the images array to the productDetails object
+      productDetails.images = imageResults;
 
-      const productDetails = results[0];
-      const sellerID = productDetails.seller_id;
-
-      // Fetch associated images for the product
-      const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
-      // Use pool.getConnection to obtain a connection for the image query
-      pool.getConnection((getImageConnectionError, imageConnection) => {
-        if (getImageConnectionError) {
-          console.error('Error getting image connection:', getImageConnectionError);
-          return res.status(500).json({ error: 'An error occurred while getting a database connection for images.' });
+      // Fetch details of the seller (user)
+      const getSellerDetailsQuery = 'SELECT * FROM users WHERE id = ?';
+      db.query(getSellerDetailsQuery, [sellerID], (sellerError, sellerResults) => {
+        if (sellerError) {
+          console.error('Error fetching seller details:', sellerError);
+          return res.status(500).json({ error: 'An error occurred while fetching seller details.' });
         }
 
-        // Use the obtained connection to execute the image query
-        imageConnection.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
-          // Release the image connection back to the pool
-          imageConnection.release();
+        if (sellerResults.length === 0) {
+          return res.status(404).json({ error: 'Seller not found.' });
+        }
 
-          if (imageError) {
-            console.error('Error fetching product images:', imageError);
-            return res.status(500).json({ error: 'An error occurred while fetching product images.' });
-          }
+        const sellerDetails = sellerResults[0];
+        productDetails.seller = sellerDetails;
 
-          // Add the images array to the productDetails object
-          productDetails.images = imageResults;
-
-          // Fetch details of the seller (user)
-          const getSellerDetailsQuery = 'SELECT * FROM users WHERE id = ?';
-          // Use pool.getConnection to obtain a connection for the seller query
-          pool.getConnection((getSellerConnectionError, sellerConnection) => {
-            if (getSellerConnectionError) {
-              console.error('Error getting seller connection:', getSellerConnectionError);
-              return res.status(500).json({ error: 'An error occurred while getting a database connection for the seller.' });
-            }
-
-            // Use the obtained connection to execute the seller query
-            sellerConnection.query(getSellerDetailsQuery, [sellerID], (sellerError, sellerResults) => {
-              // Release the seller connection back to the pool
-              sellerConnection.release();
-
-              if (sellerError) {
-                console.error('Error fetching seller details:', sellerError);
-                return res.status(500).json({ error: 'An error occurred while fetching seller details.' });
-              }
-
-              if (sellerResults.length === 0) {
-                return res.status(404).json({ error: 'Seller not found.' });
-              }
-
-              const sellerDetails = sellerResults[0];
-              productDetails.seller = sellerDetails;
-
-              res.status(200).json(productDetails);
-            });
-          });
-        });
+        res.status(200).json(productDetails);
       });
     });
   });
-};
+}
 
 
 //------------------- GET ALL CATEGORIES --------------- //

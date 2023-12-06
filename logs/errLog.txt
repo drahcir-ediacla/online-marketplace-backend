@@ -89,3 +89,25 @@
 20231118	12:13:50	4e639d16-99a0-481d-9778-e638393609fb	TypeError: Cannot set properties of undefined (setting 'id')
 20231123	13:32:00	887fc85a-634c-436a-be64-e9cad4cf05f4	TypeError: Cannot set properties of undefined (setting 'id')
 20231124	10:22:58	d25d2d20-6e01-4a51-966f-a26742666a00	TypeError: Cannot set properties of undefined (setting 'id')
+20231206	09:12:54	1ca5ba05-671d-4dd6-aaa1-7ec2f60def80	ReferenceError: pool is not defined
+20231206	09:12:54	a034980a-05b4-4c5d-8b0e-e530bf296f4f	ReferenceError: pool is not defined
+20231206	09:13:35	c6deb00a-7b04-4161-8a35-112e1a4110a5	ReferenceError: pool is not defined
+20231206	09:13:35	37f640aa-f63d-4a90-9408-e513dd03908b	ReferenceError: pool is not defined
+20231206	09:14:25	287f19cd-8074-4247-8065-02d9ffb629a0	ReferenceError: pool is not defined
+20231206	09:14:25	6802c06f-f786-4d6a-ad8c-2aadc5963f71	ReferenceError: pool is not defined
+20231206	09:15:00	805932b1-9930-40f8-a4b4-87957323c3bd	ReferenceError: pool is not defined
+20231206	09:15:00	2e868fbb-023e-4832-b4e8-0e339a3974b4	ReferenceError: pool is not defined
+20231206	09:16:52	1c9c89f8-5983-45cf-93a1-cadb7639d4fd	ReferenceError: pool is not defined
+20231206	09:16:52	c710ec16-1347-4b63-844a-4fc259aea9ae	ReferenceError: pool is not defined
+20231206	09:17:50	a9041ead-e37a-4ded-a19f-b43426b86a9e	ReferenceError: pool is not defined
+20231206	09:17:50	cd066ec1-334d-47e3-8d6f-b9340cbf1136	ReferenceError: pool is not defined
+20231206	09:20:20	8724cc2a-f108-4735-81f3-f384112f0354	ReferenceError: pool is not defined
+20231206	09:20:20	7a5452cc-a4bd-453a-a7d6-081d1c467347	ReferenceError: pool is not defined
+20231206	09:20:29	5b9f675c-2577-421b-a998-34fc11ca9aab	ReferenceError: pool is not defined
+20231206	09:20:29	9456093e-0703-4415-806c-de59f315f282	ReferenceError: pool is not defined
+20231206	09:21:02	df3961b2-01bf-48c0-bf12-e6cc683a1a4b	ReferenceError: pool is not defined
+20231206	09:21:02	bfc740f2-61ec-4086-858a-fa169f72c702	ReferenceError: pool is not defined
+20231206	09:28:43	de37ea95-411b-42ce-a09e-2c68a0012155	ReferenceError: db is not defined
+20231206	09:28:43	b12a8a64-904e-4f59-b6be-6d7fb6132784	ReferenceError: db is not defined
+20231206	09:29:03	2f480c3e-b351-4ae6-b3a3-6ef8f7952d9a	ReferenceError: db is not defined
+20231206	09:29:03	8d2f470c-2a4b-4448-9c73-38abb8e88f2e	ReferenceError: db is not defined
