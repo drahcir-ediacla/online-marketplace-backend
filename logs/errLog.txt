@@ -111,3 +111,8 @@
 20231206	09:28:43	b12a8a64-904e-4f59-b6be-6d7fb6132784	ReferenceError: db is not defined
 20231206	09:29:03	2f480c3e-b351-4ae6-b3a3-6ef8f7952d9a	ReferenceError: db is not defined
 20231206	09:29:03	8d2f470c-2a4b-4448-9c73-38abb8e88f2e	ReferenceError: db is not defined
+20231208	11:14:25	0df694e4-940d-4cd6-b398-d821469b79fc	TypeError: userModel.findOne is not a function
+20231208	11:15:46	f6fc33f1-2b6f-43a8-b4ab-a2b43e521adc	TypeError: userModel.findOne is not a function
+20231209	23:20:47	995b61bb-ec36-4310-b77f-f34ad21ef4c7	URIError: Failed to decode param 'Mobile%and%Electronics'
+20231210	10:11:25	1843fd6a-f209-4b6e-a9db-001699d0c3ec	TypeError: Cannot set properties of undefined (setting 'id')
+20231210	10:11:25	45df15b3-bd8a-4656-8311-07bb582ebc0d	TypeError: Cannot set properties of undefined (setting 'id')

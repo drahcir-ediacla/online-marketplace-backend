@@ -1,105 +1,65 @@
 
 const db = require('../config/dbConfig');
 const pool = require('../config/dbConfig');
-const userModel = require('../models/userModels')
+const { userModel, productModel, productImagesModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 
 
 
 // --------------- FETCH ALL USERS  --------------- //
-const getUsers = (req, res) => {
-  const sql = 'SELECT * FROM users';
-  db.query(sql, (err, results) => {
-    if (err) {
-      console.error('Error fetching users:', err);
-      res.status(500).json({ message: 'Error fetching users' });
-    } else {
-      const key = req.originalUrl || req.url;
-      redisClient.setex(key, 10 * 1, JSON.stringify(results)); // Cache for 10 minutes
-      res.status(200).json(results);
-    }
-  });
+const getUsers = async (req, res) => {
+  try {
+    // Use Sequelize to fetch all users
+    const users = await userModel.findAll();
+
+    // Cache the results using Redis
+    const key = req.originalUrl || req.url;
+    redisClient.setex(key, 10 * 60, JSON.stringify(users)); // Cache for 10 minutes
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
 };
 
 
 
 // --------------- GET USERS BY ID  --------------- //
-const getUsersById = (req, res) => {
+const getUsersById = async (req, res) => {
   const userID = req.params.id;
 
-  // Use pool.getConnection to obtain a connection from the pool
-  pool.getConnection((getConnectionError, connection) => {
-    if (getConnectionError) {
-      console.error('Error getting connection:', getConnectionError);
-      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
+  try {
+    // Use Sequelize to fetch user data and associated products
+    const userData = await userModel.findByPk(userID, {
+      include: [
+        {
+          model: productModel,
+          attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'createdAt'],
+          order: [['createdAt', 'DESC']],
+          as: 'products',
+          include: [
+            {
+              model: productImagesModel,
+              attributes: ['id', 'image_url'],
+              as: 'images',
+            },
+          ],
+        },
+      ],
+    });
+
+    if (!userData) {
+      return res.status(404).json({ error: 'User not found.' });
     }
 
-    const getUserQuery = 'SELECT * FROM users WHERE id=?';
-    // Use the obtained connection to execute the user query
-    connection.query(getUserQuery, [userID], (error, userResults) => {
-      // Release the connection back to the pool
-      connection.release();
-
-      if (error) {
-        console.error('Error fetching user data:', error);
-        return res.status(500).json({ error: 'An error occurred while fetching user data.' });
-      }
-
-      if (userResults.length === 0) {
-        return res.status(404).json({ error: 'User not found.' });
-      }
-
-      const userData = userResults[0];
-
-      const getUserProductsQuery = 'SELECT * FROM products WHERE seller_id = ? ORDER BY products.created_at DESC';
-      // Use the obtained connection to execute the products query
-      connection.query(getUserProductsQuery, [userID], (productError, productResults) => {
-        // Release the connection back to the pool
-        
-
-        if (productError) {
-          console.error('Error fetching products:', productError);
-          return res.status(500).json({ error: 'An error occurred while fetching user products.' });
-        }
-
-        // Add the products array to the userData object
-        userData.products = productResults;
-
-        // Fetch images for each product
-        const getProductImages = (productID) => {
-          const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
-          return new Promise((resolve, reject) => {
-            // Use the obtained connection to execute the images query
-            connection.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
-              if (imageError) {
-                console.error('Error fetching product images:', imageError);
-                reject(imageError);
-              } else {
-                resolve(imageResults);
-              }
-            });
-          });
-        };
-
-        // Fetch images for each product and add them to the productDetails object
-        const fetchProductImages = async () => {
-          for (const product of userData.products) {
-            try {
-              const productImages = await getProductImages(product.id);
-              product.images = productImages;
-            } catch (error) {
-              console.error('Error fetching product images:', error);
-            }
-          }
-
-          res.status(200).json(userData);
-        };
-
-        fetchProductImages();
-      });
-    });
-  });
+    res.status(200).json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'An error occurred while fetching user data.' });
+  }
 };
+
 
 
 

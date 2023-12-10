@@ -4,7 +4,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils')
-const userModel = require('../models/userModels')
+const {userModel} = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
