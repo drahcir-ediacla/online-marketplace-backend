@@ -31,7 +31,7 @@ categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' 
 // productModel.belongsTo(categoryModel, { foreignKey: 'parent_id', as: 'subCategoryProducts' });
 // categoryModel.belongsTo(categoryModel, { foreignKey: 'parent_id', as: 'subCategory' });
 categoryModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
-categoryModel.hasMany(userModel, { as: 'seller' });
+// categoryModel.hasMany(userModel, { as: 'seller' });
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
