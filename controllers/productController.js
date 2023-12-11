@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { userModel, productModel, categoryModel, productImagesModel } = require('../config/sequelizeConfig')
+const { userModel, productModel, categoryModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 
 
@@ -237,6 +237,81 @@ const getCategoryById = async (req, res) => {
 };
 
 
+// ------------------- ADD WISHLIST ------------------- //
+const addWishList = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to add an item to the wishlist.' });
+    }
+
+    const userId = req.user.id;
+    const productId = req.params.id || req.body.productId;
+
+    if (!productId) {
+      return res.status(400).json({ error: 'productId is required.' });
+    }
+
+    // Check if the item already exists in the wishlist
+    const existingWishlistItem = await wishListModel.findOne({
+      where: {
+        user_id: userId,
+        product_id: productId,
+      },
+    });
+
+    if (existingWishlistItem) {
+      return res.status(400).json({ error: 'Item already exists in the wishlist.' });
+    }
+
+    // If the item doesn't exist, create a new wishlist entry
+    await wishListModel.create({
+      user_id: userId,
+      product_id: productId,
+    });
+
+    res.send('Item added to wishlist');
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+};
 
 
-module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails };
+
+
+// ------------------- REMOVE WISHLIST ------------------- //
+const removeWishList = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to remove an item from the wishlist.' });
+    }
+
+    const userId = req.user.id;
+    const productId = req.params.id || req.body.productId;
+
+    // Assuming you have already defined the Wishlist model
+    const removedItem = await wishListModel.destroy({
+      where: {
+        user_id: userId,
+        product_id: productId,
+      },
+    });
+
+    if (removedItem === 0) {
+      // If no rows were affected, the item was not found in the wishlist
+      return res.status(404).json({ error: 'Item not found in the wishlist.' });
+    }
+
+    res.send('Item removed from wishlist');
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+};
+
+
+
+
+
+
+module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails, addWishList, removeWishList };
