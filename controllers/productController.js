@@ -245,7 +245,7 @@ const addWishList = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const productId = req.params.id || req.body.productId;
+    const productId = req.params.id || req.body.id;
 
     if (!productId) {
       return res.status(400).json({ error: 'productId is required.' });
@@ -287,7 +287,7 @@ const removeWishList = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const productId = req.params.id || req.body.productId;
+    const productId = req.params.id || req.body.id;
 
     // Assuming you have already defined the Wishlist model
     const removedItem = await wishListModel.destroy({
