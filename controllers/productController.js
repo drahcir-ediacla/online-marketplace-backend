@@ -1,88 +1,54 @@
-const pool = require('../config/dbConfig');
 const { Sequelize } = require('sequelize');
-const db = require('../config/dbConfig');
-const { userModel, productModel, subCategoryProductModel, categoryModel, productImagesModel } = require('../config/sequelizeConfig')
+const { userModel, productModel, categoryModel, productImagesModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 
 
-// --------------- GET ADD NEW PRODUCT  --------------- //
-const addNewProduct = (req, res) => {
-  // Check if the user is authenticated
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: 'Authentication required to add a new product.' });
-  }
-
-  // The authenticated user's ID is available as req.user.id
-  const seller_id = req.user.id;
-  const { product_name, description, price, category_id, product_condition, youtube_link } = req.body;
-
-  if (!product_name || !price || !category_id) {
-    return res.status(400).json({ error: 'Name, price, and category are required fields.' });
-  }
-
-  // Use pool.getConnection to obtain a connection from the pool
-  pool.getConnection((getConnectionError, connection) => {
-    if (getConnectionError) {
-      console.error('Error getting connection:', getConnectionError);
-      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
+// --------------- ADD NEW PRODUCT  --------------- //
+const addNewProduct = async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to add a new product.' });
     }
 
-    const insertProduct = 'INSERT INTO products (product_name, description, price, category_id, seller_id, product_condition, youtube_link) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    // The authenticated user's ID is available as req.user.id
+    const sellerId = req.user.id;
+    const { product_name, description, price, category_id, product_condition, youtube_link, imageUrls } = req.body;
 
-    // Use the obtained connection to execute the product insertion query
-    connection.query(insertProduct, [product_name, description, price, category_id, seller_id, product_condition, youtube_link], (error, results) => {
-      // Release the connection back to the pool
-      connection.release();
+    if (!product_name || !price || !category_id) {
+      return res.status(400).json({ error: 'Name, price, and category are required fields.' });
+    }
 
-      if (error) {
-        console.error('Error inserting product:', error);
-        return res.status(500).json({ error: 'An error occurred while inserting the product.' });
-      }
+    // Use Sequelize to insert a new product
+    const newProduct = await productModel.create({
+      product_name,
+      description,
+      price,
+      category_id,
+      seller_id: sellerId,
+      product_condition,
+      youtube_link,
+    });
 
-      const newProduct = {
-        id: results.insertId,
-        product_name,
-        description,
-        price,
-        category_id,
-        seller_id,
-        product_condition,
-        youtube_link,
-      };
-
-      // Assuming you have image URLs from Cloudinary in your request (client-side)
-      const imageUrls = req.body.imageUrls;
-
-      const insertImage = 'INSERT INTO product_images (product_id, image_url) VALUES (?, ?)';
-
-      // Loop through the image URLs and insert them into the database
+    // Insert associated image URLs for the product
+    if (imageUrls && imageUrls.length > 0) {
       const imageInsertPromises = imageUrls.map((imageUrl) => {
-        return new Promise((resolve, reject) => {
-          // Use the obtained connection to execute the image insertion query
-          connection.query(insertImage, [newProduct.id, imageUrl], (imageError, imageResults) => {
-            if (imageError) {
-              reject(imageError);
-            } else {
-              resolve(imageUrl);
-            }
-          });
+        return productImagesModel.create({
+          product_id: newProduct.id,
+          image_url: imageUrl,
         });
       });
 
-      Promise.all(imageInsertPromises)
-        .then(() => {
-          newProduct.image_urls = imageUrls;
-          res.status(201).json(newProduct);
-        })
-        .catch((insertError) => {
-          console.error('Error inserting image URLs:', insertError);
-          res.status(500).json({ error: 'An error occurred while inserting image URLs.' });
-        });
-    });
-  });
+      await Promise.all(imageInsertPromises);
+      newProduct.image_urls = imageUrls;
+    }
+
+    res.status(201).json(newProduct);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
 };
-
-
 
 
 
@@ -122,91 +88,36 @@ const getAllProducts = async (req, res) => {
 
 
 // --------------- GET PRODUCT BY ID --------------- //
-const getProductDetails = (req, res) => {
-  const productID = req.params.id;
+const getProductDetails = async (req, res) => {
+  try {
+    const productID = req.params.id;
 
-  // Use pool.getConnection to obtain a connection from the pool
-  pool.getConnection((getConnectionError, connection) => {
-    if (getConnectionError) {
-      console.error('Error getting connection:', getConnectionError);
-      return res.status(500).json({ error: 'An error occurred while getting a database connection.' });
+    // Use Sequelize to find the product by ID
+    const productDetails = await productModel.findByPk(productID, {
+      include: [
+        {
+          model: userModel,
+          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+          as: 'seller',
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+      ]
+    })
+
+
+    if (!productDetails) {
+      return res.status(404).json({ error: 'Product not found.' });
     }
 
-    // Validate product name if needed
-
-    const getProductDetailsQuery = 'SELECT * FROM products WHERE id = ?';
-    // Use the obtained connection to execute the main query
-    connection.query(getProductDetailsQuery, [productID], (error, results) => {
-      // Release the connection back to the pool
-      connection.release();
-
-      if (error) {
-        console.error('Error fetching product details:', error);
-        return res.status(500).json({ error: 'An error occurred while fetching product details.' });
-      }
-
-      if (results.length === 0) {
-        return res.status(404).json({ error: 'Product not found.' });
-      }
-
-      const productDetails = results[0];
-      const sellerID = productDetails.seller_id;
-
-      // Fetch associated images for the product
-      const getProductImagesQuery = 'SELECT * FROM product_images WHERE product_id = ?';
-      // Use pool.getConnection to obtain a connection for the image query
-      pool.getConnection((getImageConnectionError, imageConnection) => {
-        if (getImageConnectionError) {
-          console.error('Error getting image connection:', getImageConnectionError);
-          return res.status(500).json({ error: 'An error occurred while getting a database connection for images.' });
-        }
-
-        // Use the obtained connection to execute the image query
-        imageConnection.query(getProductImagesQuery, [productID], (imageError, imageResults) => {
-          // Release the image connection back to the pool
-          imageConnection.release();
-
-          if (imageError) {
-            console.error('Error fetching product images:', imageError);
-            return res.status(500).json({ error: 'An error occurred while fetching product images.' });
-          }
-
-          // Add the images array to the productDetails object
-          productDetails.images = imageResults;
-
-          // Fetch details of the seller (user)
-          const getSellerDetailsQuery = 'SELECT * FROM users WHERE id = ?';
-          // Use pool.getConnection to obtain a connection for the seller query
-          pool.getConnection((getSellerConnectionError, sellerConnection) => {
-            if (getSellerConnectionError) {
-              console.error('Error getting seller connection:', getSellerConnectionError);
-              return res.status(500).json({ error: 'An error occurred while getting a database connection for the seller.' });
-            }
-
-            // Use the obtained connection to execute the seller query
-            sellerConnection.query(getSellerDetailsQuery, [sellerID], (sellerError, sellerResults) => {
-              // Release the seller connection back to the pool
-              sellerConnection.release();
-
-              if (sellerError) {
-                console.error('Error fetching seller details:', sellerError);
-                return res.status(500).json({ error: 'An error occurred while fetching seller details.' });
-              }
-
-              if (sellerResults.length === 0) {
-                return res.status(404).json({ error: 'Seller not found.' });
-              }
-
-              const sellerDetails = sellerResults[0];
-              productDetails.seller = sellerDetails;
-
-              res.status(200).json(productDetails);
-            });
-          });
-        });
-      });
-    });
-  });
+    res.status(200).json(productDetails);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
 };
 
 
@@ -276,7 +187,7 @@ const getCategoryById = async (req, res) => {
       include: [
         {
           model: userModel,
-          attributes: ['id','fb_id','display_name','profile_pic','createdAt','bio','first_name','last_name','country','phone','gender','birthday','city', 'region'],
+          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
           as: 'seller',
           where: { id: Sequelize.col('Product.seller_id') },
         },
@@ -298,7 +209,7 @@ const getCategoryById = async (req, res) => {
         },
         {
           model: userModel,
-          attributes: ['id','fb_id','display_name','profile_pic','createdAt','bio','first_name','last_name','country','phone','gender','birthday','city', 'region'],
+          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'createdAt', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region'],
           as: 'seller',
           where: { id: Sequelize.col('Product.seller_id') },
         },
@@ -318,12 +229,6 @@ const getCategoryById = async (req, res) => {
       subCategoryProducts,
     };
 
-    // // Fetch sellers and images for products
-    // await Promise.all([
-    //   fetchProductDetails(categoryData.products),
-    //   fetchProductDetails(categoryData.subCategoryProducts),
-    // ]);
-
     res.status(200).json(categoryData);
   } catch (error) {
     console.error('Error:', error);
@@ -331,20 +236,7 @@ const getCategoryById = async (req, res) => {
   }
 };
 
-// const fetchProductDetails = async (products) => {
-//   // Fetch sellers and images for each product
-//   for (const product of products) {
-//     try {
-//       const seller = await userModel.findByPk(product.seller_id);
-//       const images = await productImagesModel.findAll({ where: { product_id: product.id } });
 
-//       product.seller = seller.toJSON();
-//       product.images = images.map((image) => image.toJSON());
-//     } catch (error) {
-//       console.error('Error fetching product details:', error);
-//     }
-//   }
-// };
 
 
 module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails };

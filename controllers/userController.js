@@ -1,6 +1,3 @@
-
-const db = require('../config/dbConfig');
-const pool = require('../config/dbConfig');
 const { userModel, productModel, productImagesModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 
