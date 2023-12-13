@@ -196,6 +196,11 @@ const getCategoryById = async (req, res) => {
           attributes: ['id', 'image_url'],
           as: 'images',
         },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
       ],
     });
 
@@ -218,9 +223,27 @@ const getCategoryById = async (req, res) => {
           attributes: ['id', 'image_url'],
           as: 'images',
         },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
       ],
       order: [['createdAt', 'DESC']],
     });
+
+    // // Extract user_ids from wishlist and format as an array
+    // const wishlistUserIds = Array.from(new Set(subCategoryProducts.flatMap(product => product.wishlist.map(item => item.user_id))));
+
+    // // Add products and sub-category products to the category data
+    // const categoryData = {
+    //   ...category.toJSON(),
+    //   products,
+    //   subCategoryProducts: subCategoryProducts.map(product => ({
+    //     ...product.toJSON(),
+    //     wishlist: { user_id: wishlistUserIds },
+    //   })),
+    // };
 
     // Add products and sub-category products to the category data
     const categoryData = {
@@ -309,6 +332,8 @@ const removeWishList = async (req, res) => {
   }
 };
 
+
+// ------------------- GET ALL WISHLIST ------------------- //
 
 
 

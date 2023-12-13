@@ -25,19 +25,16 @@ const userModel = defineUserModel(sequelize);
 const productModel = defineProductModel(sequelize);
 const categoryModel = defineCategoryModel(sequelize);
 const productImagesModel = defineProductImagesModel(sequelize);
-// const subCategoryProductModel = defineProductImagesModel(sequelize);
 const wishListModel = definewishListModel(sequelize);
 
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
-// productModel.belongsTo(categoryModel, { foreignKey: 'parent_id', as: 'subCategoryProducts' });
-// categoryModel.belongsTo(categoryModel, { foreignKey: 'parent_id', as: 'subCategory' });
 categoryModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
-// categoryModel.hasMany(userModel, { as: 'seller' });
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
 productModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
+productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist' });
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
 
 
