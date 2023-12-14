@@ -72,6 +72,11 @@ const getAllProducts = async (req, res) => {
           attributes: ['id', 'image_url'],
           as: 'images',
         },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
       ],
     });
 
@@ -81,8 +86,6 @@ const getAllProducts = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while fetching products.' });
   }
 };
-
-
 
 
 
@@ -335,8 +338,47 @@ const removeWishList = async (req, res) => {
 
 // ------------------- GET ALL WISHLIST ------------------- //
 
+const getAllWishlist = async (req, res) => {
+  try {
+    const allWishlist = await wishListModel.findAll({
+      attributes: ['user_id', 'product_id'],
+      order: [['createdAt', 'DESC']],
+    })
+
+    res.status(200).json(allWishlist);
+
+  } catch(error) {
+    console.error('Error fetching wishlist:', error);
+    res.status(500).json({ error: 'An error occurred while fetching products.'})
+  }
+}
+
+
+// ------------------- GET WISHLIST BY USER ID------------------- //
+
+const getWishlistByUserId = async (req, res) => {
+  try {
+    const userId = req.params.user_id;
+
+    const userWishlist = await wishListModel.findAll({
+      attributes: ['user_id', 'product_id'],
+      where: {
+        user_id: userId
+      },
+      order: [['createdAt', 'DESC']],
+    })
+
+    res.status(200).json(userWishlist);
+
+  } catch(error) {
+    console.error('Error fetching wishlist:', error);
+    res.status(500).json({ error: 'An error occurred while fetching products.'})
+  }
+}
 
 
 
 
-module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails, addWishList, removeWishList };
+
+
+module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails, addWishList, removeWishList, getAllWishlist, getWishlistByUserId };

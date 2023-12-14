@@ -11,5 +11,7 @@ router.get('/api/getallcategories', cacheMiddleware, ProductController.getAllCat
 router.get('/api/getcategory/:id/:label', ProductController.getCategoryById);
 router.post('/api/addwishlist/product-:id', ProductController.addWishList);
 router.post('/api/removewishlist/product-:id', ProductController.removeWishList);
+router.get('/api/getallwishlist', ProductController.getAllWishlist);
+router.get('/api/getuserwishlist/:user_id', ProductController.getWishlistByUserId);
 
 module.exports = router;
