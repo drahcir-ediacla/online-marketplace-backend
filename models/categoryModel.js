@@ -24,7 +24,7 @@ const defineCategoryModel = (sequelize) => {
         },
         parent_id: {
             type: DataTypes.INTEGER,
-            unique: true,
+            unique: false,
             allowNull: true,
         },
     }, {

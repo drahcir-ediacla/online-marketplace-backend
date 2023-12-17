@@ -35,7 +35,10 @@ productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
 productModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist' });
+
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
+
+productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products' });
 
 
 

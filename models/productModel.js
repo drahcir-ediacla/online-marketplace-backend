@@ -37,7 +37,7 @@ const defineProductModel = (sequelize) => {
         },
         youtube_link: {
             type: DataTypes.STRING,
-            unique: true,
+            unique: false,
             allowNull: true,
         },
     }, {

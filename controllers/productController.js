@@ -235,20 +235,7 @@ const getCategoryById = async (req, res) => {
       order: [['createdAt', 'DESC']],
     });
 
-    // // Extract user_ids from wishlist and format as an array
-    // const wishlistUserIds = Array.from(new Set(subCategoryProducts.flatMap(product => product.wishlist.map(item => item.user_id))));
 
-    // // Add products and sub-category products to the category data
-    // const categoryData = {
-    //   ...category.toJSON(),
-    //   products,
-    //   subCategoryProducts: subCategoryProducts.map(product => ({
-    //     ...product.toJSON(),
-    //     wishlist: { user_id: wishlistUserIds },
-    //   })),
-    // };
-
-    // Add products and sub-category products to the category data
     const categoryData = {
       ...category.toJSON(),
       products,
@@ -347,9 +334,9 @@ const getAllWishlist = async (req, res) => {
 
     res.status(200).json(allWishlist);
 
-  } catch(error) {
+  } catch (error) {
     console.error('Error fetching wishlist:', error);
-    res.status(500).json({ error: 'An error occurred while fetching products.'})
+    res.status(500).json({ error: 'An error occurred while fetching products.' })
   }
 }
 
@@ -360,24 +347,41 @@ const getWishlistByUserId = async (req, res) => {
   try {
     const userId = req.params.user_id;
 
-    const userWishlist = await wishListModel.findAll({
-      attributes: ['user_id', 'product_id'],
-      where: {
-        user_id: userId
-      },
+    const product = await productModel.findAll({
+      attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'createdAt'],
       order: [['createdAt', 'DESC']],
-    })
+      include: [
+        {
+          model: userModel,
+          attributes: ['city', 'region'],
+          as: 'seller',
+          where: { id: Sequelize.col('Product.seller_id') },
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          where: { user_id: userId },
+          as: 'wishlist',
+        },
+      ],
+    });
 
-    res.status(200).json(userWishlist);
 
-  } catch(error) {
-    console.error('Error fetching wishlist:', error);
-    res.status(500).json({ error: 'An error occurred while fetching products.'})
+    if (product.length === 0) {
+      return res.status(404).json({ error: 'No items in the wishlist' });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'An error occurred while fetching products.' });
   }
-}
-
-
-
+};
 
 
 
