@@ -1,4 +1,4 @@
-const { userModel, productModel, productImagesModel } = require('../config/sequelizeConfig')
+const { userModel, productModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 
 
@@ -41,6 +41,11 @@ const getUsersById = async (req, res) => {
               attributes: ['id', 'image_url'],
               as: 'images',
             },
+            {
+              model: wishListModel,
+              attributes: ['user_id', 'product_id'],
+              as: 'wishlist',
+            }
           ],
         },
       ],
