@@ -1,6 +1,7 @@
 const { Sequelize } = require('sequelize');
-const { userModel, productModel, categoryModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig')
+const { userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
+const { v4: uuidv4 } = require('uuid');
 
 
 // --------------- ADD NEW PRODUCT  --------------- //
@@ -390,4 +391,56 @@ const getWishlistByUserId = async (req, res) => {
 
 
 
-module.exports = { getCategoryById, getAllCategories, addNewProduct, getAllProducts, getProductDetails, addWishList, removeWishList, getAllWishlist, getWishlistByUserId };
+
+// --------------- INSERT VIEWED ITEMS --------------- //
+
+const generateUUID = () => {
+  return uuidv4(); // Generate a version 4 (random) UUID
+};
+
+const addProductView = async (req, res) => {
+  try {
+    // Generate or retrieve session ID from session upon request
+    const sessionId = req.session.session_id || generateUUID();
+
+    // Retrieve item_id from request
+    const productId = req.params.id || req.body.id; // Assuming item_id is passed in the request body
+
+    // Insert record into product_views table using Sequelize
+    const productView = await productViewModel.create({
+      session_id: sessionId,
+      product_id: productId,
+      // Add other fields as necessary
+    });
+
+    // Send response
+    res.status(201).json({
+      success: true,
+      data: productView,
+      message: 'Product view added successfully',
+    });
+  } catch (error) {
+    console.error('Error adding product view:', error);
+    // Handle error and send response
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add product view',
+      error: error.message,
+    });
+  }
+};
+
+
+
+module.exports = {
+  getCategoryById,
+  getAllCategories,
+  addNewProduct,
+  getAllProducts,
+  getProductDetails,
+  addWishList,
+  removeWishList,
+  getAllWishlist,
+  getWishlistByUserId,
+  addProductView
+};
