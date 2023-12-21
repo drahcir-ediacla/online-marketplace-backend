@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
+const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const { v4: uuidv4 } = require('uuid');
 
@@ -432,6 +432,77 @@ const addProductView = async (req, res) => {
 
 
 
+// --------------- FIND MOST VIEWED ITEMS --------------- //
+
+const findMostViewedProducts = async (req, res, next) => {
+  const { limit = 10 } = req.query; 
+
+  try {
+    const viewedProducts = await productViewModel.findAll({
+      attributes: ['product_id', [sequelize.fn('COUNT', sequelize.col('product_id')), 'view_count']],
+      group: ['product_id'],
+      order: [[sequelize.literal('view_count'), 'DESC']],
+      limit: parseInt(limit, 10),
+    });
+
+    const productIds = viewedProducts.map(product => product.product_id);
+
+    const products = await productModel.findAll({
+      where: { id: productIds },
+      attributes: [
+        'id', 
+        'product_name', 
+        'description', 
+        'price', 
+        'category_id', 
+        'seller_id', 
+        'product_condition', 
+        'youtube_link', 
+        'createdAt'
+      ],
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: userModel,
+          attributes: ['city', 'region'],
+          as: 'seller',
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
+      ],
+    });
+
+    // Combine viewedProducts and products to get the desired format
+    const combinedProducts = viewedProducts.map(viewedProduct => {
+      const productDetail = products.find(product => product.id === viewedProduct.product_id);
+      return {
+        product_id: viewedProduct.product_id,
+        view_count: viewedProduct.get('view_count'),
+        ...productDetail.toJSON()
+      };
+    });
+
+    res.status(200).json(combinedProducts);
+  } catch (error) {
+    console.error('Error fetching most viewed products:', error);
+    next(error);
+  }
+};
+
+
+
+
+
+
+
 module.exports = {
   getCategoryById,
   getAllCategories,
@@ -442,5 +513,6 @@ module.exports = {
   removeWishList,
   getAllWishlist,
   getWishlistByUserId,
-  addProductView
+  addProductView,
+  findMostViewedProducts
 };

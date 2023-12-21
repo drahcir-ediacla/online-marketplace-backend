@@ -116,3 +116,7 @@
 20231209	23:20:47	995b61bb-ec36-4310-b77f-f34ad21ef4c7	URIError: Failed to decode param 'Mobile%and%Electronics'
 20231210	10:11:25	1843fd6a-f209-4b6e-a9db-001699d0c3ec	TypeError: Cannot set properties of undefined (setting 'id')
 20231210	10:11:25	45df15b3-bd8a-4656-8311-07bb582ebc0d	TypeError: Cannot set properties of undefined (setting 'id')
+20231221	13:10:14	d1fa7a59-7b65-415a-91af-6e7fffba9a87	TypeError: viewedProducts.toJSON is not a function
+20231221	13:18:10	7337badd-3bab-41eb-9d1d-16f3cbbf1a29	Error: WHERE parameter "id" has invalid "undefined" value
+20231221	13:20:01	304c7a4e-e388-43e2-ad82-ad9e8ae264d9	Error: WHERE parameter "id" has invalid "undefined" value
+20231221	13:23:54	56d5e657-8d3a-420d-83a7-0d51d09b9cd4	Error: WHERE parameter "id" has invalid "undefined" value
