@@ -89,6 +89,44 @@ const getAllProducts = async (req, res) => {
 };
 
 
+// --------------- FETCH RANDOM PRODUCTS --------------- //
+
+const getRandomProducts = async (req, res) => {
+  try {
+    // Use Sequelize to fetch random products with associated seller information and images
+    const productDetails = await productModel.findAll({
+      attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'createdAt'],
+      order: [Sequelize.fn('RAND')], // For PostgreSQL use: [Sequelize.fn('RANDOM')]
+      limit: 30,  // Fetching 10 random products, you can adjust the limit as needed
+      include: [
+        {
+          model: userModel,
+          attributes: ['city', 'region'],
+          as: 'seller',
+          where: { id: Sequelize.col('Product.seller_id') },
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
+      ],
+    });
+
+    res.status(200).json(productDetails);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'An error occurred while fetching products.' });
+  }
+};
+
+
+
 
 
 // --------------- GET PRODUCT BY ID --------------- //
@@ -502,7 +540,6 @@ const findMostViewedProducts = async (req, res, next) => {
 
 
 
-
 module.exports = {
   getCategoryById,
   getAllCategories,
@@ -514,5 +551,6 @@ module.exports = {
   getAllWishlist,
   getWishlistByUserId,
   addProductView,
-  findMostViewedProducts
+  findMostViewedProducts,
+  getRandomProducts
 };
