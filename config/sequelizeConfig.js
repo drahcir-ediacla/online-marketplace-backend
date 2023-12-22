@@ -3,7 +3,7 @@ const defineUserModel = require('../models/userModel')
 const defineProductModel = require('../models/productModel')
 const defineCategoryModel = require('../models/categoryModel')
 const defineProductImagesModel = require('../models/productImagesModel')
-const definewishListModel = require('../models/wishListModel')
+const defineWishListModel = require('../models/wishListModel')
 const defineProductViewModel = require('../models/productVidewModel')
 require('dotenv').config();
 
@@ -26,7 +26,7 @@ const userModel = defineUserModel(sequelize);
 const productModel = defineProductModel(sequelize);
 const categoryModel = defineCategoryModel(sequelize);
 const productImagesModel = defineProductImagesModel(sequelize);
-const wishListModel = definewishListModel(sequelize);
+const wishListModel = defineWishListModel(sequelize);
 const productViewModel = defineProductViewModel(sequelize);
 
 // Define association after defining all models
