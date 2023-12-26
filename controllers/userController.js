@@ -47,10 +47,10 @@ const getUsersById = async (req, res) => {
               as: 'wishlist',
             }
           ],
-        },
+        }
       ],
     });
-
+    
     if (!userData) {
       return res.status(404).json({ error: 'User not found.' });
     }

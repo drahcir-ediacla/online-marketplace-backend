@@ -120,3 +120,116 @@
 20231221	13:18:10	7337badd-3bab-41eb-9d1d-16f3cbbf1a29	Error: WHERE parameter "id" has invalid "undefined" value
 20231221	13:20:01	304c7a4e-e388-43e2-ad82-ad9e8ae264d9	Error: WHERE parameter "id" has invalid "undefined" value
 20231221	13:23:54	56d5e657-8d3a-420d-83a7-0d51d09b9cd4	Error: WHERE parameter "id" has invalid "undefined" value
+20231223	21:56:36	37f6e171-264c-4374-85da-fe2c516be590	ReferenceError: accessTokenExpiration is not defined
+20231224	11:00:11	1bea7aa0-f499-489e-9ca4-71bdf046b142	ReferenceError: accessTokenExpiration is not defined
+20231224	12:21:21	5622f21b-065b-4709-9188-72a27a75e1ae	TypeError: Cannot read properties of null (reading 'id')
+20231224	12:21:21	6fdf93cd-dde7-4a14-a2a8-ac5fa553a301	TypeError: Cannot set properties of undefined (setting 'id')
+20231225	09:42:35	a2c93e3d-d9ff-4b2a-a3aa-b725caa20a18	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	84b91cd3-c0c1-4efb-9d68-303e67595be3	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	6b6f7972-45a2-4ff3-a73e-add3576295e7	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	d4323018-5da6-4961-8ddd-2468b685393d	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	d26f8939-a9b1-484d-8be8-f5c9f5decf99	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	68324403-37d1-4123-8b07-3cfbb645e52c	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	ade2d07e-ef69-47d9-8c13-6c96686ecb29	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	54a9c8b2-3c44-4d59-a7ab-d190fd38347a	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	0a10b35b-6e48-4042-b03e-1f51d714a095	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	85308ff0-cebe-4c7b-a1d0-60c4f7b5c1a8	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	8430a0ca-8107-4ca6-9078-181475733455	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	c62ec81e-c671-49ef-8d27-a90330a3e167	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	92b6ea67-1b57-4aea-be70-7afceb16ed53	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	d06e27bf-9945-46a3-a944-a521849e0abd	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	2b763f17-7759-49e2-b18f-ea10bea57dde	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	36379f75-2637-41b2-a05d-91613c7c967a	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	9e3b3b44-ec78-40ce-8c23-49f60993b241	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	b39ae9a2-3977-4245-a21f-cd34486f6f14	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	3d8f5c03-31c4-4c09-b927-455af693d7de	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	d8f6f1d4-0a65-4958-87d8-020bbdc6ceb2	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	7a78ca0b-027d-4169-a93a-1a098e931d8a	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	11797c8c-e3cf-4cf7-a57b-2dd60bcf7a08	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	315c9e40-b7d9-4fc9-89d1-577bc441fea1	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:35	abdcf0f5-e186-4024-8dfc-b63b70d0cf84	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:46	ddff23c5-293f-4a8f-8f06-7829f8962ddb	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:46	b662efea-f325-4112-9e16-6f15c36135a8	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:46	e09941e9-1ec2-41c5-b28f-19a2568804c8	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:46	4014601d-c0b6-43c3-a207-e55969162ce5	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:46	5f960723-3f2c-4663-925a-c21885b46a2c	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	d4956d89-2dbe-4ce6-8322-a99e0f23346f	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	589e2d78-703a-450f-bf57-b13d88908446	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	ad7108d5-95b1-4755-8ec2-41b454b9b264	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	78efad16-3880-4097-9d11-2da6c0f2c08d	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	ceaf8402-d2d6-4937-8c45-4a6bc499800e	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	7cfdab28-6834-4d79-893b-5e0ca48fe1b3	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	0cdc750b-cfc5-48fb-9ca8-6d5a68ba7126	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	b028c595-df2b-46a6-a931-efcf40ff1d99	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	3048bcc5-e39c-4650-8fdc-cfc53891dbb4	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	eee96381-416a-40f8-9e42-a995fed75731	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	2c7fd7e6-0d58-47c1-841b-b41790db1e18	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	bdf73bd8-295f-44eb-a045-3edd30dc3025	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	1391307f-e2aa-4f37-93c7-324af3d9fdc6	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	cbf64aac-015f-48c2-a520-089de0943697	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	979ea4cd-212f-410f-9adb-c6366358ccd0	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	db98599a-6fbd-4f6a-9f78-3da93749746c	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	ed9b450e-1abf-4f02-9eda-bf7a4011709b	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	8bdaf954-57d4-46fa-bf15-62e3f3440198	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	a835eda9-b291-4cf1-bcf3-59847d411f2e	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	b7d84837-5bcf-4e85-ad36-d386c3e50638	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:47	eebade42-eeb4-4562-9277-ee6eef07e9e0	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	3b4d30ca-c46d-4943-a430-ff297872db77	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	e592cadf-39a4-4d9f-b92a-b274c32d7b66	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	55e74e2c-19ce-4bc9-9945-d393cb985605	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	6108cc7e-6ae9-4921-8d17-c21161640b45	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	fb9355ed-f91f-4dbb-9083-34ba93715d6e	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	eaaab241-45ce-4dbd-bf40-fd38817a567d	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	6963d62e-2847-47e0-8408-ef55b421e3b1	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	c8cc8614-bc6d-4e61-9cef-7dc788f22ccc	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	8478e455-bf05-4f18-a778-59e5e28a68c6	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	71635b9a-7e64-4317-8aa3-76a8a816f155	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	25ddf4f3-56cb-4e15-9d64-3f162473baaf	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	4e3769ed-5603-485e-b28e-9df5e30a12d7	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	fbc9a715-6dd3-43c5-8158-482cbd027443	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	022be1d7-88d7-488c-9aa7-5ad5088149c3	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	8b6517a0-964d-4f71-afcf-661928d0499d	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	c1a3571a-55c5-4b5f-a624-6689a43adf10	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	170d50bc-8b3b-4250-a515-f76252df61c2	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	3460e508-6895-4219-b4ef-412e473febbf	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	3de2c036-3729-440a-bd08-c3f584f99a80	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	a00afe04-2402-48f1-ba32-60f00abb8b5b	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	5f336a1d-a82e-46e5-b500-b4a83728359b	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	0b95bbb5-0c0f-4b7d-a103-f3c6cc663f62	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	eb9a9316-3d4d-46a8-b959-01e7a60923f2	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	8c6734ea-d0a0-48bb-83b5-c43ca9a32f55	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	5436a701-d103-46fb-95a7-62fc6964cf22	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:42:51	74f3af73-225a-472c-854f-d2864dd4daa6	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	42a081e2-0f08-4c73-910b-bfb66e59ffe6	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	90ab691d-bef9-42f9-91a4-f3101af01362	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	1f9e82b0-4d91-409f-985e-230d82c44b2c	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	d292155a-de40-4857-8bcc-097d0fbe2cda	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	9e5142e6-046d-4e1a-a51f-8ba2325b5d32	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	3b08a207-ad51-4d0a-b9c3-aa86cea31586	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	e30d3515-a4fd-40b8-a386-b786d279dafe	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	9881516e-e63e-4a58-b900-f0d106d4a100	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	4dbccc57-a968-4de5-ba8b-c149e157d3e2	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	0e606f85-719c-45f1-aa99-f81fe890baa4	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	ddf683f0-53aa-450a-949a-d94c35d2df04	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	73d56298-02aa-4dbb-8ee3-683021da4eae	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	6901d650-e1d3-438b-b787-5bdc006d7f0e	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	7c5ccdea-88fa-46fe-885e-a23d48b649e2	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	fbf7ea7b-3b03-4a62-9325-503d963a141d	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	8538dd32-9f2d-450c-b397-b314ac2410a6	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	545f7c61-b5b1-480c-9cbc-365f456ddc0f	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	00381766-fff9-4463-9940-0e662a46a680	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	f220b72e-ebd0-47f8-8e45-cb473fb77fea	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	f28629ab-7960-4be2-8612-b09d046a670c	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	c6901dba-4094-4d2f-a469-dee6f698eed1	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	fa49e418-9277-4fa5-b51e-b7b7730a171a	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	a4ef3f14-c142-4d2b-9bd9-4a53a6534b3c	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	78be572e-fbda-4483-8529-313151f89502	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231225	09:43:35	615b9b8e-4ad5-47fc-a91a-ba91bb6dcdf0	Error: ER_NO_SUCH_TABLE: Table 'yogeek-data.sessions' doesn't exist
+20231226	15:43:56	dc5ca11d-0311-41a5-a3ee-38ad16bc76b0	TypeError: Cannot set properties of undefined (setting 'id')
+20231226	15:44:23	983a189f-9138-4e89-a74e-46a611a6fb41	TypeError: Cannot set properties of undefined (setting 'id')
+20231226	15:44:34	55465f7f-ce20-4708-860e-e87a5314ac67	TypeError: Cannot set properties of undefined (setting 'id')
+20231226	15:45:20	27d4ac98-a46e-495a-9487-61370fae8804	TypeError: Cannot set properties of undefined (setting 'id')
+20231226	17:00:48	5055ea15-d104-4f56-b062-856c973cc506	TypeError: Cannot read properties of undefined (reading 'token')
+20231226	17:01:08	002f7057-3834-4031-974c-21ff0198e7b3	TypeError: Cannot destructure property 'refreshToken' of 'req.user.refreshtoken' as it is undefined.
+20231226	17:07:20	bf8484b9-a06e-4654-8c0f-a5a5a5f3e495	TypeError: Cannot read properties of undefined (reading 'refreshToken')
+20231226	17:09:54	d5269854-9448-4890-aed6-27983b76f15a	ReferenceError: response is not defined

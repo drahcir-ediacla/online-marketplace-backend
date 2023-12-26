@@ -5,6 +5,7 @@ const defineCategoryModel = require('../models/categoryModel')
 const defineProductImagesModel = require('../models/productImagesModel')
 const defineWishListModel = require('../models/wishListModel')
 const defineProductViewModel = require('../models/productVidewModel')
+const defineRefreshTokenModel = require('../models/refreshTokenModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -28,6 +29,7 @@ const categoryModel = defineCategoryModel(sequelize);
 const productImagesModel = defineProductImagesModel(sequelize);
 const wishListModel = defineWishListModel(sequelize);
 const productViewModel = defineProductViewModel(sequelize);
+const refreshTokenModel = defineRefreshTokenModel(sequelize);
 
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
@@ -39,6 +41,7 @@ productModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist' });
 
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
+userModel.hasMany(refreshTokenModel, { foreignKey: 'user_id', as: 'refreshToken' });
 
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products' });
 
@@ -73,7 +76,6 @@ const initializeDatabase = async () => {
     categoryModel,
     productImagesModel,
     wishListModel,
-    productViewModel
-    // Add other models similarly, if any
-    // otherModel,
+    productViewModel,
+    refreshTokenModel
   };

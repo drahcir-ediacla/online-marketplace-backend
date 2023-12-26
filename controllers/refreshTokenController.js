@@ -4,12 +4,13 @@ require('dotenv').config();
 
 const handleRefreshToken = (req, res) => {
     const cookies = req.cookies;
-    if (!cookies?.jwt) {
+    if (!cookies?.refreshJWT) {
         return res.sendStatus(401); // Unauthorized
     }
 
-    const refreshToken = cookies.jwt;
+    const refreshToken = cookies.refreshJWT;
 
+    
     // Query the database to find the user associated with the refreshToken
     const getUserQuery = 'SELECT * FROM refresh_tokens WHERE token = ?';
     db.query(getUserQuery, [refreshToken], (getUserErr, user) => {
@@ -35,10 +36,16 @@ const handleRefreshToken = (req, res) => {
                 const accessToken = jwt.sign(
                     { user_id: decoded.user_id },
                     process.env.ACCESS_TOKEN_SECRET,
-                    { expiresIn: '5m' } // Adjust the expiration time as needed
+                    { expiresIn: '10s' } // Adjust the expiration time as needed
                 );
 
-                // Send the new access token in the response
+                // Set the new access token in the cookie
+                res.cookie('jwt', accessToken, {
+                    httpOnly: true,
+                    // Add other cookie attributes as needed (e.g., domain, path, secure, etc.)
+                });
+
+                // Send the new access token in the response body if needed
                 res.json({ accessToken });
             }
         );

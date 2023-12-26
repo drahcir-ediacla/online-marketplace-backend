@@ -4,7 +4,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils')
-const {userModel} = require('../config/sequelizeConfig')
+const {userModel, refreshTokenModel} = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
@@ -52,68 +52,46 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
     },
-    async (accessToken, refreshToken, profile, done) => {
-      console.log('accessToken:', accessToken);
-      console.log('refreshToken:', refreshToken);
-      console.log('profile:', profile);
-
+    async (req, accessToken, refreshToken, profile, done) => { // Added `req` before `profile`
       try {
-        // Access the user's email address if available in the profile
         const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
         const displayName = profile.displayName;
         const photos = profile.photos[0].value;
 
-        if (email) {
-          let user = await userModel.findOne({ where: { email } });
-
-          if (user) {
-            // Create and return access and refresh tokens here
-            user.accessToken = generateAccessToken(user.id);
-            user.refreshToken = generateRefreshToken(user.id);
-            console.log('Access Token:', user.accessToken);
-            console.log('Refresh Token:', user.refreshToken);
-
-            // Store the refresh token in the database
-            const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
-            const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-
-            db.query(storeRefreshTokenQuery, [user.id, user.refreshToken, expirationDate], (storeErr) => {
-              if (storeErr) {
-                console.error('Error storing refresh token:', storeErr);
-                return done(storeErr, null);
-              }
-
-              return done(null, user);
-            });
-          } else {
-            const newUser = new userModel({
-              email: email,
-              display_name: displayName,
-              profile_pic: photos,
-            });
-
-            await newUser.save();
-
-            // Create and return access and refresh tokens here
-            newUser.accessToken = generateAccessToken(newUser.id);
-            newUser.refreshToken = generateRefreshToken(newUser.id);
-
-            // Store the refresh token in the database
-            const storeRefreshTokenQuery = 'INSERT INTO refresh_tokens (user_id, token, expiration_date) VALUES (?, ?, ?)';
-            const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-
-            db.query(storeRefreshTokenQuery, [newUser.id, newUser.refreshToken, expirationDate], (storeErr) => {
-              if (storeErr) {
-                console.error('Error storing refresh token:', storeErr);
-                return done(storeErr, null);
-              }
-
-              return done(null, newUser);
-            });
-          }
-        } else {
+        if (!email) {
           return done(new Error('Email not found in profile'), null);
         }
+
+        let user = await userModel.findOne({ where: { email } });
+
+        if (!user) {
+          // Create a new user if not found
+          user = await userModel.create({
+            email,
+            display_name: displayName,
+            profile_pic: photos,
+          });
+        }
+
+        // Generate access and refresh tokens
+        const accessTokenValue = generateAccessToken(user.id);
+        const refreshTokenValue = generateRefreshToken(user.id);
+
+        // Store the refresh token using Sequelize
+        const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+        await refreshTokenModel.create({
+          user_id: user.id,
+          token: refreshTokenValue,
+          expiration_date: expirationDate
+        });
+
+        // Return the user
+        user.accessToken = accessTokenValue;
+        user.refreshToken = refreshTokenValue;
+        
+        return done(null, user);
+
       } catch (error) {
         console.error('Error in GoogleStrategy:', error);
         return done(error, null);
@@ -121,6 +99,7 @@ passport.use(
     }
   )
 );
+
 
 
   
