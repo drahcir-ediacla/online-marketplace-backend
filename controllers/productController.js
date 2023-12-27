@@ -63,6 +63,11 @@ const getAllProducts = async (req, res) => {
       order: [['createdAt', 'DESC']],
       include: [
         {
+          model: categoryModel,
+          attributes: ['label'],
+          as: 'category',
+        },
+        {
           model: userModel,
           attributes: ['city', 'region'],
           as: 'seller',

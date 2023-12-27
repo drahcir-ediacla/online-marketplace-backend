@@ -4,42 +4,86 @@ const { sequelize, userModel, productModel, categoryModel, productImagesModel, w
 
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
 const searchProductsGlobally = async (req, res) => {
-    try {
-      const { name } = req.query;
-  
-      // Sequelize query to search for products based on name and category label
-      const productDetails = await productModel.findAll({
-        where: {
-          product_name: {
-            [Sequelize.Op.like]: `%${name}%`,
-          },
-        },
-        include: [
+  try {
+    const { keyword } = req.query;
+
+    const products = await productModel.findAll({
+      where: {
+        [Sequelize.Op.or]: [
           {
-            model: userModel,
-            attributes: ['city', 'region'],
-            as: 'seller',
-            where: { id: Sequelize.col('Product.seller_id') },
+            product_name: {
+              [Sequelize.Op.like]: `%${keyword}%`,
+            },
           },
           {
-            model: productImagesModel,
-            attributes: ['id', 'image_url'],
-            as: 'images',
+            description: {
+              [Sequelize.Op.like]: `%${keyword}%`,
+            },
           },
           {
-            model: wishListModel,
-            attributes: ['product_id', 'user_id'],
-            as: 'wishlist',
+            '$category.label$': {  // Include category in the search
+              [Sequelize.Op.like]: `%${keyword}%`,
+            },
           },
         ],
-      });
-  
-      res.status(200).json(productDetails);
-    } catch (error) {
-      console.error('Error searching products:', error);
-      res.status(500).json({ error: 'An error occurred while searching products.' });
-    }
-  };
+      },
+      include: [
+        {
+          model: categoryModel,
+          attributes: ['label'],
+          as: 'category',
+        },
+        {
+          model: userModel,
+          attributes: ['city', 'region'],
+          as: 'seller',
+          where: { id: Sequelize.col('Product.seller_id') },
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
+      ],
+    });
 
+    // Format the products as per the desired JSON structure
+    const formattedProducts = products.map(product => ({
+      id: product.id,
+      product_name: product.product_name,
+      description: product.description,
+      price: product.price,
+      category_id: product.category_id,
+      seller_id: product.seller_id,
+      product_condition: product.product_condition,
+      youtube_link: product.youtube_link,
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      category: product.category ? product.category.label : null,
+      seller: {
+        city: product.seller.city,
+        region: product.seller.region,
+      },
+      images: product.images.map(image => ({
+        id: image.id,
+        image_url: image.image_url,
+      })),
+      wishlist: product.wishlist.map(wish => ({
+        product_id: wish.product_id,
+        user_id: wish.user_id,
+      })),
+    }));
+
+    res.status(200).json(formattedProducts);
+  } catch (error) {
+    console.error('Error searching products:', error);
+    res.status(500).json({ error: 'An error occurred while searching products.' });
+  }
+};
 
   module.exports = { searchProductsGlobally}  
