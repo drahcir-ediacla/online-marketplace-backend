@@ -5,7 +5,18 @@ const { sequelize, userModel, productModel, categoryModel, productImagesModel, w
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
 const searchProductsGlobally = async (req, res) => {
   try {
-    const { keyword } = req.query;
+    const { keyword, location } = req.query;
+
+    // Replace 'All of the Philippines' with 'Philippines'
+    const cleanedLocation = location.replace('All of the Philippines', 'Philippines');
+
+    // Split the cleaned location into an array
+    const locationsArray = cleanedLocation.split(' | ').map(loc => loc.trim());
+
+    console.log("Location:", locationsArray);
+
+    // ... rest of your code remains the same ...
+
 
     const products = await productModel.findAll({
       where: {
@@ -35,9 +46,15 @@ const searchProductsGlobally = async (req, res) => {
         },
         {
           model: userModel,
-          attributes: ['city', 'region'],
+          attributes: ['city', 'region', 'country'],
           as: 'seller',
-          where: { id: Sequelize.col('Product.seller_id') },
+          where: {
+            [Sequelize.Op.or]: [
+              { city: { [Sequelize.Op.in]: locationsArray } },  // Use Op.in for multiple city matching
+              { region: locationsArray },
+              { country: locationsArray },
+            ],
+          },
         },
         {
           model: productImagesModel,
@@ -68,6 +85,7 @@ const searchProductsGlobally = async (req, res) => {
       seller: {
         city: product.seller.city,
         region: product.seller.region,
+        country: product.seller.country,
       },
       images: product.images.map(image => ({
         id: image.id,
@@ -86,4 +104,7 @@ const searchProductsGlobally = async (req, res) => {
   }
 };
 
-  module.exports = { searchProductsGlobally}  
+
+
+
+module.exports = { searchProductsGlobally }  
