@@ -138,9 +138,14 @@ const getRandomProducts = async (req, res) => {
 const getProductDetails = async (req, res) => {
   try {
     const productID = req.params.id;
+    const productName = req.params.product_name;
 
     // Use Sequelize to find the product by ID
-    const productDetails = await productModel.findByPk(productID, {
+    const productDetails = await productModel.findOne({
+      where: {
+        id: productID,
+        product_name: productName // Assuming there's a 'name' field in your productModel
+      },
       include: [
         {
           model: userModel,

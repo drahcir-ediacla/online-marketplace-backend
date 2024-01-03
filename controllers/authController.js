@@ -69,8 +69,8 @@ const loginUser = async (req, res) => {
         });
 
         // Set cookie with access token
-        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
 
         // Send success response
         res.status(200).json({
