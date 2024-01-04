@@ -144,7 +144,7 @@ const getProductDetails = async (req, res) => {
     const productDetails = await productModel.findOne({
       where: {
         id: productID,
-        product_name: productName // Assuming there's a 'name' field in your productModel
+        product_name: productName 
       },
       include: [
         {

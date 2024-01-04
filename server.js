@@ -17,6 +17,7 @@ const otpRoutes = require('./routes/otpRoutes');
 const passportRoutes = require('./routes/passportRoutes');
 const refreshRoutes = require('./routes/refreshRoutes');
 const searchRoutes = require('./routes/searchRoutes')
+const messageRoutes = require('./routes/messagesRoutes')
 const sessionStore = require('./config/sessionsConfig');
 
 const port = process.env.PORT || 8081;
@@ -38,7 +39,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite:'none' , secure: true, maxAge: 86400000 },
+    cookie: { httpOnly: true, sameSite:'none', secure: true, maxAge: 86400000 },
     proxy: true,
   })
 );
@@ -54,6 +55,7 @@ app.use('/', refreshRoutes);
 app.use('/', productRoutes);
 app.use('/', userRoutes);
 app.use('/', searchRoutes);
+app.use('/', messageRoutes);
 
 // Middleware to set Cache-Control header
 app.use((req, res, next) => {
@@ -61,7 +63,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(verifyJWT)
+// app.use(verifyJWT)
 // Authenticated routes
 app.use('/verify', userRoutes);
 

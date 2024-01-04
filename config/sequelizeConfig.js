@@ -6,6 +6,7 @@ const defineProductImagesModel = require('../models/productImagesModel')
 const defineWishListModel = require('../models/wishListModel')
 const defineProductViewModel = require('../models/productVidewModel')
 const defineRefreshTokenModel = require('../models/refreshTokenModel')
+const defineMessagesModel = require('../models/messagesModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -30,6 +31,7 @@ const productImagesModel = defineProductImagesModel(sequelize);
 const wishListModel = defineWishListModel(sequelize);
 const productViewModel = defineProductViewModel(sequelize);
 const refreshTokenModel = defineRefreshTokenModel(sequelize);
+const messagesModel = defineMessagesModel(sequelize);
 
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
@@ -77,5 +79,6 @@ const initializeDatabase = async () => {
     productImagesModel,
     wishListModel,
     productViewModel,
-    refreshTokenModel
+    refreshTokenModel,
+    messagesModel
   };
