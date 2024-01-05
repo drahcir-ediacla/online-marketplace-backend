@@ -3,7 +3,10 @@ const cors = require('cors');
 const corsOptions = require('./config/corsOptions');
 require('./controllers/passportController');
 const passport = require('passport');
+const configureSocket = require('./config/socketConfig')
 const app = express();
+const http = require('http');
+const server = http.createServer(app); // Create HTTP server
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const { logger } = require('./middleware/logEvents');
@@ -39,13 +42,22 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite:'none', secure: true, maxAge: 86400000 },
+    cookie: { httpOnly: true, sameSite: 'none', secure: true, maxAge: 86400000 },
     proxy: true,
   })
 );
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Initialize Socket.io
+const io = configureSocket(server); // Pass the server instance to configureSocket function
+
+// Middleware to use Socket.io
+app.use((req, res, next) => {
+  req.io = io; // Attach io instance to the request object
+  next();
+});
 
 //Routes
 app.use('/', otpRoutes);
@@ -63,7 +75,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(verifyJWT)
+app.use(verifyJWT)
 // Authenticated routes
 app.use('/verify', userRoutes);
 
@@ -74,4 +86,4 @@ app.get('/', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+server.listen(port, () => console.log(`Listening on port ${port}`));

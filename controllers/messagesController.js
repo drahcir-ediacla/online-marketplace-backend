@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const { sequelize, messagesModel } = require('../config/sequelizeConfig')
 
 
@@ -58,7 +58,7 @@ const getMessages = async (req, res) => {
     try {
         const messages = await messagesModel.findAll({
             where: {
-                [sequelize.Op.or]: [
+                [Op.or]: [
                     { sender, receiver },
                     { sender: receiver, receiver: sender }
                 ]
