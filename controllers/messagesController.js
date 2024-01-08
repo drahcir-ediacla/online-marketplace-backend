@@ -54,23 +54,31 @@ const createMessages = async (req, res) => {
 
 
 const getMessages = async (req, res) => {
-    const { sender, receiver } = req.params;
+    const sender = req.user.id;
+    const receiver = req.query.receiverId; // Assuming receiverId is passed as a query parameter
+  
+  
     try {
-        const messages = await messagesModel.findAll({
-            where: {
-                [Op.or]: [
-                    { sender, receiver },
-                    { sender: receiver, receiver: sender }
-                ]
-            },
-            order: [['createdAt', 'ASC']]
-        });
-        res.send(messages);
-
+      const messages = await messagesModel.findAll({
+        where: {
+          [Op.or]: [
+            { sender, receiver },
+            { sender: receiver, receiver: sender }
+          ]
+        },
+        order: [['createdAt', 'ASC']]
+      });
+  
+      // Log the fetched messages for debugging
+      console.log('Fetched Messages:', messages);
+  
+      res.send(messages);
     } catch (error) {
-        res.status(500).send(error.message);
+      console.error('Error fetching messages:', error);
+      res.status(500).send(error.message);
     }
-}
+  };
+  
 
 
 module.exports = {
