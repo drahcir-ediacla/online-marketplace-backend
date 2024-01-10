@@ -1,9 +1,10 @@
 const socketIo = require('socket.io');
+require('dotenv').config()
 
 const configureSocket = (server) => {
   const io = socketIo(server, {
     cors: {
-      origin: "http://localhost:3000", // Update with your React app URL
+      origin: process.env.CLIENT_URL, // Update with your React app URL
       methods: ["GET", "POST"]
     }
   });

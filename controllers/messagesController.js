@@ -42,10 +42,8 @@ const createChatMessages = async (req, res) => {
   try {
     const { sender_id, receiver_id, content } = req.body;
 
-    // Get or create chat ID for sender and receiver
+    // Store the message in the database regardless of the WebSocket condition
     const chatId = await getOrCreateChatId(sender_id, receiver_id);
-
-    // Create new message with associated chat ID
     const message = await messagesModel.create({
       chat_id: chatId,
       sender_id,
@@ -55,9 +53,11 @@ const createChatMessages = async (req, res) => {
 
     res.status(201).json(message);
   } catch (error) {
+    console.error('Detailed Error:', error); // Log detailed error
     res.status(500).json({ error: 'Failed to create message.' });
   }
 };
+
 
 
 
