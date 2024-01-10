@@ -1,5 +1,4 @@
-const { Sequelize } = require('sequelize');
-const {DataTypes} = require('sequelize');
+const { Sequelize, DataTypes } = require('sequelize');
 
 const defineMessagesModel = (sequelize) => {
     const messagesModel = sequelize.define('Messages', {
@@ -8,22 +7,26 @@ const defineMessagesModel = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        sender: {
+        chat_id: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        receiver: {
+        sender_id: {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        message: {
+        receiver_id: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        content: {
             type: DataTypes.TEXT,
             allowNull: false,
         },
-        createdAt: {
+        timestamp: {
             type: DataTypes.DATE,
-            defaultValue: Sequelize.NOW
-          },
+            defaultValue: Sequelize.NOW,
+        },
     }, {
         tableName: 'messages',
         timestamps: false,
