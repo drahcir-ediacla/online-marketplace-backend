@@ -134,7 +134,7 @@ const getRandomProducts = async (req, res) => {
 
 
 
-// --------------- GET PRODUCT BY ID --------------- //
+// --------------- GET PRODUCT BY ID and Name --------------- //
 const getProductDetails = async (req, res) => {
   try {
     const productID = req.params.id;
@@ -145,6 +145,48 @@ const getProductDetails = async (req, res) => {
       where: {
         id: productID,
         product_name: productName 
+      },
+      include: [
+        {
+          model: userModel,
+          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+          as: 'seller',
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+        {
+          model: wishListModel,
+          attributes: ['user_id', 'product_id'],
+          as: 'wishlist',
+        }
+      ]
+    })
+
+
+    if (!productDetails) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+
+    res.status(200).json(productDetails);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+};
+
+
+// --------------- GET PRODUCT BY ID --------------- //
+const getProductById = async (req, res) => {
+  try {
+    const productID = req.params.id;
+
+    // Use Sequelize to find the product by ID
+    const productDetails = await productModel.findOne({
+      where: {
+        id: productID
       },
       include: [
         {
@@ -556,6 +598,7 @@ module.exports = {
   addNewProduct,
   getAllProducts,
   getProductDetails,
+  getProductById,
   addWishList,
   removeWishList,
   getAllWishlist,

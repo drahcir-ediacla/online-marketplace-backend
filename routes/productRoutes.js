@@ -8,7 +8,9 @@ const cacheMiddleware = require('../middleware/cacheMiddleware')
 router.post('/api/addnewproduct', ProductController.addNewProduct);
 router.get('/api/getallproducts', ProductController.getAllProducts);
 router.get('/api/getproductdetails/:id/:product_name', ProductController.getProductDetails);
+router.get('/api/getproductbyid/:id', ProductController.getProductById);
 router.get('/api/products/getrandom', ProductController.getRandomProducts);
+
 
 // Category routes
 router.get('/api/getallcategories', cacheMiddleware, ProductController.getAllCategories);

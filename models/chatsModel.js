@@ -22,6 +22,10 @@ const defineChatsModel = (sequelize) => {
                 this.setDataValue('participants', JSON.stringify(value));
             },
         },
+        product_id: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
         created_at: {
             type: DataTypes.DATE,
             defaultValue: Sequelize.NOW,
