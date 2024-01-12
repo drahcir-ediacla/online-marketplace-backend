@@ -2,6 +2,7 @@ const { Sequelize, Op } = require('sequelize');
 const { sequelize, messagesModel, chatsModel } = require('../config/sequelizeConfig')
 
 
+
 // --------------- CHECK IF CHAT EXISTS  --------------- //
 
 // Backend API to check if chat exists
@@ -41,10 +42,9 @@ const getChatId = async (req, res) => {
 };
 
 
-
-// --------------- SEND AND CREATE NEW CHAT MESSAGES  --------------- //
+// --------------- CREATE NEW CHAT MESSAGES  --------------- //
 // Create or retrieve chat ID based on sender and receiver
-const getOrCreateChatId = async (sender_id, receiver_id, product_id) => {
+const createChatId = async (sender_id, receiver_id, product_id) => {
   try {
     // Convert sender and receiver IDs to strings
     const senderId = sender_id.toString();
@@ -54,13 +54,18 @@ const getOrCreateChatId = async (sender_id, receiver_id, product_id) => {
     // Normalize participant ordering
     const sortedParticipants = JSON.stringify([senderId, receiverId].sort());
 
-    // Find chat where participants include both sender and receiver
+    // Find chat where participants include both sender, receiver and product
     const existingChat = await chatsModel.findOne({
       where: {
         participants: sortedParticipants,
         product_id: productId,
       },
     });
+
+    console.log('Sender ID:', senderId);
+    console.log('Receiver ID:', receiverId);
+    console.log('Product ID:', productId);
+    console.log('Sorted Participants:', sortedParticipants);
 
 
     // const existingChat = await chatsModel.findOne({
@@ -69,11 +74,11 @@ const getOrCreateChatId = async (sender_id, receiver_id, product_id) => {
     //     product_id: productId,
     //   },
     // });
-    
 
-     // Log existing chat for debugging
-     console.log('Existing Chat:', existingChat);
-     
+
+    // Log existing chat for debugging
+    console.log('Existing Chat:', existingChat);
+
     if (existingChat) {
       // If chat exists, return the existing chat_id
       return existingChat.chat_id;
@@ -100,7 +105,7 @@ const createChatMessages = async (req, res) => {
     const { sender_id, receiver_id, product_id, content } = req.body;
 
     // Store the message in the database regardless of the WebSocket condition
-    const chatId = await getOrCreateChatId(sender_id, receiver_id, product_id);
+    const chatId = await createChatId(sender_id, receiver_id, product_id);
     const message = await messagesModel.create({
       chat_id: chatId,
       sender_id,
@@ -115,6 +120,80 @@ const createChatMessages = async (req, res) => {
     res.status(500).json({ error: 'Failed to create message.' });
   }
 };
+
+
+
+//-----------------------SEND MESSAGE TO EXISTING CHAT  ----------------------------//
+
+const useChatId = async (sender_id, receiver_id, product_id) => {
+  try {
+    // Convert sender and receiver IDs to strings
+    const senderId = sender_id.toString();
+    const receiverId = receiver_id.toString();
+    const productId = product_id.toString();
+
+    // Normalize participant ordering
+    const sortedParticipants = JSON.stringify([senderId, receiverId].sort());
+
+    // Find chat where participants include both sender, receiver and product
+    const existingChat = await chatsModel.findOne({
+      where: {
+        participants: sortedParticipants,
+        product_id: productId,
+      },
+    });
+
+    console.log('Sender ID:', senderId);
+    console.log('Receiver ID:', receiverId);
+    console.log('Product ID:', productId);
+    console.log('Sorted Participants:', sortedParticipants);
+
+
+    // const existingChat = await chatsModel.findOne({
+    //   where: {
+    //     participants: JSON.stringify([senderId, receiverId]),
+    //     product_id: productId,
+    //   },
+    // });
+
+
+    // Log existing chat for debugging
+    console.log('Existing Chat:', existingChat);
+
+    if (existingChat) {
+      // If chat exists, return the existing chat_id
+      return existingChat.chat_id;
+    } 
+  } catch (error) {
+    console.error('Error retrieving or creating chat:', error);
+    throw new Error('Failed to get or create chat.');
+  }
+};
+
+
+
+
+const sendChatMessages = async (req, res) => {
+  try {
+    const { chat_id, sender_id, receiver_id, product_id, content } = req.body;
+
+    // Store the message in the database regardless of the WebSocket condition
+    // const chatId = await useChatId(sender_id, receiver_id, product_id);
+    const message = await messagesModel.create({
+      chat_id,
+      sender_id,
+      receiver_id,
+      product_id,
+      content,
+    });
+
+    res.status(201).json(message);
+  } catch (error) {
+    console.error('Detailed Error:', error); // Log detailed error
+    res.status(500).json({ error: 'Failed to create message.' });
+  }
+};
+
 
 
 
@@ -140,5 +219,6 @@ module.exports = {
   checkChatId,
   getChatId,
   createChatMessages,
+  sendChatMessages,
   getMessages
 }
