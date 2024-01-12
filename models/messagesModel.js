@@ -20,7 +20,7 @@ const defineMessagesModel = (sequelize) => {
             allowNull: false,
         },
         product_id: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         content: {

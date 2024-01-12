@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, productModel, productImagesModel } = require('../config/sequelizeConfig')
 
 
 
@@ -29,6 +29,54 @@ const checkChatId = async (req, res) => {
 };
 
 
+
+const getAllUserChat = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to get chat messages.' });
+    } else {
+      const userId = req.user.id;
+
+      const existingChat = await chatsModel.findAll({
+        attributes: ['chat_id', 'product_id'],
+        where: {
+          // Assuming participants is stored as a comma-separated string
+          participants: {
+            [Op.like]: `%${userId}%` // Using Sequelize's like operator to find chats where participants contain userId
+          }
+        },
+        include: [
+          {
+            model: productModel,
+            attributes: ['id', 'product_name'],
+            as: 'product',
+            include: [
+              {
+                model: productImagesModel,
+                attributes: ['id', 'image_url'],
+                as: 'images',
+              },
+            ],
+          },
+          {
+            model: messagesModel,
+            attributes: ['sender_id', 'receiver_id', 'content'],
+            as: 'messages'
+          }
+        ]
+      });
+
+res.status(200).json(existingChat);
+    }
+  } catch (error) {
+  console.error('Error fetching chat messages:', error);
+  res.status(500).json({ error: 'An error occurred while fetching chats.' });
+}
+};
+
+
+
+
 // --------------- GET CHAT BY ID  --------------- //
 const getChatId = async (req, res) => {
 
@@ -49,7 +97,7 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
     // Convert sender and receiver IDs to strings
     const senderId = sender_id.toString();
     const receiverId = receiver_id.toString();
-    const productId = product_id.toString();
+    const productId = product_id;
 
     // Normalize participant ordering
     const sortedParticipants = JSON.stringify([senderId, receiverId].sort());
@@ -125,53 +173,6 @@ const createChatMessages = async (req, res) => {
 
 //-----------------------SEND MESSAGE TO EXISTING CHAT  ----------------------------//
 
-const useChatId = async (sender_id, receiver_id, product_id) => {
-  try {
-    // Convert sender and receiver IDs to strings
-    const senderId = sender_id.toString();
-    const receiverId = receiver_id.toString();
-    const productId = product_id.toString();
-
-    // Normalize participant ordering
-    const sortedParticipants = JSON.stringify([senderId, receiverId].sort());
-
-    // Find chat where participants include both sender, receiver and product
-    const existingChat = await chatsModel.findOne({
-      where: {
-        participants: sortedParticipants,
-        product_id: productId,
-      },
-    });
-
-    console.log('Sender ID:', senderId);
-    console.log('Receiver ID:', receiverId);
-    console.log('Product ID:', productId);
-    console.log('Sorted Participants:', sortedParticipants);
-
-
-    // const existingChat = await chatsModel.findOne({
-    //   where: {
-    //     participants: JSON.stringify([senderId, receiverId]),
-    //     product_id: productId,
-    //   },
-    // });
-
-
-    // Log existing chat for debugging
-    console.log('Existing Chat:', existingChat);
-
-    if (existingChat) {
-      // If chat exists, return the existing chat_id
-      return existingChat.chat_id;
-    } 
-  } catch (error) {
-    console.error('Error retrieving or creating chat:', error);
-    throw new Error('Failed to get or create chat.');
-  }
-};
-
-
-
 
 const sendChatMessages = async (req, res) => {
   try {
@@ -210,6 +211,17 @@ const getMessages = async (req, res) => {
 };
 
 
+const getAllChat = async (req, res) => {
+
+  try {
+    const chats = await chatsModel.findAll();
+    res.json(chats);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve messages.' });
+  }
+};
+
+
 
 
 
@@ -218,7 +230,9 @@ const getMessages = async (req, res) => {
 module.exports = {
   checkChatId,
   getChatId,
+  getAllUserChat,
   createChatMessages,
   sendChatMessages,
-  getMessages
+  getMessages,
+  getAllChat
 }

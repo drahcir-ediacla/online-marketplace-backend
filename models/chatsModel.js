@@ -23,14 +23,10 @@ const defineChatsModel = (sequelize) => {
             },
         },
         product_id: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         created_at: {
-            type: DataTypes.DATE,
-            defaultValue: Sequelize.NOW,
-        },
-        last_message_at: {
             type: DataTypes.DATE,
             defaultValue: Sequelize.NOW,
         },
