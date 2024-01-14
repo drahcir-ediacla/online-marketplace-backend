@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, productModel, productImagesModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -38,7 +38,7 @@ const getAllUserChat = async (req, res) => {
       const userId = req.user.id;
 
       const existingChat = await chatsModel.findAll({
-        attributes: ['chat_id', 'product_id'],
+        attributes: ['chat_id', 'participants', 'product_id'],
         where: {
           // Assuming participants is stored as a comma-separated string
           participants: {
@@ -51,6 +51,11 @@ const getAllUserChat = async (req, res) => {
             attributes: ['id', 'product_name'],
             as: 'product',
             include: [
+              {
+                model: userModel,
+                attributes: ['display_name'],
+                as: 'seller',
+              },
               {
                 model: productImagesModel,
                 attributes: ['id', 'image_url'],
