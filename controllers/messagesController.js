@@ -1,5 +1,5 @@
-const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
+const { Op } = require('sequelize');
+const { sequelize, messagesModel, chatsModel, participantModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -30,54 +30,99 @@ const checkChatId = async (req, res) => {
 
 
 
+
+
+
 const getAllUserChat = async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: 'Authentication required to get chat messages.' });
     } else {
-      const userId = req.user.id;
+      const authenticatedUserId = req.user.id;
 
-      const existingChat = await chatsModel.findAll({
-        attributes: ['chat_id', 'participants', 'product_id'],
+      // Fetch existing chats for the authenticated user
+      const existingChats = await participantModel.findAll({
+        attributes: ['chat_id', 'user_id'],
         where: {
-          // Assuming participants is stored as a comma-separated string
-          participants: {
-            [Op.like]: `%${userId}%` // Using Sequelize's like operator to find chats where participants contain userId
-          }
+          user_id: authenticatedUserId
         },
         include: [
           {
-            model: productModel,
-            attributes: ['id', 'product_name'],
-            as: 'product',
+            model: chatsModel,
+            attributes: ['chat_id', 'product_id'],
+            as: 'chat',
             include: [
               {
-                model: userModel,
-                attributes: ['display_name'],
-                as: 'seller',
+                model: productModel,
+                attributes: ['id', 'product_name'],
+                as: 'product',
+                include: [
+                  {
+                    model: userModel,
+                    attributes: ['id', 'display_name'],
+                    as: 'seller',
+                  },
+                  {
+                    model: productImagesModel,
+                    attributes: ['id', 'image_url'],
+                    as: 'images',
+                  },
+                ],
               },
               {
-                model: productImagesModel,
-                attributes: ['id', 'image_url'],
-                as: 'images',
+                model: messagesModel,
+                attributes: ['sender_id', 'receiver_id', 'content'],
+                as: 'messages',
               },
             ],
           },
           {
-            model: messagesModel,
-            attributes: ['sender_id', 'receiver_id', 'content'],
-            as: 'messages'
-          }
-        ]
+            model: userModel,
+            attributes: ['id', 'display_name', 'profile_pic'],
+            as: 'participantsData',
+          },
+        ],
       });
 
-res.status(200).json(existingChat);
+      if (existingChats.length === 0) {
+        return res.status(200).json({ message: 'No chats found.' });
+      }
+
+      // Fetch chats for other participants with the same chat_id
+      const otherParticipantsChats = await participantModel.findAll({
+        attributes: ['chat_id', 'user_id'],
+        where: {
+          chat_id: {
+            [Op.in]: existingChats.map(chat => chat.chat_id)
+          },
+          user_id: {
+            [Op.ne]: authenticatedUserId
+          }
+        },
+        include: [
+          {
+            model: userModel,
+            attributes: ['id', 'display_name', 'profile_pic'],
+            as: 'participantsData',
+            where: {
+              id: {
+                [Op.ne]: authenticatedUserId
+              },
+            },
+          },
+        ],
+      });
+
+      res.status(200).json({ existingChats, otherParticipantsChats });
     }
   } catch (error) {
-  console.error('Error fetching chat messages:', error);
-  res.status(500).json({ error: 'An error occurred while fetching chats.' });
-}
+    console.error('Error fetching chat messages:', error);
+    res.status(500).json({ error: 'An error occurred while fetching chats.' });
+  }
 };
+
+
+
 
 
 
@@ -99,34 +144,19 @@ const getChatId = async (req, res) => {
 // Create or retrieve chat ID based on sender and receiver
 const createChatId = async (sender_id, receiver_id, product_id) => {
   try {
-    // Convert sender and receiver IDs to strings
-    const senderId = sender_id.toString();
-    const receiverId = receiver_id.toString();
+  
     const productId = product_id;
-
-    // Normalize participant ordering
-    const sortedParticipants = JSON.stringify([senderId, receiverId].sort());
 
     // Find chat where participants include both sender, receiver and product
     const existingChat = await chatsModel.findOne({
       where: {
-        participants: sortedParticipants,
         product_id: productId,
       },
     });
 
-    console.log('Sender ID:', senderId);
-    console.log('Receiver ID:', receiverId);
+ 
     console.log('Product ID:', productId);
-    console.log('Sorted Participants:', sortedParticipants);
 
-
-    // const existingChat = await chatsModel.findOne({
-    //   where: {
-    //     participants: JSON.stringify([senderId, receiverId]),
-    //     product_id: productId,
-    //   },
-    // });
 
 
     // Log existing chat for debugging
@@ -138,7 +168,6 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
     } else {
       // If chat does not exist, create a new chat
       const newChat = await chatsModel.create({
-        participants: [senderId, receiverId], // Store as array in JSON format
         product_id: productId,
       });
       // Log new chat for debugging
@@ -167,12 +196,19 @@ const createChatMessages = async (req, res) => {
       content,
     });
 
+    // Store participants in the chat_participants table
+    await participantModel.bulkCreate([
+      { chat_id: chatId, user_id: sender_id },
+      { chat_id: chatId, user_id: receiver_id },
+    ]);
+
     res.status(201).json(message);
   } catch (error) {
     console.error('Detailed Error:', error); // Log detailed error
     res.status(500).json({ error: 'Failed to create message.' });
   }
 };
+
 
 
 

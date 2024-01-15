@@ -8,6 +8,7 @@ const defineProductViewModel = require('../models/productVidewModel')
 const defineRefreshTokenModel = require('../models/refreshTokenModel')
 const defineMessagesModel = require('../models/messagesModel')
 const defineChatsModel = require('../models/chatsModel')
+const defineParticipantModel = require('../models/participantModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -34,6 +35,7 @@ const productViewModel = defineProductViewModel(sequelize);
 const refreshTokenModel = defineRefreshTokenModel(sequelize);
 const messagesModel = defineMessagesModel(sequelize);
 const chatsModel = defineChatsModel(sequelize);
+const participantModel = defineParticipantModel(sequelize);
 
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
@@ -52,6 +54,9 @@ chatsModel.belongsTo(productModel, {foreignKey: 'product_id', as: 'product'})
 
 chatsModel.hasMany(messagesModel, { foreignKey: 'chat_id', as: 'messages' });
 messagesModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
+
+participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'participantsData' });
+participantModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
 
 
 
@@ -87,5 +92,6 @@ const initializeDatabase = async () => {
     productViewModel,
     refreshTokenModel,
     messagesModel,
-    chatsModel
+    chatsModel,
+    participantModel
   };

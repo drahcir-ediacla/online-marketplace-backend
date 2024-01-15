@@ -12,11 +12,11 @@ const defineMessagesModel = (sequelize) => {
             allowNull: false,
         },
         sender_id: {
-            type: DataTypes.STRING,
+            type: DataTypes.BIGINT,
             allowNull: false,
         },
         receiver_id: {
-            type: DataTypes.STRING,
+            type: DataTypes.BIGINT,
             allowNull: false,
         },
         product_id: {
