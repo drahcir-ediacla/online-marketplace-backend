@@ -42,14 +42,14 @@ const getAllUserChat = async (req, res) => {
 
       // Fetch existing chats for the authenticated user
       const existingChats = await participantModel.findAll({
-        attributes: ['chat_id', 'user_id'],
+        attributes: ['chat_id'],
         where: {
           user_id: authenticatedUserId
         },
         include: [
           {
             model: chatsModel,
-            attributes: ['chat_id', 'product_id'],
+            attributes: ['product_id'],
             as: 'chat',
             include: [
               {
@@ -71,7 +71,7 @@ const getAllUserChat = async (req, res) => {
               },
               {
                 model: messagesModel,
-                attributes: ['sender_id', 'receiver_id', 'content'],
+                attributes: ['sender_id', 'receiver_id', 'content', 'timestamp'],
                 as: 'messages',
               },
             ],
@@ -79,7 +79,7 @@ const getAllUserChat = async (req, res) => {
           {
             model: userModel,
             attributes: ['id', 'display_name', 'profile_pic'],
-            as: 'participantsData',
+            as: 'authenticatedParticipant',
           },
         ],
       });
@@ -90,7 +90,6 @@ const getAllUserChat = async (req, res) => {
 
       // Fetch chats for other participants with the same chat_id
       const otherParticipantsChats = await participantModel.findAll({
-        attributes: ['chat_id', 'user_id'],
         where: {
           chat_id: {
             [Op.in]: existingChats.map(chat => chat.chat_id)
@@ -103,7 +102,7 @@ const getAllUserChat = async (req, res) => {
           {
             model: userModel,
             attributes: ['id', 'display_name', 'profile_pic'],
-            as: 'participantsData',
+            as: 'otherParticipant',
             where: {
               id: {
                 [Op.ne]: authenticatedUserId
@@ -113,13 +112,22 @@ const getAllUserChat = async (req, res) => {
         ],
       });
 
-      res.status(200).json({ existingChats, otherParticipantsChats });
+      const allChats = existingChats.map(chat => {
+        const otherParticipantChat = otherParticipantsChats.find(oc => oc.chat_id === chat.chat_id);
+        return {
+          ...chat.toJSON(),
+          otherParticipant: otherParticipantChat ? otherParticipantChat.otherParticipant : null,
+        };
+      });
+
+      res.status(200).json(allChats);
     }
   } catch (error) {
     console.error('Error fetching chat messages:', error);
     res.status(500).json({ error: 'An error occurred while fetching chats.' });
   }
 };
+
 
 
 
@@ -144,17 +152,23 @@ const getChatId = async (req, res) => {
 // Create or retrieve chat ID based on sender and receiver
 const createChatId = async (sender_id, receiver_id, product_id) => {
   try {
-  
+    // Convert sender and receiver IDs to strings
+    const senderId = sender_id.toString();
+    const receiverId = receiver_id.toString();
     const productId = product_id;
+
+    // Normalize participant ordering
+    const sortedParticipants = JSON.stringify([senderId, receiverId].sort());
 
     // Find chat where participants include both sender, receiver and product
     const existingChat = await chatsModel.findOne({
       where: {
+        participants: sortedParticipants,
         product_id: productId,
       },
     });
 
- 
+
     console.log('Product ID:', productId);
 
 
@@ -168,6 +182,7 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
     } else {
       // If chat does not exist, create a new chat
       const newChat = await chatsModel.create({
+        participants: [senderId, receiverId], // Store as array in JSON format
         product_id: productId,
       });
       // Log new chat for debugging

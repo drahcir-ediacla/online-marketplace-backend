@@ -55,7 +55,8 @@ chatsModel.belongsTo(productModel, {foreignKey: 'product_id', as: 'product'})
 chatsModel.hasMany(messagesModel, { foreignKey: 'chat_id', as: 'messages' });
 messagesModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
 
-participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'participantsData' });
+participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'authenticatedParticipant' });
+participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'otherParticipant' });
 participantModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
 
 
