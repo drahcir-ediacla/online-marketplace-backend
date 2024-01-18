@@ -233,3 +233,5 @@
 20231226	17:01:08	002f7057-3834-4031-974c-21ff0198e7b3	TypeError: Cannot destructure property 'refreshToken' of 'req.user.refreshtoken' as it is undefined.
 20231226	17:07:20	bf8484b9-a06e-4654-8c0f-a5a5a5f3e495	TypeError: Cannot read properties of undefined (reading 'refreshToken')
 20231226	17:09:54	d5269854-9448-4890-aed6-27983b76f15a	ReferenceError: response is not defined
+20240118	16:08:35	bffe00f8-a34e-4d92-85bb-38ecc00af3e0	MulterError: Unexpected field
+20240118	16:11:12	326829b4-ecb3-4312-83e2-0bfe121cead1	MulterError: Unexpected field
