@@ -15,6 +15,7 @@ router.get('/api/products/getrandom', ProductController.getRandomProducts);
 // Category routes
 router.get('/api/getallcategories', cacheMiddleware, ProductController.getAllCategories);
 router.get('/api/getcategory/:id/:label', ProductController.getCategoryById);
+router.get('/api/getcategory/:id', ProductController.getCategoryById);
 
 // Wishlist routes
 router.post('/api/addwishlist/product-:id', ProductController.addWishList);
