@@ -144,7 +144,7 @@ const getProductDetails = async (req, res) => {
     const productDetails = await productModel.findOne({
       where: {
         id: productID,
-        product_name: productName 
+        product_name: productName
       },
       include: [
         {
@@ -525,14 +525,14 @@ const addProductView = async (req, res) => {
 // --------------- FIND MOST VIEWED ITEMS --------------- //
 
 const findMostViewedProducts = async (req, res, next) => {
-  const { limit = 10 } = req.query; 
+  // const { limit = 20 } = req.query; 
 
   try {
     const viewedProducts = await productViewModel.findAll({
       attributes: ['product_id', [sequelize.fn('COUNT', sequelize.col('product_id')), 'view_count']],
       group: ['product_id'],
       order: [[sequelize.literal('view_count'), 'DESC']],
-      limit: parseInt(limit, 10),
+      // limit: parseInt(limit, 20),
     });
 
     const productIds = viewedProducts.map(product => product.product_id);
@@ -540,14 +540,14 @@ const findMostViewedProducts = async (req, res, next) => {
     const products = await productModel.findAll({
       where: { id: productIds },
       attributes: [
-        'id', 
-        'product_name', 
-        'description', 
-        'price', 
-        'category_id', 
-        'seller_id', 
-        'product_condition', 
-        'youtube_link', 
+        'id',
+        'product_name',
+        'description',
+        'price',
+        'category_id',
+        'seller_id',
+        'product_condition',
+        'youtube_link',
         'createdAt'
       ],
       order: [['createdAt', 'DESC']],
@@ -589,6 +589,89 @@ const findMostViewedProducts = async (req, res, next) => {
 
 
 
+// --------------- FIND MOST VIEWED ITEMS BY CATEGORY --------------- //
+const findMostViewedProductsByCategory = async (req, res, next) => {
+  const { categoryId } = req.params; // Assuming categoryId is provided in the request parameters
+
+  try {
+    // Fetch viewedProducts for all categories
+    const viewedProducts = await productViewModel.findAll({
+      attributes: ['product_id', [sequelize.fn('COUNT', sequelize.col('product_id')), 'view_count']],
+      group: ['product_id'],
+      order: [[sequelize.literal('view_count'), 'DESC']],
+    });
+
+    // Extract productIds from viewedProducts
+    const productIds = viewedProducts.map(product => product.product_id);
+
+    // Fetch mostViewedProducts for the specified category
+    const mostViewedProducts = await productModel.findAll({
+      where: { id: productIds, category_id: categoryId }, // Add category_id filter
+      attributes: [
+        'id',
+        'product_name',
+        'description',
+        'price',
+        'category_id',
+        'seller_id',
+        'product_condition',
+        'youtube_link',
+        'createdAt'
+      ],
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: userModel,
+          attributes: ['city', 'region'],
+          as: 'seller',
+        },
+        {
+          model: productImagesModel,
+          attributes: ['id', 'image_url'],
+          as: 'images',
+        },
+        {
+          model: wishListModel,
+          attributes: ['product_id', 'user_id'],
+          as: 'wishlist',
+        },
+      ],
+    });
+
+    // Filter viewedProducts based on the specified category
+    const filteredViewedProducts = viewedProducts.filter(viewedProduct =>
+      mostViewedProducts.some(product => product.id === viewedProduct.product_id)
+    );
+
+    // Combine filteredViewedProducts and mostViewedProducts to get the desired format
+    const combinedProducts = filteredViewedProducts.map((viewedProduct) => {
+      const productDetail = mostViewedProducts.find(
+        (product) => product.id === viewedProduct.product_id
+      );
+
+      // Check if productDetail exists before calling toJSON()
+      const productDetailJSON = productDetail ? productDetail.toJSON() : null;
+
+      return {
+        product_id: viewedProduct.product_id,
+        view_count: viewedProduct.get('view_count'),
+        ...(productDetailJSON || {}), // Use an empty object as a fallback
+      };
+    });
+
+    res.status(200).json(combinedProducts);
+
+  } catch (error) {
+    console.error('Error fetching most viewed products by category:', error);
+    next(error);
+  }
+};
+
+
+
+
+
+
 
 
 
@@ -605,5 +688,6 @@ module.exports = {
   getWishlistByUserId,
   addProductView,
   findMostViewedProducts,
+  findMostViewedProductsByCategory,
   getRandomProducts
 };

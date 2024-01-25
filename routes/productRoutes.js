@@ -26,5 +26,6 @@ router.get('/api/getuserwishlist/:user_id', ProductController.getWishlistByUserI
 // Product view routes
 router.post('/api/product/view/:id', ProductController.addProductView);
 router.get('/api/product/most-viewed', ProductController.findMostViewedProducts);
+router.get('/api/category/most-viewed-product/:categoryId', ProductController.findMostViewedProductsByCategory);
 
 module.exports = router;

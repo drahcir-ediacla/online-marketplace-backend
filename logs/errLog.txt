@@ -235,3 +235,11 @@
 20231226	17:09:54	d5269854-9448-4890-aed6-27983b76f15a	ReferenceError: response is not defined
 20240118	16:08:35	bffe00f8-a34e-4d92-85bb-38ecc00af3e0	MulterError: Unexpected field
 20240118	16:11:12	326829b4-ecb3-4312-83e2-0bfe121cead1	MulterError: Unexpected field
+20240125	13:39:07	13106a84-10e9-4c05-baa4-4e743af8c3a7	Error: WHERE parameter "category_id" has invalid "undefined" value
+20240125	13:39:30	df851906-c28b-477b-8a77-0ef5018cf726	Error: WHERE parameter "category_id" has invalid "undefined" value
+20240125	13:39:49	9d0b382d-84e0-495f-876e-e882b3e5462c	Error: WHERE parameter "category_id" has invalid "undefined" value
+20240125	13:42:55	82743574-f3fe-4e59-b8d7-951553306e3b	TypeError: Cannot read properties of undefined (reading 'toJSON')
+20240125	14:41:37	9c70b4b8-a79f-4d5e-9c44-f55421a392d2	TypeError: viewedProducts.get is not a function
+20240125	14:50:23	9ba2e86b-8a97-44b2-8688-665024850be1	TypeError: undefined is not a function
+20240125	14:50:48	ac2b07d8-cb07-4136-82d8-3153405f00f6	TypeError: productDetail.toJSON is not a function
+20240125	15:03:18	25fe4682-ca1f-4e34-99f0-14cdfe3ea2bb	SequelizeDatabaseError: Unknown column 'Views.category_id' in 'where clause'
