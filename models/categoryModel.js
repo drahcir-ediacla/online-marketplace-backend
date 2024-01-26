@@ -22,6 +22,11 @@ const defineCategoryModel = (sequelize) => {
             unique: false,
             allowNull: true,
         },
+        thumbnail_image: {
+            type: DataTypes.STRING,
+            unique: false,
+            allowNull: true,
+        },
         parent_id: {
             type: DataTypes.INTEGER,
             unique: false,

@@ -227,10 +227,10 @@ function mapCategories(rows) {
   const topLevelCategories = [];
 
   rows.forEach((row) => {
-    const { id, label, value, icon, parent_id } = row;
+    const { id, label, value, icon, thumbnail_image, parent_id } = row;
 
     // Create a category object
-    const category = { id, label, value, icon, subcategories: [] };
+    const category = { id, label, value, icon, thumbnail_image, subcategories: [] };
 
     // Add the category to the map using its ID
     categoriesMap.set(id, category);
@@ -273,11 +273,20 @@ const getCategoryById = async (req, res) => {
     const categoryId = req.params.id;
 
     // Use Sequelize to find the category by ID
-    const category = await categoryModel.findByPk(categoryId);
+    const category = await categoryModel.findByPk(categoryId, {
+      attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image'], // Include only necessary attributes
+    });
 
     if (!category) {
+      console.error('Category not found for ID:', categoryId);
       return res.status(404).json({ error: 'Category not found' });
     }
+
+    const subcategories = await categoryModel.findAll({
+      where: { parent_id: categoryId },
+      attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image'],
+    });
+
 
     // Find products for the category
     const products = await productModel.findAll({
@@ -334,6 +343,7 @@ const getCategoryById = async (req, res) => {
 
     const categoryData = {
       ...category.toJSON(),
+      subcategories, // Ensure subcategories is an array even if it's null
       products,
       subCategoryProducts,
     };
