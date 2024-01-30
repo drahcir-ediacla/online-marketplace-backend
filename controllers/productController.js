@@ -230,7 +230,7 @@ function mapCategories(rows) {
     const { id, label, value, icon, thumbnail_image, parent_id } = row;
 
     // Create a category object
-    const category = { id, label, value, icon, thumbnail_image, subcategories: [] };
+    const category = { id, label, value, icon, thumbnail_image, parent_id, subcategories: [] };
 
     // Add the category to the map using its ID
     categoriesMap.set(id, category);
@@ -274,7 +274,7 @@ const getCategoryById = async (req, res) => {
 
     // Use Sequelize to find the category by ID
     const category = await categoryModel.findByPk(categoryId, {
-      attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image'], // Include only necessary attributes
+      attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'], // Include only necessary attributes
     });
 
     if (!category) {
@@ -282,70 +282,73 @@ const getCategoryById = async (req, res) => {
       return res.status(404).json({ error: 'Category not found' });
     }
 
-    const subcategories = await categoryModel.findAll({
-      where: { parent_id: categoryId },
-      attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image'],
-    });
-
-
-    // Find products for the category
-    const products = await productModel.findAll({
-      where: { category_id: categoryId },
-      order: [['createdAt', 'DESC']],
-      include: [
-        {
-          model: userModel,
-          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
-          as: 'seller',
-          where: { id: Sequelize.col('Product.seller_id') },
-        },
-        {
-          model: productImagesModel,
-          attributes: ['id', 'image_url'],
-          as: 'images',
-        },
-        {
-          model: wishListModel,
-          attributes: ['product_id', 'user_id'],
-          as: 'wishlist',
-        },
-      ],
-    });
 
     // Find sub-category products
-    const subCategoryProducts = await productModel.findAll({
-      include: [
-        {
-          model: categoryModel,
-          as: 'category',
-          where: { parent_id: categoryId },
-        },
-        {
-          model: userModel,
-          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'createdAt', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region'],
-          as: 'seller',
-          where: { id: Sequelize.col('Product.seller_id') },
-        },
-        {
-          model: productImagesModel,
-          attributes: ['id', 'image_url'],
-          as: 'images',
-        },
-        {
-          model: wishListModel,
-          attributes: ['product_id', 'user_id'],
-          as: 'wishlist',
-        },
-      ],
-      order: [['createdAt', 'DESC']],
+    const subcategories = await categoryModel.findAll({
+      where: { parent_id: categoryId },
+      attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
     });
+
+
+    // Function to recursively fetch products for a category and its subcategories
+    const fetchProductsRecursively = async (categoryId) => {
+      const category = await categoryModel.findByPk(categoryId, {
+        attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
+      });
+
+      if (!category) {
+        return [];
+      }
+
+
+      // Find products for the category
+      const products = await productModel.findAll({
+        where: { category_id: categoryId },
+        order: [['createdAt', 'DESC']],
+        include: [
+          {
+            model: userModel,
+            attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+            as: 'seller',
+            where: { id: Sequelize.col('Product.seller_id') },
+          },
+          {
+            model: productImagesModel,
+            attributes: ['id', 'image_url'],
+            as: 'images',
+          },
+          {
+            model: wishListModel,
+            attributes: ['product_id', 'user_id'],
+            as: 'wishlist',
+          },
+        ],
+      });
+
+      // Find sub-category products
+      const childSubcategories = await categoryModel.findAll({
+        where: { parent_id: categoryId },
+        attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
+      });
+
+      const subcategoryProducts = await Promise.all(
+        childSubcategories.map((subCategory) =>
+          fetchProductsRecursively(subCategory.id)
+        )
+      );
+
+      return [...products, ...subcategoryProducts.flat()];
+    };
+
+
+    // Fetch products recursively for the specified category
+    const allProducts = await fetchProductsRecursively(categoryId);
 
 
     const categoryData = {
       ...category.toJSON(),
       subcategories, // Ensure subcategories is an array even if it's null
-      products,
-      subCategoryProducts,
+      allProducts,
     };
 
     res.status(200).json(categoryData);
