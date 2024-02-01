@@ -220,6 +220,7 @@ const getProductById = async (req, res) => {
 };
 
 
+
 // ------------------- GET ALL CATEGORIES ------------------- //
 // Map database rows to the desired structure
 function mapCategories(rows) {
@@ -264,6 +265,7 @@ const getAllCategories = async (req, res) => {
     res.status(500).json({ message: 'Error fetching categories' });
   }
 };
+
 
 
 
