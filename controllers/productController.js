@@ -221,6 +221,44 @@ const getProductById = async (req, res) => {
 
 
 
+const deleteProductById = async (req, res) => {
+  try {
+    const productID = req.params.id;
+
+    // Use Sequelize to find the product by ID
+    const product = await productModel.findByPk(productID);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found or already deleted.' });
+    }
+
+    // Manually delete related records in product_views table (or any other related models)
+    await productViewModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
+    await productImagesModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
+    // Now, delete the product
+    await product.destroy();
+
+    res.status(200).json({ message: 'Product deleted successfully.' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+};
+
+
+
+
+
 // ------------------- GET ALL CATEGORIES ------------------- //
 // Map database rows to the desired structure
 function mapCategories(rows) {
@@ -704,5 +742,6 @@ module.exports = {
   addProductView,
   findMostViewedProducts,
   findMostViewedProductsByCategory,
-  getRandomProducts
+  getRandomProducts,
+  deleteProductById
 };
