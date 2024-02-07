@@ -45,7 +45,7 @@ categoryModel.hasMany(categoryModel, { foreignKey: 'parent_id', as: 'subcategori
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
 productModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images', onDelete: 'CASCADE' });
-productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist' });
+productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist',  onDelete: 'CASCADE' });
 productModel.hasMany(productViewModel, { foreignKey: 'product_id', as: 'views', onDelete: 'CASCADE' });
 
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
