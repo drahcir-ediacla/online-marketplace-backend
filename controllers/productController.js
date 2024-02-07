@@ -53,6 +53,93 @@ const addNewProduct = async (req, res) => {
 
 
 
+// --------------- UPDATE EXISTING PRODUCT --------------- //
+const updateProduct = async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to update a product.' });
+    }
+
+    // The authenticated user's ID is available as req.user.id
+    const sellerId = req.user.id;
+    const productId = req.params.productId; // Assuming the product ID is in the request parameters
+    const productName = req.params.product_name;
+    const { product_name, description, price, category_id, product_condition, youtube_link, imageUrls } = req.body;
+
+    // Validate input fields
+    if (!product_name || !price || !category_id) {
+      return res.status(400).json({ error: 'Name, price, and category are required fields.' });
+    }
+
+    // Use Sequelize transaction to ensure data integrity
+    const transaction = await sequelize.transaction();
+
+    try {
+      // Check if the product exists and belongs to the authenticated seller
+      const existingProduct = await productModel.findOne({
+        where: {
+          id: productId,
+          product_name: productName,
+          seller_id: sellerId,
+        },
+      });
+
+      if (!existingProduct) {
+        return res.status(404).json({ error: 'Product not found or you do not have permission to update it.' });
+      }
+
+      // Update the product details
+      await existingProduct.update({
+        product_name,
+        description,
+        price,
+        category_id,
+        product_condition,
+        youtube_link,
+      }, { transaction });
+
+      // Update associated image URLs for the product
+      if (imageUrls && imageUrls.length > 0) {
+        // Delete existing images
+        await productImagesModel.destroy({
+          where: {
+            product_id: productId,
+          },
+          transaction,
+        });
+
+        // Insert new images
+        const imageInsertPromises = imageUrls.map((imageUrl) => {
+          return productImagesModel.create({
+            product_id: productId,
+            image_url: imageUrl,
+          }, { transaction });
+        });
+
+        await Promise.all(imageInsertPromises);
+        existingProduct.image_urls = imageUrls;
+      }
+
+      // Commit the transaction if everything is successful
+      await transaction.commit();
+
+      res.status(200).json({ message: 'Product updated successfully', product: existingProduct });
+    } catch (error) {
+      // Rollback the transaction in case of any error
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+
 
 // --------------- GET ALL PRODUCTS --------------- //
 const getAllProducts = async (req, res) => {
@@ -749,5 +836,6 @@ module.exports = {
   findMostViewedProducts,
   findMostViewedProductsByCategory,
   getRandomProducts,
-  deleteProductById
+  deleteProductById,
+  updateProduct
 };

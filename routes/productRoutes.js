@@ -13,6 +13,8 @@ router.get('/api/products/getrandom', ProductController.getRandomProducts);
 
 router.delete('/api/deleteproductbyid/:id', ProductController.deleteProductById);
 
+router.put('/api/updateproductbyid/:productId/:product_name', ProductController.updateProduct);
+
 
 // Category routes
 router.get('/api/getallcategories', cacheMiddleware, ProductController.getAllCategories);
