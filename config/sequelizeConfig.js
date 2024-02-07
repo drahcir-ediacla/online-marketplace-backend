@@ -51,7 +51,7 @@ productModel.hasMany(productViewModel, { foreignKey: 'product_id', as: 'views', 
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
 userModel.hasMany(refreshTokenModel, { foreignKey: 'user_id', as: 'refreshToken' });
 
-productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products' });
+productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products',  onDelete: 'CASCADE' });
 chatsModel.belongsTo(productModel, {foreignKey: 'product_id', as: 'product'})
 
 chatsModel.hasMany(messagesModel, { foreignKey: 'chat_id', as: 'messages' });

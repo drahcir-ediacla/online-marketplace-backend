@@ -245,6 +245,12 @@ const deleteProductById = async (req, res) => {
       }
     });
 
+    await wishListModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
     // Now, delete the product
     await product.destroy();
 
