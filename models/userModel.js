@@ -81,6 +81,11 @@ const defineUserModel = (sequelize) => {
       unique: false,
       allowNull: true,
     },
+    cover_photo: {
+      type: DataTypes.STRING,
+      unique: false,
+      allowNull: true,
+    },
   }, {
     tableName: 'users', // Specify the actual table name in your database
   });

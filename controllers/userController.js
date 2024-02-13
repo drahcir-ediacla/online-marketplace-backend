@@ -107,6 +107,7 @@ const updateUser = async (req, res) => {
         birthday: updatedUserData.birthday,
         password: updatedUserData.password,
         profile_pic: updatedUserData.profile_pic,
+        cover_photo: updatedUserData.cover_photo,
       });
 
 
