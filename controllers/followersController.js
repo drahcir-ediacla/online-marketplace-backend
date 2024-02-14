@@ -83,7 +83,47 @@ const getFollowedUser = async (req, res) => {
 
 
 
+//---------------------------- GET ALL USER FOLLOWING  -------------------------------------------//
+
+const getAllUserFollowing = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const allUserFollowing = await followersModel.findAll({
+            where: {
+                follower_id: userId,
+            }
+        })
+
+        res.status(200).json(allUserFollowing);
+    } catch (error) {
+        console.error('Error fetching user following:', error);
+        res.status(500).json({ error: 'An error occurred while fetching following users.' });
+    }
+}
 
 
 
-module.exports = { followUser, unfollowUser, getFollowedUser }
+//---------------------------- GET ALL USER FOLLOWER  -------------------------------------------//
+
+const getAllUserFollower = async (req, res) => {
+    try {
+        const userId = req.params.id;
+
+        const allUserFollower = await followersModel.findAll({
+            where: {
+                following_id: userId,
+            }
+        })
+
+        res.status(200).json(allUserFollower);
+    } catch (error) {
+        console.error('Error fetching user following:', error);
+        res.status(500).json({ error: 'An error occurred while fetching following users.' });
+    }
+}
+
+
+
+
+module.exports = { followUser, unfollowUser, getFollowedUser, getAllUserFollowing, getAllUserFollower }
