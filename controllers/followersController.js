@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { sequelize, followersModel } = require('../config/sequelizeConfig')
+const { sequelize, followersModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -92,7 +92,21 @@ const getAllUserFollowing = async (req, res) => {
         const allUserFollowing = await followersModel.findAll({
             where: {
                 follower_id: userId,
-            }
+            },
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['id', 'display_name', 'profile_pic'],
+                    as: 'followingInfo',
+                    include: [
+                        {
+                            model: followersModel,
+                            attributes: ['id', 'follower_id', 'following_id'],
+                            as: 'following'
+                        }
+                    ]
+                }
+            ]
         })
 
         res.status(200).json(allUserFollowing);
@@ -113,8 +127,22 @@ const getAllUserFollower = async (req, res) => {
         const allUserFollower = await followersModel.findAll({
             where: {
                 following_id: userId,
-            }
-        })
+            },
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['id', 'display_name', 'profile_pic'],
+                    as: 'followerInfo',
+                    include: [
+                        {
+                            model: followersModel,
+                            attributes: ['id', 'follower_id', 'following_id'],
+                            as: 'followers'
+                        }
+                    ]
+                }
+            ]
+        });
 
         res.status(200).json(allUserFollower);
     } catch (error) {
@@ -122,6 +150,9 @@ const getAllUserFollower = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while fetching following users.' });
     }
 }
+
+
+
 
 
 

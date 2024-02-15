@@ -52,6 +52,8 @@ productModel.hasMany(productViewModel, { foreignKey: 'product_id', as: 'views', 
 
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
 userModel.hasMany(refreshTokenModel, { foreignKey: 'user_id', as: 'refreshToken' });
+userModel.hasMany(followersModel, { foreignKey: 'following_id', as: 'followers' });
+userModel.hasMany(followersModel, { foreignKey: 'follower_id', as: 'following' });
 
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products',  onDelete: 'CASCADE' });
 chatsModel.belongsTo(productModel, {foreignKey: 'product_id', as: 'product'})
@@ -62,6 +64,9 @@ messagesModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
 participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'authenticatedParticipant' });
 participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'otherParticipant' });
 participantModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
+
+followersModel.belongsTo(userModel, { foreignKey: 'follower_id', as: 'followerInfo' });
+followersModel.belongsTo(userModel, { foreignKey: 'following_id', as: 'followingInfo' });
 
 
 
