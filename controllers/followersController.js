@@ -102,7 +102,7 @@ const getAllUserFollowing = async (req, res) => {
                         {
                             model: followersModel,
                             attributes: ['id', 'follower_id', 'following_id'],
-                            as: 'following'
+                            as: 'followers'
                         }
                     ]
                 }

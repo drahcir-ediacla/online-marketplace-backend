@@ -1,5 +1,6 @@
 const { userModel, productModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
+const bcrypt = require('bcrypt');
 
 
 
@@ -50,7 +51,7 @@ const getUsersById = async (req, res) => {
         }
       ],
     });
-    
+
     if (!userData) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -127,5 +128,47 @@ const updateUser = async (req, res) => {
 }
 
 
+// --------------- CHANGE USER PASSWORD  --------------- //
+const changePassword = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to change the password.' });
+    }
 
-module.exports = { getUsers, getUsersById, updateUser };
+    const userId = req.user.id;
+
+    // Check if newPassword exists
+    const newPassword = req.body.newPassword;
+
+    if (!newPassword) {
+      return res.status(400).json({ success: false, message: 'New password is required' });
+    }
+
+    // Retrieve the user by ID
+    const user = await userModel.findByPk(userId);
+
+    // Check if the old password matches the stored hashed password
+    const isPasswordValid = await bcrypt.compare(req.body.oldPassword, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ success: false, message: 'Old password is incorrect' });
+    }
+
+    // Hash the new password before updating it
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+
+    // Update the user's password
+    await user.update({ password: hashedPassword });
+
+    res.status(200).json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ success: false, message: 'Error changing password' });
+  }
+};
+
+
+
+
+module.exports = { getUsers, getUsersById, updateUser, changePassword };

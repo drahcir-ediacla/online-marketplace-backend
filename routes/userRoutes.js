@@ -12,6 +12,9 @@ router.get('/api/user/:id', UserController.getUsersById);
 // Define a route for updating user profile data
 router.put('/api/updateuser', UserController.updateUser);
 
+// Change password
+router.post('/api/change-password', UserController.changePassword)
+
 
 
 module.exports = router;
