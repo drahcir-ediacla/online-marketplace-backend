@@ -141,7 +141,7 @@ const changePassword = async (req, res) => {
     const newPassword = req.body.newPassword;
 
     if (!newPassword) {
-      return res.status(400).json({ success: false, message: 'New password is required' });
+      return res.status(400).json({ success: false, error: 'New password is required' });
     }
 
     // Retrieve the user by ID
@@ -151,7 +151,7 @@ const changePassword = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(req.body.oldPassword, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ success: false, message: 'Old password is incorrect' });
+      return res.status(401).json({ success: false, error: 'Old password is incorrect' });
     }
 
     // Hash the new password before updating it
