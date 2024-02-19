@@ -40,6 +40,11 @@ const defineProductModel = (sequelize) => {
             unique: false,
             allowNull: true,
         },
+        createdAt: {
+            type: DataTypes.DATE, // Use DATE data type for createdAt
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
     }, {
         tableName: 'products', // Specify the actual table name in your database
         // timestamps: false, // Add this line to disable timestamps

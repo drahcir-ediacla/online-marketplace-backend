@@ -53,6 +53,93 @@ const addNewProduct = async (req, res) => {
 
 
 
+// --------------- UPDATE EXISTING PRODUCT --------------- //
+const updateProduct = async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to update a product.' });
+    }
+
+    // The authenticated user's ID is available as req.user.id
+    const sellerId = req.user.id;
+    const productId = req.params.productId; // Assuming the product ID is in the request parameters
+    const productName = req.params.product_name;
+    const { product_name, description, price, category_id, product_condition, youtube_link, imageUrls } = req.body;
+
+    // Validate input fields
+    if (!product_name || !price || !category_id) {
+      return res.status(400).json({ error: 'Name, price, and category are required fields.' });
+    }
+
+    // Use Sequelize transaction to ensure data integrity
+    const transaction = await sequelize.transaction();
+
+    try {
+      // Check if the product exists and belongs to the authenticated seller
+      const existingProduct = await productModel.findOne({
+        where: {
+          id: productId,
+          product_name: productName,
+          seller_id: sellerId,
+        },
+      });
+
+      if (!existingProduct) {
+        return res.status(404).json({ error: 'Product not found or you do not have permission to update it.' });
+      }
+
+      // Update the product details
+      await existingProduct.update({
+        product_name,
+        description,
+        price,
+        category_id,
+        product_condition,
+        youtube_link,
+      }, { transaction });
+
+      // Update associated image URLs for the product
+      if (imageUrls && imageUrls.length > 0) {
+        // Delete existing images
+        await productImagesModel.destroy({
+          where: {
+            product_id: productId,
+          },
+          transaction,
+        });
+
+        // Insert new images
+        const imageInsertPromises = imageUrls.map((imageUrl) => {
+          return productImagesModel.create({
+            product_id: productId,
+            image_url: imageUrl,
+          }, { transaction });
+        });
+
+        await Promise.all(imageInsertPromises);
+        existingProduct.image_urls = imageUrls;
+      }
+
+      // Commit the transaction if everything is successful
+      await transaction.commit();
+
+      res.status(200).json({ message: 'Product updated successfully', product: existingProduct });
+    } catch (error) {
+      // Rollback the transaction in case of any error
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+
+
 
 // --------------- GET ALL PRODUCTS --------------- //
 const getAllProducts = async (req, res) => {
@@ -220,6 +307,51 @@ const getProductById = async (req, res) => {
 };
 
 
+
+const deleteProductById = async (req, res) => {
+  try {
+    const productID = req.params.id;
+
+    // Use Sequelize to find the product by ID
+    const product = await productModel.findByPk(productID);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found or already deleted.' });
+    }
+
+    // Manually delete related records in product_views table (or any other related models)
+    await productViewModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
+    await productImagesModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
+    await wishListModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
+    // Now, delete the product
+    await product.destroy();
+
+    res.status(200).json({ message: 'Product deleted successfully.' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+};
+
+
+
+
+
 // ------------------- GET ALL CATEGORIES ------------------- //
 // Map database rows to the desired structure
 function mapCategories(rows) {
@@ -267,6 +399,7 @@ const getAllCategories = async (req, res) => {
 
 
 
+
 // ------------------- GET CATEGORY BY ID ------------------- //
 const getCategoryById = async (req, res) => {
   try {
@@ -282,70 +415,73 @@ const getCategoryById = async (req, res) => {
       return res.status(404).json({ error: 'Category not found' });
     }
 
+
+    // Find sub-category products
     const subcategories = await categoryModel.findAll({
       where: { parent_id: categoryId },
       attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
     });
 
 
-    // Find products for the category
-    const products = await productModel.findAll({
-      where: { category_id: categoryId },
-      order: [['createdAt', 'DESC']],
-      include: [
-        {
-          model: userModel,
-          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
-          as: 'seller',
-          where: { id: Sequelize.col('Product.seller_id') },
-        },
-        {
-          model: productImagesModel,
-          attributes: ['id', 'image_url'],
-          as: 'images',
-        },
-        {
-          model: wishListModel,
-          attributes: ['product_id', 'user_id'],
-          as: 'wishlist',
-        },
-      ],
-    });
+    // Function to recursively fetch products for a category and its subcategories
+    const fetchProductsRecursively = async (categoryId) => {
+      const category = await categoryModel.findByPk(categoryId, {
+        attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
+      });
 
-    // Find sub-category products
-    const subCategoryProducts = await productModel.findAll({
-      include: [
-        {
-          model: categoryModel,
-          as: 'category',
-          where: { parent_id: categoryId },
-        },
-        {
-          model: userModel,
-          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'createdAt', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region'],
-          as: 'seller',
-          where: { id: Sequelize.col('Product.seller_id') },
-        },
-        {
-          model: productImagesModel,
-          attributes: ['id', 'image_url'],
-          as: 'images',
-        },
-        {
-          model: wishListModel,
-          attributes: ['product_id', 'user_id'],
-          as: 'wishlist',
-        },
-      ],
-      order: [['createdAt', 'DESC']],
-    });
+      if (!category) {
+        return [];
+      }
+
+
+      // Find products for the category
+      const products = await productModel.findAll({
+        where: { category_id: categoryId },
+        order: [['createdAt', 'DESC']],
+        include: [
+          {
+            model: userModel,
+            attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+            as: 'seller',
+            where: { id: Sequelize.col('Product.seller_id') },
+          },
+          {
+            model: productImagesModel,
+            attributes: ['id', 'image_url'],
+            as: 'images',
+          },
+          {
+            model: wishListModel,
+            attributes: ['product_id', 'user_id'],
+            as: 'wishlist',
+          },
+        ],
+      });
+
+      // Find sub-category products
+      const childSubcategories = await categoryModel.findAll({
+        where: { parent_id: categoryId },
+        attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
+      });
+
+      const subcategoryProducts = await Promise.all(
+        childSubcategories.map((subCategory) =>
+          fetchProductsRecursively(subCategory.id)
+        )
+      );
+
+      return [...products, ...subcategoryProducts.flat()];
+    };
+
+
+    // Fetch products recursively for the specified category
+    const allProducts = await fetchProductsRecursively(categoryId);
 
 
     const categoryData = {
       ...category.toJSON(),
       subcategories, // Ensure subcategories is an array even if it's null
-      products,
-      subCategoryProducts,
+      allProducts,
     };
 
     res.status(200).json(categoryData);
@@ -699,5 +835,7 @@ module.exports = {
   addProductView,
   findMostViewedProducts,
   findMostViewedProductsByCategory,
-  getRandomProducts
+  getRandomProducts,
+  deleteProductById,
+  updateProduct
 };
