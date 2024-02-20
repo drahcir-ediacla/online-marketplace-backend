@@ -445,7 +445,7 @@ const fetchProductsRecursively = async (categoryId, filters) => {
       break;
   }
 
-
+ 
   // Find products for the category
   const products = await productModel.findAll({
     where: productFilter,
@@ -469,6 +469,8 @@ const fetchProductsRecursively = async (categoryId, filters) => {
       },
     ],
   });
+
+  
 
   // Find sub-category products
   const childSubcategories = await categoryModel.findAll({
