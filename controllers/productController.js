@@ -433,19 +433,20 @@ const fetchProductsRecursively = async (categoryId, filters) => {
       order = [['createdAt', 'DESC']];
       break;
     case 'highToLow':
-      order = [['price', 'DESC']];
+      order = [['price', 'DESC'], ['createdAt', 'DESC']];
       break;
     case 'lowToHigh':
-      order = [['price', 'ASC']];
+      order = [['price', 'ASC'], ['createdAt', 'DESC']];
       break;
     // Add more sorting options as needed
 
     default:
-      // No sorting
+      // Default to sorting by createdAt in descending order
+      order = [['createdAt', 'DESC']];
       break;
   }
 
- 
+
   // Find products for the category
   const products = await productModel.findAll({
     where: productFilter,
@@ -470,7 +471,7 @@ const fetchProductsRecursively = async (categoryId, filters) => {
     ],
   });
 
-  
+
 
   // Find sub-category products
   const childSubcategories = await categoryModel.findAll({
@@ -484,8 +485,33 @@ const fetchProductsRecursively = async (categoryId, filters) => {
     )
   );
 
-  return [...products, ...subcategoryProducts.flat()];
+
+  // Combine products and subcategory products
+  const allProducts = [...products, ...subcategoryProducts.flat()];
+
+  // Apply sorting filter
+  allProducts.sort((a, b) => {
+    switch (sort) {
+      case 'recent':
+        return b.createdAt - a.createdAt;
+      case 'highToLow':
+        return b.price - a.price || b.createdAt - a.createdAt;
+      case 'lowToHigh':
+        return a.price - b.price || b.createdAt - a.createdAt;
+      // Add more sorting options as needed
+
+      default:
+        // Default to sorting by createdAt in descending order
+        return b.createdAt - a.createdAt;
+    }
+  });
+
+
+  return allProducts;
+
 };
+
+
 
 
 const getCategoryById = async (req, res) => {
@@ -519,7 +545,7 @@ const getCategoryById = async (req, res) => {
     });
 
 
-    // Fetch products recursively for the specified category
+    // Fetch and sort products for the specified category
     const allProducts = await fetchProductsRecursively(categoryId, filters);
 
 

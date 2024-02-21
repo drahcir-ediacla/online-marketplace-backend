@@ -1,10 +1,17 @@
 const { Sequelize } = require('sequelize');
-const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
-
+const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig');
 
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
 const searchProductsGlobally = async (req, res) => {
   try {
+    // Extract filters and sorting options from query parameters
+    const filters = {
+      minPrice: req.query.minPrice || undefined,
+      maxPrice: req.query.maxPrice || undefined,
+      condition: req.query.condition || '',
+      sort: req.query.sort || '',
+    };
+
     const { keyword, location } = req.query;
 
     // Replace 'All of the Philippines' with 'Philippines'
@@ -13,31 +20,42 @@ const searchProductsGlobally = async (req, res) => {
     // Split the cleaned location into an array
     const locationsArray = cleanedLocation.split(' | ').map(loc => loc.trim());
 
-    console.log("Location:", locationsArray);
+    // Filtering logic for products
+    let productFilter = {
+      [Sequelize.Op.or]: [
+        {
+          product_name: {
+            [Sequelize.Op.like]: `%${keyword}%`,
+          },
+        },
+        {
+          description: {
+            [Sequelize.Op.like]: `%${keyword}%`,
+          },
+        },
+        {
+          '$category.label$': {
+            [Sequelize.Op.like]: `%${keyword}%`,
+          },
+        },
+      ],
+    };
 
-    // ... rest of your code remains the same ...
+    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
+      // Add price range filter
+      productFilter.price = {
+        [Sequelize.Op.between]: [filters.minPrice, filters.maxPrice],
+      };
+    }
 
+    if (filters.condition) {
+      // Add condition filter
+      productFilter.product_condition = filters.condition;
+    }
 
+    // Include category in the search
     const products = await productModel.findAll({
-      where: {
-        [Sequelize.Op.or]: [
-          {
-            product_name: {
-              [Sequelize.Op.like]: `%${keyword}%`,
-            },
-          },
-          {
-            description: {
-              [Sequelize.Op.like]: `%${keyword}%`,
-            },
-          },
-          {
-            '$category.label$': {  // Include category in the search
-              [Sequelize.Op.like]: `%${keyword}%`,
-            },
-          },
-        ],
-      },
+      where: productFilter,
       include: [
         {
           model: categoryModel,
@@ -50,7 +68,7 @@ const searchProductsGlobally = async (req, res) => {
           as: 'seller',
           where: {
             [Sequelize.Op.or]: [
-              { city: { [Sequelize.Op.in]: locationsArray } },  // Use Op.in for multiple city matching
+              { city: { [Sequelize.Op.in]: locationsArray } },
               { region: locationsArray },
               { country: locationsArray },
             ],
@@ -67,6 +85,7 @@ const searchProductsGlobally = async (req, res) => {
           as: 'wishlist',
         },
       ],
+      order: getSortingOrder(filters.sort),
     });
 
     // Format the products as per the desired JSON structure
@@ -104,7 +123,19 @@ const searchProductsGlobally = async (req, res) => {
   }
 };
 
+// Helper function to get sorting order
+const getSortingOrder = (sort) => {
+  switch (sort) {
+    case 'recent':
+      return [['createdAt', 'DESC']];
+    case 'highToLow':
+      return [['price', 'DESC'], ['createdAt', 'DESC']];
+    case 'lowToHigh':
+      return [['price', 'ASC'], ['createdAt', 'DESC']];
+    // Add more sorting options as needed
+    default:
+      return [['createdAt', 'DESC']];
+  }
+};
 
-
-
-module.exports = { searchProductsGlobally }  
+module.exports = { searchProductsGlobally };
