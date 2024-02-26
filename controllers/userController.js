@@ -1,3 +1,4 @@
+const { Sequelize, Op } = require('sequelize');
 const { userModel, productModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const bcrypt = require('bcrypt');
@@ -24,45 +25,133 @@ const getUsers = async (req, res) => {
 
 
 // --------------- GET USERS BY ID  --------------- //
+const fetchProductsRecursively = async (userID, filters) => {
+  const user = await userModel.findByPk(userID, {
+    attributes: ['id', 'fb_id', 'email', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'region', 'city', 'phone', 'gender', 'birthday', 'password', 'profile_pic', 'cover_photo', 'createdAt', 'updatedAt'],
+  });
+
+  if (!user) {
+    return [];
+  }
+
+  const { minPrice, maxPrice, condition, sort } = filters;
+
+  let productFilter = { seller_id: userID };
+
+  if (minPrice !== undefined && maxPrice !== undefined) {
+    // Add price range filter
+    productFilter.price = {
+      [Sequelize.Op.between]: [minPrice, maxPrice],
+    };
+  }
+
+  if (condition) {
+    // Add condition filter
+    productFilter.product_condition = condition;
+  }
+
+  let order = [];
+
+  switch (sort) {
+    case 'recent':
+      order = [['createdAt', 'DESC']];
+      break;
+    case 'highToLow':
+      order = [['price', 'DESC'], ['createdAt', 'DESC']];
+      break;
+    case 'lowToHigh':
+      order = [['price', 'ASC'], ['createdAt', 'DESC']];
+      break;
+    // Add more sorting options as needed
+
+    default:
+      // Default to sorting by createdAt in descending order
+      order = [['createdAt', 'DESC']];
+      break;
+  }
+
+
+  // Find products for the category
+  const products = await productModel.findAll({
+    where: productFilter,
+    order: order,
+    include: [
+      {
+        model: productImagesModel,
+        attributes: ['id', 'image_url'],
+        as: 'images',
+      },
+      {
+        model: wishListModel,
+        attributes: ['product_id', 'user_id'],
+        as: 'wishlist',
+      },
+    ],
+  });
+
+
+
+  // Apply sorting filter
+  products.sort((a, b) => {
+    switch (sort) {
+      case 'recent':
+        return b.createdAt - a.createdAt;
+      case 'highToLow':
+        return b.price - a.price || b.createdAt - a.createdAt;
+      case 'lowToHigh':
+        return a.price - b.price || b.createdAt - a.createdAt;
+      // Add more sorting options as needed
+
+      default:
+        // Default to sorting by createdAt in descending order
+        return b.createdAt - a.createdAt;
+    }
+  });
+
+
+  return products;
+
+};
+
+
+
+
 const getUsersById = async (req, res) => {
   const userID = req.params.id;
 
   try {
+    // Extract filters and sorting options from query parameters
+    const filters = {
+      minPrice: req.query.minPrice || undefined,
+      maxPrice: req.query.maxPrice || undefined,
+      condition: req.query.condition || '',
+      sort: req.query.sort || '',
+    };
+
     // Use Sequelize to fetch user data and associated products
-    const userData = await userModel.findByPk(userID, {
-      include: [
-        {
-          model: productModel,
-          attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'createdAt'],
-          order: [['createdAt', 'DESC']],
-          as: 'products',
-          include: [
-            {
-              model: productImagesModel,
-              attributes: ['id', 'image_url'],
-              as: 'images',
-            },
-            {
-              model: wishListModel,
-              attributes: ['user_id', 'product_id'],
-              as: 'wishlist',
-            }
-          ],
-        }
-      ],
+    const user = await userModel.findByPk(userID, {
+      attributes: ['id', 'fb_id', 'email', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'region', 'city', 'phone', 'gender', 'birthday', 'password', 'profile_pic', 'cover_photo', 'createdAt', 'updatedAt'], // Include only necessary attributes
     });
 
-    if (!userData) {
+    if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
 
+    // Fetch and sort products for the specified user
+    const products = await fetchProductsRecursively(userID, filters);
+
+    const userData = {
+      ...user.toJSON(),
+      products,
+    };
+
     res.status(200).json(userData);
+
   } catch (error) {
     console.error('Error fetching user data:', error);
     res.status(500).json({ error: 'An error occurred while fetching user data.' });
   }
 };
-
 
 
 
