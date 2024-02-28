@@ -1,9 +1,9 @@
 const { DataTypes } = require('sequelize');
 
-const defineProductImagesModel = (sequelize) => {
-  const productImagesModel = sequelize.define('Images', { // Use 'User' as the model name
+const defineProductVideosModel = (sequelize) => {
+  const productVideosModel = sequelize.define('Images', { // Use 'User' as the model name
     id: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BIGINT,
       primaryKey: true,
       autoIncrement: true,
     },
@@ -12,18 +12,18 @@ const defineProductImagesModel = (sequelize) => {
       unique: true,
       allowNull: false,
     },
-    image_url: {
+    video_url: {
       type: DataTypes.STRING,
       unique: true,
       allowNull: false,
     },
   }, {
-    tableName: 'product_images', // Specify the actual table name in your database
+    tableName: 'product_videos', // Specify the actual table name in your database
     timestamps: false, // Add this line to disable timestamps
   });
   
   
-  return productImagesModel;
+  return productVideosModel;
 };
 
-module.exports = defineProductImagesModel;
+module.exports = defineProductVideosModel;

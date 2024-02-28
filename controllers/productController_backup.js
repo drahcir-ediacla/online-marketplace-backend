@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const { v4: uuidv4 } = require('uuid');
@@ -401,9 +401,131 @@ const getAllCategories = async (req, res) => {
 
 
 // ------------------- GET CATEGORY BY ID ------------------- //
+const fetchProductsRecursively = async (categoryId, filters) => {
+  const category = await categoryModel.findByPk(categoryId, {
+    attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
+  });
+
+  if (!category) {
+    return [];
+  }
+
+  const { minPrice, maxPrice, condition, sort } = filters;
+
+  let productFilter = { category_id: categoryId };
+
+  if (minPrice !== undefined && maxPrice !== undefined) {
+    // Add price range filter
+    productFilter.price = {
+      [Sequelize.Op.between]: [minPrice, maxPrice],
+    };
+  }
+
+  if (condition) {
+    // Add condition filter
+    productFilter.product_condition = condition;
+  }
+
+  let order = [];
+
+  switch (sort) {
+    case 'recent':
+      order = [['createdAt', 'DESC']];
+      break;
+    case 'highToLow':
+      order = [['price', 'DESC'], ['createdAt', 'DESC']];
+      break;
+    case 'lowToHigh':
+      order = [['price', 'ASC'], ['createdAt', 'DESC']];
+      break;
+    // Add more sorting options as needed
+
+    default:
+      // Default to sorting by createdAt in descending order
+      order = [['createdAt', 'DESC']];
+      break;
+  }
+
+
+  // Find products for the category
+  const products = await productModel.findAll({
+    where: productFilter,
+    order: order,
+    include: [
+      {
+        model: userModel,
+        attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+        as: 'seller',
+        where: { id: Sequelize.col('Product.seller_id') },
+      },
+      {
+        model: productImagesModel,
+        attributes: ['id', 'image_url'],
+        as: 'images',
+      },
+      {
+        model: wishListModel,
+        attributes: ['product_id', 'user_id'],
+        as: 'wishlist',
+      },
+    ],
+  });
+
+
+
+  // Find sub-category products
+  const childSubcategories = await categoryModel.findAll({
+    where: { parent_id: categoryId },
+    attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
+  });
+
+  const subcategoryProducts = await Promise.all(
+    childSubcategories.map((subCategory) =>
+      fetchProductsRecursively(subCategory.id, filters)
+    )
+  );
+
+
+  // Combine products and subcategory products
+  const allProducts = [...products, ...subcategoryProducts.flat()];
+
+  // Apply sorting filter
+  allProducts.sort((a, b) => {
+    switch (sort) {
+      case 'recent':
+        return b.createdAt - a.createdAt;
+      case 'highToLow':
+        return b.price - a.price || b.createdAt - a.createdAt;
+      case 'lowToHigh':
+        return a.price - b.price || b.createdAt - a.createdAt;
+      // Add more sorting options as needed
+
+      default:
+        // Default to sorting by createdAt in descending order
+        return b.createdAt - a.createdAt;
+    }
+  });
+
+
+  return allProducts;
+
+};
+
+
+
+
 const getCategoryById = async (req, res) => {
   try {
     const categoryId = req.params.id;
+    const categoryValue = req.params.value;
+
+    // Extract filters and sorting options from query parameters
+    const filters = {
+      minPrice: req.query.minPrice || undefined,
+      maxPrice: req.query.maxPrice || undefined,
+      condition: req.query.condition || '',
+      sort: req.query.sort || '',
+    };
 
     // Use Sequelize to find the category by ID
     const category = await categoryModel.findByPk(categoryId, {
@@ -423,59 +545,8 @@ const getCategoryById = async (req, res) => {
     });
 
 
-    // Function to recursively fetch products for a category and its subcategories
-    const fetchProductsRecursively = async (categoryId) => {
-      const category = await categoryModel.findByPk(categoryId, {
-        attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
-      });
-
-      if (!category) {
-        return [];
-      }
-
-
-      // Find products for the category
-      const products = await productModel.findAll({
-        where: { category_id: categoryId },
-        order: [['createdAt', 'DESC']],
-        include: [
-          {
-            model: userModel,
-            attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
-            as: 'seller',
-            where: { id: Sequelize.col('Product.seller_id') },
-          },
-          {
-            model: productImagesModel,
-            attributes: ['id', 'image_url'],
-            as: 'images',
-          },
-          {
-            model: wishListModel,
-            attributes: ['product_id', 'user_id'],
-            as: 'wishlist',
-          },
-        ],
-      });
-
-      // Find sub-category products
-      const childSubcategories = await categoryModel.findAll({
-        where: { parent_id: categoryId },
-        attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
-      });
-
-      const subcategoryProducts = await Promise.all(
-        childSubcategories.map((subCategory) =>
-          fetchProductsRecursively(subCategory.id)
-        )
-      );
-
-      return [...products, ...subcategoryProducts.flat()];
-    };
-
-
-    // Fetch products recursively for the specified category
-    const allProducts = await fetchProductsRecursively(categoryId);
+    // Fetch and sort products for the specified category
+    const allProducts = await fetchProductsRecursively(categoryId, filters);
 
 
     const categoryData = {

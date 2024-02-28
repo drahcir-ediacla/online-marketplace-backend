@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
+const { sequelize, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const { v4: uuidv4 } = require('uuid');
 
@@ -14,11 +14,12 @@ const addNewProduct = async (req, res) => {
 
     // The authenticated user's ID is available as req.user.id
     const sellerId = req.user.id;
-    const { product_name, description, price, category_id, product_condition, youtube_link, imageUrls } = req.body;
+    const { product_name, description, price, category_id, product_condition, youtube_link, fileUrls } = req.body;
 
     if (!product_name || !price || !category_id) {
       return res.status(400).json({ error: 'Name, price, and category are required fields.' });
     }
+
 
     // Use Sequelize to insert a new product
     const newProduct = await productModel.create({
@@ -31,18 +32,39 @@ const addNewProduct = async (req, res) => {
       youtube_link,
     });
 
-    // Insert associated image URLs for the product
-    if (imageUrls && imageUrls.length > 0) {
-      const imageInsertPromises = imageUrls.map((imageUrl) => {
-        return productImagesModel.create({
-          product_id: newProduct.id,
-          image_url: imageUrl,
-        });
+    // Insert associated image and video URLs for the product
+    if (fileUrls && fileUrls.length > 0) {
+      const imageInsertPromises = [];
+      const videoInsertPromises = [];
+
+      fileUrls.forEach((mediaUrl) => {
+        if (mediaUrl.endsWith('.mp4')) {
+          videoInsertPromises.push(
+            productVideosModel.create({
+              product_id: newProduct.id,
+              video_url: mediaUrl,
+            })
+          );
+        } else {
+          imageInsertPromises.push(
+            productImagesModel.create({
+              product_id: newProduct.id,
+              image_url: mediaUrl,
+            })
+          );
+        }
       });
 
+      console.log('File URLs for images:', imageInsertPromises);
+      console.log('File URLs for videos:', videoInsertPromises);
+
       await Promise.all(imageInsertPromises);
-      newProduct.image_urls = imageUrls;
+      await Promise.all(videoInsertPromises);
+
+      newProduct.file_urls = fileUrls;
+      console.log('Product with files:', newProduct);
     }
+
 
     res.status(201).json(newProduct);
   } catch (error) {
@@ -65,7 +87,7 @@ const updateProduct = async (req, res) => {
     const sellerId = req.user.id;
     const productId = req.params.productId; // Assuming the product ID is in the request parameters
     const productName = req.params.product_name;
-    const { product_name, description, price, category_id, product_condition, youtube_link, imageUrls } = req.body;
+    const { product_name, description, price, category_id, product_condition, youtube_link, fileUrls } = req.body;
 
     // Validate input fields
     if (!product_name || !price || !category_id) {
@@ -100,7 +122,11 @@ const updateProduct = async (req, res) => {
       }, { transaction });
 
       // Update associated image URLs for the product
-      if (imageUrls && imageUrls.length > 0) {
+      if (fileUrls && fileUrls.length > 0) {
+
+        const imageInsertPromises = [];
+        const videoInsertPromises = [];
+
         // Delete existing images
         await productImagesModel.destroy({
           where: {
@@ -109,16 +135,37 @@ const updateProduct = async (req, res) => {
           transaction,
         });
 
-        // Insert new images
-        const imageInsertPromises = imageUrls.map((imageUrl) => {
-          return productImagesModel.create({
+        await productVideosModel.destroy({
+          where: {
             product_id: productId,
-            image_url: imageUrl,
-          }, { transaction });
+          },
+          transaction,
         });
 
+
+        fileUrls.forEach((mediaUrl) => {
+          if (mediaUrl.endsWith('.mp4')) {
+            videoInsertPromises.push(
+              productVideosModel.create({
+                product_id: existingProduct.id,
+                video_url: mediaUrl,
+              }, { transaction })
+            );
+          } else {
+            imageInsertPromises.push(
+              productImagesModel.create({
+                product_id: existingProduct.id,
+                image_url: mediaUrl,
+              }, { transaction })
+            );
+          }
+        });
+
+
         await Promise.all(imageInsertPromises);
-        existingProduct.image_urls = imageUrls;
+        await Promise.all(videoInsertPromises);
+
+        existingProduct.file_urls = fileUrls;
       }
 
       // Commit the transaction if everything is successful
@@ -245,17 +292,22 @@ const getProductDetails = async (req, res) => {
           as: 'images',
         },
         {
+          model: productVideosModel,
+          attributes: ['id', 'video_url'],
+          as: 'videos',
+        },
+        {
           model: wishListModel,
           attributes: ['user_id', 'product_id'],
           as: 'wishlist',
         }
       ]
-    })
-
+    });
 
     if (!productDetails) {
       return res.status(404).json({ error: 'Product not found.' });
     }
+
 
     res.status(200).json(productDetails);
   } catch (error) {
@@ -263,6 +315,8 @@ const getProductDetails = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while processing the request.' });
   }
 };
+
+
 
 
 // --------------- GET PRODUCT BY ID --------------- //
@@ -327,6 +381,12 @@ const deleteProductById = async (req, res) => {
     });
 
     await productImagesModel.destroy({
+      where: {
+        product_id: productID
+      }
+    });
+
+    await productVideosModel.destroy({
       where: {
         product_id: productID
       }

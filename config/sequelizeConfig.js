@@ -3,8 +3,9 @@ const defineUserModel = require('../models/userModel')
 const defineProductModel = require('../models/productModel')
 const defineCategoryModel = require('../models/categoryModel')
 const defineProductImagesModel = require('../models/productImagesModel')
+const defineProductVideosModel = require('../models/productVideosModel')
 const defineWishListModel = require('../models/wishListModel')
-const defineProductViewModel = require('../models/productVidewModel')
+const defineProductViewModel = require('../models/productViewModel')
 const defineRefreshTokenModel = require('../models/refreshTokenModel')
 const defineMessagesModel = require('../models/messagesModel')
 const defineChatsModel = require('../models/chatsModel')
@@ -31,6 +32,7 @@ const userModel = defineUserModel(sequelize);
 const productModel = defineProductModel(sequelize);
 const categoryModel = defineCategoryModel(sequelize);
 const productImagesModel = defineProductImagesModel(sequelize);
+const productVideosModel = defineProductVideosModel(sequelize);
 const wishListModel = defineWishListModel(sequelize);
 const productViewModel = defineProductViewModel(sequelize);
 const refreshTokenModel = defineRefreshTokenModel(sequelize);
@@ -42,11 +44,13 @@ const followersModel = defineFollowersModel(sequelize);
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
 categoryModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
+categoryModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos' });
 categoryModel.hasMany(categoryModel, { foreignKey: 'parent_id', as: 'subcategories' });
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
 productModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images', onDelete: 'CASCADE' });
+productModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos', onDelete: 'CASCADE' });
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist',  onDelete: 'CASCADE' });
 productModel.hasMany(productViewModel, { foreignKey: 'product_id', as: 'views', onDelete: 'CASCADE' });
 
@@ -98,6 +102,7 @@ const initializeDatabase = async () => {
     productModel,
     categoryModel,
     productImagesModel,
+    productVideosModel,
     wishListModel,
     productViewModel,
     refreshTokenModel,
