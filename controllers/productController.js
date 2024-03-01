@@ -14,7 +14,7 @@ const addNewProduct = async (req, res) => {
 
     // The authenticated user's ID is available as req.user.id
     const sellerId = req.user.id;
-    const { product_name, description, price, category_id, product_condition, youtube_link, fileUrls } = req.body;
+    const { product_name, description, price, category_id, product_condition, youtube_link, status, fileUrls } = req.body;
 
     if (!product_name || !price || !category_id) {
       return res.status(400).json({ error: 'Name, price, and category are required fields.' });
@@ -30,6 +30,7 @@ const addNewProduct = async (req, res) => {
       seller_id: sellerId,
       product_condition,
       youtube_link,
+      status,
     });
 
     // Insert associated image and video URLs for the product
@@ -87,7 +88,7 @@ const updateProduct = async (req, res) => {
     const sellerId = req.user.id;
     const productId = req.params.productId; // Assuming the product ID is in the request parameters
     const productName = req.params.product_name;
-    const { product_name, description, price, category_id, product_condition, youtube_link, fileUrls } = req.body;
+    const { product_name, description, price, category_id, product_condition, youtube_link, status, fileUrls } = req.body;
 
     // Validate input fields
     if (!product_name || !price || !category_id) {
@@ -119,6 +120,7 @@ const updateProduct = async (req, res) => {
         category_id,
         product_condition,
         youtube_link,
+        status,
       }, { transaction });
 
       // Update associated image URLs for the product
@@ -721,7 +723,7 @@ const getWishlistByUserId = async (req, res) => {
     const userId = req.params.user_id;
 
     const product = await productModel.findAll({
-      attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'createdAt'],
+      attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'status', 'createdAt'],
       order: [['createdAt', 'DESC']],
       include: [
         {
@@ -825,6 +827,7 @@ const findMostViewedProducts = async (req, res, next) => {
         'seller_id',
         'product_condition',
         'youtube_link',
+        'status',
         'createdAt'
       ],
       order: [['createdAt', 'DESC']],
@@ -893,6 +896,7 @@ const findMostViewedProductsByCategory = async (req, res, next) => {
         'seller_id',
         'product_condition',
         'youtube_link',
+        'status',
         'createdAt'
       ],
       order: [['createdAt', 'DESC']],

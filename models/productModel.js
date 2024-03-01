@@ -18,7 +18,7 @@ const defineProductModel = (sequelize) => {
             allowNull: true,
         },
         price: {
-            type: DataTypes.DECIMAL(10,2),
+            type: DataTypes.DECIMAL(10, 2),
             unique: false,
             allowNull: false,
         },
@@ -40,16 +40,21 @@ const defineProductModel = (sequelize) => {
             unique: false,
             allowNull: true,
         },
+        status: {
+            type: DataTypes.ENUM('available', 'sold'), 
+            defaultValue: 'available',
+            allowNull: false,
+        },
         createdAt: {
             type: DataTypes.DATE, // Use DATE data type for createdAt
             allowNull: false,
             defaultValue: DataTypes.NOW,
-          },
+        },
     }, {
         tableName: 'products', // Specify the actual table name in your database
         timestamps: false, // Add this line to disable timestamps
     })
-    
+
     return productModel;
 }
 
