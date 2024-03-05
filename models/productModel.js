@@ -41,8 +41,8 @@ const defineProductModel = (sequelize) => {
             allowNull: true,
         },
         status: {
-            type: DataTypes.ENUM('available', 'sold'), 
-            defaultValue: 'available',
+            type: DataTypes.ENUM('Available', 'Sold'), 
+            defaultValue: 'Available',
             allowNull: false,
         },
         createdAt: {

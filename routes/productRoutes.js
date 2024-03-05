@@ -15,6 +15,8 @@ router.delete('/api/deleteproductbyid/:id', ProductController.deleteProductById)
 
 router.put('/api/updateproductbyid/:productId/:product_name', ProductController.updateProduct);
 
+router.put('/api/mark-sold/:productId/:product_name', ProductController.markSoldProduct);
+
 
 // Category routes
 router.get('/api/getallcategories', cacheMiddleware, ProductController.getAllCategories);

@@ -364,12 +364,25 @@ const getProductById = async (req, res) => {
 
 
 
+//---------------------DELETE PRODUCT BY ID -----------------------------------//
+
 const deleteProductById = async (req, res) => {
   try {
+
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to update a product.' });
+    }
+
+    const sellerId = req.user.id;
     const productID = req.params.id;
 
     // Use Sequelize to find the product by ID
-    const product = await productModel.findByPk(productID);
+    const product = await productModel.findOne({
+      where: {
+        id: productID,
+        seller_id: sellerId,
+      },
+    });
 
     if (!product) {
       return res.status(404).json({ error: 'Product not found or already deleted.' });
@@ -950,7 +963,58 @@ const findMostViewedProductsByCategory = async (req, res, next) => {
 
 
 
+//---------------------------------------- MARK AS SOLD PRODUCT --------------------------------//
 
+const markSoldProduct = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication required to update a product.' });
+    }
+
+    const sellerId = req.user.id;
+    const productId = req.params.productId;
+    const productName = req.params.product_name;
+    const newStatus  = 'Sold';
+
+    // Use Sequelize transaction to ensure data integrity
+    const transaction = await sequelize.transaction();
+
+    try {
+
+      const existingProduct = await productModel.findOne({
+        where: {
+          id: productId,
+          product_name: productName,
+          seller_id: sellerId,
+        },
+      });
+
+      if (!existingProduct) {
+        return res.status(404).json({ error: 'Product not found or you do not have permission to update it.' });
+      }
+
+       // Assuming newStatus is a string with values 'Available' or 'Sold'
+      await existingProduct.update({
+        status: newStatus,
+      }, {transaction});
+
+      // Commit the transaction after a successful update
+      await transaction.commit();
+
+      // Send a success response
+      res.status(200).json({ success: true, message: 'Product status updated successfully.' });
+    } catch (error) {
+      // Rollback the transaction in case of any error
+      await transaction.rollback();
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+}
 
 
 
@@ -972,5 +1036,6 @@ module.exports = {
   findMostViewedProductsByCategory,
   getRandomProducts,
   deleteProductById,
-  updateProduct
+  updateProduct,
+  markSoldProduct
 };
