@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
+const { sequelize, chatsModel, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const { v4: uuidv4 } = require('uuid');
 
@@ -412,6 +412,12 @@ const deleteProductById = async (req, res) => {
         product_id: productID
       }
     });
+
+    // await chatsModel.destroy({
+    //   where: {
+    //     product_id: productID
+    //   }
+    // });
 
     // Now, delete the product
     await product.destroy();
@@ -973,7 +979,6 @@ const markSoldProduct = async (req, res) => {
 
     const sellerId = req.user.id;
     const productId = req.params.productId;
-    const productName = req.params.product_name;
     const newStatus  = 'Sold';
 
     // Use Sequelize transaction to ensure data integrity
@@ -984,7 +989,6 @@ const markSoldProduct = async (req, res) => {
       const existingProduct = await productModel.findOne({
         where: {
           id: productId,
-          product_name: productName,
           seller_id: sellerId,
         },
       });

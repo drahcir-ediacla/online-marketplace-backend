@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 const { sequelize, messagesModel, chatsModel, participantModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
@@ -113,12 +113,24 @@ const getAllUserChat = async (req, res) => {
       });
 
       const allChats = existingChats.map(chat => {
+        const chatJSON = chat.toJSON();
+        chatJSON.chat.product = chatJSON.chat.product[0]; // Extract the first product from the array
         const otherParticipantChat = otherParticipantsChats.find(oc => oc.chat_id === chat.chat_id);
         return {
-          ...chat.toJSON(),
+          ...chatJSON,
           otherParticipant: otherParticipantChat ? otherParticipantChat.otherParticipant : null,
-        };
+        }
       });
+
+      // const allChats = existingChats.map(chat => {
+      //   const chatJSON = chat.toJSON();
+      //   chatJSON.chat.product = chatJSON.chat.product[0]; 
+      //   const otherParticipantChat = otherParticipantsChats.find(oc => oc.chat_id === chat.chat_id);
+      //   return {
+      //     ...chat.toJSON(),
+      //     otherParticipant: otherParticipantChat ? otherParticipantChat.otherParticipant : null,
+      //   };
+      // });
 
       res.status(200).json(allChats);
     }
@@ -213,8 +225,8 @@ const createChatMessages = async (req, res) => {
 
     // Store participants in the chat_participants table
     await participantModel.bulkCreate([
-      { chat_id: chatId, user_id: sender_id },
-      { chat_id: chatId, user_id: receiver_id },
+      { chat_id: chatId, user_id: sender_id, product_id: product_id },
+      { chat_id: chatId, user_id: receiver_id, product_id: product_id },
     ]);
 
     res.status(201).json(message);

@@ -15,7 +15,7 @@ router.delete('/api/deleteproductbyid/:id', ProductController.deleteProductById)
 
 router.put('/api/updateproductbyid/:productId/:product_name', ProductController.updateProduct);
 
-router.put('/api/mark-sold/:productId/:product_name', ProductController.markSoldProduct);
+router.put('/api/mark-sold/:productId', ProductController.markSoldProduct);
 
 
 // Category routes
