@@ -11,6 +11,8 @@ const defineMessagesModel = require('../models/messagesModel')
 const defineChatsModel = require('../models/chatsModel')
 const defineParticipantModel = require('../models/participantModel')
 const defineFollowersModel = require('../models/followersModel')
+const defineReviewsModel = require('../models/reviewsModel')
+const defineReviewImagesModel = require('../models/reviewImagesModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -40,6 +42,8 @@ const messagesModel = defineMessagesModel(sequelize);
 const chatsModel = defineChatsModel(sequelize);
 const participantModel = defineParticipantModel(sequelize);
 const followersModel = defineFollowersModel(sequelize);
+const reviewsModel = defineReviewsModel(sequelize);
+const reviewImagesModel = defineReviewImagesModel(sequelize);
 
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
@@ -78,6 +82,8 @@ participantModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat', onDe
 followersModel.belongsTo(userModel, { foreignKey: 'follower_id', as: 'followerInfo' });
 followersModel.belongsTo(userModel, { foreignKey: 'following_id', as: 'followingInfo' });
 
+reviewsModel.hasMany(reviewImagesModel, { foreignKey: 'review_id', as: 'images', onDelete: 'CASCADE' });
+
 
 
 const initializeDatabase = async () => {
@@ -115,5 +121,7 @@ const initializeDatabase = async () => {
     messagesModel,
     chatsModel,
     participantModel,
-    followersModel
+    followersModel,
+    reviewsModel,
+    reviewImagesModel
   };

@@ -43,4 +43,57 @@ const uploadChatImage = (req, res) => {
 // Use multer middleware in the route
 const uploadChatImageMiddleware = upload.single('image');
 
-module.exports = { uploadChatImageMiddleware, uploadChatImage };
+
+
+//--------------------------------- UPLOAD REVIEW IMAGES ---------------------------------//
+
+const uploadReviewImages = async (files) => {
+  try {
+    const uploadPromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: 'review_images' }, // Optional: replace with your desired folder
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result.url);
+            }
+          }
+        );
+
+        stream.end(file.buffer);
+      });
+    });
+
+    const imageUrls = await Promise.all(uploadPromises);
+    return imageUrls;
+  } catch (error) {
+    console.error('Error uploading review images to Cloudinary:', error);
+    throw error;
+  }
+};
+
+const createReviewImages = async (reviewId, imageUrls) => {
+  try {
+    const imageRecords = imageUrls.map(imageUrl => ({
+      review_id: reviewId,
+      image_url: imageUrl,
+    }));
+
+    await reviewImagesModel.bulkCreate(imageRecords);
+  } catch (error) {
+    console.error('Error creating review images:', error);
+    throw error;
+  }
+};
+
+
+
+
+module.exports = { 
+  uploadChatImageMiddleware, 
+  uploadChatImage, 
+  uploadReviewImages, 
+  createReviewImages 
+};

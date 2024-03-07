@@ -24,6 +24,7 @@ const messageRoutes = require('./routes/messagesRoutes')
 const imagesRoutes = require('./routes/imagesRoutes')
 const sessionStore = require('./config/sessionsConfig');
 const followerRoutes = require('./routes/followerRoutes')
+const reviewRoutes = require('./routes/reviewRoutes')
 
 const port = process.env.PORT || 8081;
 
@@ -72,6 +73,7 @@ app.use('/', searchRoutes);
 app.use('/', messageRoutes);
 app.use('/', imagesRoutes);
 app.use('/', followerRoutes);
+app.use('/', reviewRoutes)
 
 // Middleware to set Cache-Control header
 app.use((req, res, next) => {
