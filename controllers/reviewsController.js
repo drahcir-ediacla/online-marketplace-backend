@@ -1,20 +1,29 @@
-// reviewsController.js
 const { reviewsModel, reviewImagesModel } = require('../config/sequelizeConfig');
 const { uploadReviewImages, createReviewImages } = require('./imagesController');
 
 const createReviews = async (req, res) => {
     try {
-
         if (!req.isAuthenticated()) {
             return res.status(401).json({ error: 'Authentication required to submit a review.' });
         }
 
-        const { reviewer_id, target_id, role, rating, comment } = req.body;
 
+        const userId = req.user.id;
+        const { target_id, role, rating, comment } = req.body;
+
+        // Validate rating range (1 to 5)
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ error: 'Invalid rating. Please choose a rating between 1 and 5.' });
+        }
+
+        // Validate role (strictly equal to "Buyer" or "Seller")
+        if (role !== 'Buyer' && role !== 'Seller') {
+            return res.status(400).json({ error: 'Invalid role. Role must be either "Buyer" or "Seller".' });
+        }
 
         // Create the review
         const review = await reviewsModel.create({
-            reviewer_id,
+            reviewer_id: userId,
             target_id,
             role,
             rating,

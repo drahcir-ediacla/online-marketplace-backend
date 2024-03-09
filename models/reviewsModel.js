@@ -3,9 +3,10 @@ const { DataTypes } = require('sequelize');
 const defineReviewsModel = (sequelize) => {
     const reviewsModel = sequelize.define('Reviews', {
         review_id: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
+            allowNull: false,
         },
         reviewer_id: {
             type: DataTypes.BIGINT,
