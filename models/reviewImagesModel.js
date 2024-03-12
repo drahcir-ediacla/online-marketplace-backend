@@ -8,7 +8,7 @@ const defineReviewImagesModel = (sequelize) => {
       autoIncrement: true,
     },
     review_id: {
-      type: DataTypes.BIGINT,
+      type: DataTypes.STRING,
       unique: true,
       allowNull: false,
     },

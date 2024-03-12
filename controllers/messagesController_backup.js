@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, participantModel, offersModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -30,42 +30,56 @@ const checkChatId = async (req, res) => {
 
 
 
+
+
+
 const getAllUserChat = async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ error: 'Authentication required to get chat messages.' });
     } else {
-      const userId = req.user.id;
+      const authenticatedUserId = req.user.id;
 
-      const existingChats = await chatsModel.findAll({
-        attributes: ['chat_id', 'participants', 'product_id'],
+      // Fetch existing chats for the authenticated user
+      const existingChats = await participantModel.findAll({
+        attributes: ['chat_id'],
         where: {
-          participants: {
-            [Op.like]: `%${userId}%`
-          }
+          user_id: authenticatedUserId
         },
         include: [
           {
-            model: productModel,
-            attributes: ['id', 'product_name'],
-            as: 'product',
+            model: chatsModel,
+            attributes: ['product_id'],
+            as: 'chat',
             include: [
               {
-                model: userModel,
-                attributes: ['id', 'display_name'],
-                as: 'seller',
+                model: productModel,
+                attributes: ['id', 'product_name'],
+                as: 'product',
+                include: [
+                  {
+                    model: userModel,
+                    attributes: ['id', 'display_name'],
+                    as: 'seller',
+                  },
+                  {
+                    model: productImagesModel,
+                    attributes: ['id', 'image_url'],
+                    as: 'images',
+                  },
+                ],
               },
               {
-                model: productImagesModel,
-                attributes: ['id', 'image_url'],
-                as: 'images',
+                model: messagesModel,
+                attributes: ['sender_id', 'receiver_id', 'content', 'timestamp'],
+                as: 'messages',
               },
             ],
           },
           {
-            model: messagesModel,
-            attributes: ['sender_id', 'receiver_id', 'content'],
-            as: 'messages',
+            model: userModel,
+            attributes: ['id', 'display_name', 'profile_pic'],
+            as: 'authenticatedParticipant',
           },
         ],
       });
@@ -74,13 +88,60 @@ const getAllUserChat = async (req, res) => {
         return res.status(200).json({ message: 'No chats found.' });
       }
 
-      res.status(200).json(existingChats);
+      // Fetch chats for other participants with the same chat_id
+      const otherParticipantsChats = await participantModel.findAll({
+        where: {
+          chat_id: {
+            [Op.in]: existingChats.map(chat => chat.chat_id)
+          },
+          user_id: {
+            [Op.ne]: authenticatedUserId
+          }
+        },
+        include: [
+          {
+            model: userModel,
+            attributes: ['id', 'display_name', 'profile_pic'],
+            as: 'otherParticipant',
+            where: {
+              id: {
+                [Op.ne]: authenticatedUserId
+              },
+            },
+          },
+        ],
+      });
+
+      const allChats = existingChats.map(chat => {
+        const chatJSON = chat.toJSON();
+        chatJSON.chat.product = chatJSON.chat.product[0]; // Extract the first product from the array
+        const otherParticipantChat = otherParticipantsChats.find(oc => oc.chat_id === chat.chat_id);
+        return {
+          ...chatJSON,
+          otherParticipant: otherParticipantChat ? otherParticipantChat.otherParticipant : null,
+        }
+      });
+
+      // const allChats = existingChats.map(chat => {
+      //   const chatJSON = chat.toJSON();
+      //   chatJSON.chat.product = chatJSON.chat.product[0]; 
+      //   const otherParticipantChat = otherParticipantsChats.find(oc => oc.chat_id === chat.chat_id);
+      //   return {
+      //     ...chat.toJSON(),
+      //     otherParticipant: otherParticipantChat ? otherParticipantChat.otherParticipant : null,
+      //   };
+      // });
+
+      res.status(200).json(allChats);
     }
   } catch (error) {
     console.error('Error fetching chat messages:', error);
     res.status(500).json({ error: 'An error occurred while fetching chats.' });
   }
 };
+
+
+
 
 
 
@@ -119,18 +180,9 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
       },
     });
 
-    console.log('Sender ID:', senderId);
-    console.log('Receiver ID:', receiverId);
+
     console.log('Product ID:', productId);
-    console.log('Sorted Participants:', sortedParticipants);
 
-
-    // const existingChat = await chatsModel.findOne({
-    //   where: {
-    //     participants: JSON.stringify([senderId, receiverId]),
-    //     product_id: productId,
-    //   },
-    // });
 
 
     // Log existing chat for debugging
@@ -159,17 +211,36 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
 
 const createChatMessages = async (req, res) => {
   try {
-    const { sender_id, receiver_id, product_id, content } = req.body;
+    const { sender_id, receiver_id, product_id, content, offer_price } = req.body;
 
     // Store the message in the database regardless of the WebSocket condition
     const chatId = await createChatId(sender_id, receiver_id, product_id);
+
+    const messageContent = offer_price || content;
+
     const message = await messagesModel.create({
       chat_id: chatId,
       sender_id,
       receiver_id,
       product_id,
-      content,
+      content: messageContent,
     });
+
+
+    await offersModel.create({
+      chat_id: chatId,
+      buyer_id: sender_id,
+      seller_id: receiver_id,
+      product_id: product_id,
+      offer_price,
+    })
+
+
+    // Store participants in the chat_participants table
+    await participantModel.bulkCreate([
+      { chat_id: chatId, user_id: sender_id, product_id: product_id },
+      { chat_id: chatId, user_id: receiver_id, product_id: product_id },
+    ]);
 
     res.status(201).json(message);
   } catch (error) {
@@ -177,6 +248,7 @@ const createChatMessages = async (req, res) => {
     res.status(500).json({ error: 'Failed to create message.' });
   }
 };
+
 
 
 

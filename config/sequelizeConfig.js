@@ -7,8 +7,9 @@ const defineProductVideosModel = require('../models/productVideosModel')
 const defineWishListModel = require('../models/wishListModel')
 const defineProductViewModel = require('../models/productViewModel')
 const defineRefreshTokenModel = require('../models/refreshTokenModel')
-const defineMessagesModel = require('../models/messagesModel')
 const defineChatsModel = require('../models/chatsModel')
+const defineMessagesModel = require('../models/messagesModel')
+const defineOffersModel = require('../models/offersModel')
 const defineParticipantModel = require('../models/participantModel')
 const defineFollowersModel = require('../models/followersModel')
 const defineReviewsModel = require('../models/reviewsModel')
@@ -38,12 +39,14 @@ const productVideosModel = defineProductVideosModel(sequelize);
 const wishListModel = defineWishListModel(sequelize);
 const productViewModel = defineProductViewModel(sequelize);
 const refreshTokenModel = defineRefreshTokenModel(sequelize);
-const messagesModel = defineMessagesModel(sequelize);
 const chatsModel = defineChatsModel(sequelize);
+const messagesModel = defineMessagesModel(sequelize);
 const participantModel = defineParticipantModel(sequelize);
+const offersModel = defineOffersModel(sequelize);
 const followersModel = defineFollowersModel(sequelize);
 const reviewsModel = defineReviewsModel(sequelize);
 const reviewImagesModel = defineReviewImagesModel(sequelize);
+
 
 // Define association after defining all models
 categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' });
@@ -74,6 +77,9 @@ chatsModel.belongsToMany(productModel, {
 
 chatsModel.hasMany(messagesModel, { foreignKey: 'chat_id', as: 'messages', onDelete: 'CASCADE' });
 messagesModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat', onDelete: 'NO ACTION' });
+
+chatsModel.hasMany(offersModel, { foreignKey: 'chat_id', as: 'offers', onDelete: 'CASCADE' });
+offersModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat', onDelete: 'NO ACTION' });
 
 participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'authenticatedParticipant', onDelete: 'NO ACTION' });
 participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'otherParticipant', onDelete: 'NO ACTION' });
@@ -121,6 +127,7 @@ const initializeDatabase = async () => {
     messagesModel,
     chatsModel,
     participantModel,
+    offersModel,
     followersModel,
     reviewsModel,
     reviewImagesModel

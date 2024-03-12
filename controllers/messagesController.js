@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, participantModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, participantModel, offersModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -152,7 +152,16 @@ const getChatId = async (req, res) => {
 
   try {
     const { chat_id } = req.params;
-    const chatID = await chatsModel.findOne({ where: { chat_id } });
+    const chatID = await chatsModel.findOne({ 
+      where: { 
+        chat_id 
+      },
+      include: {
+        model: offersModel,
+        attributes: ['chat_id', 'buyer_id', 'seller_id', 'product_id', 'offer_price'],
+        as: 'offers',
+      }
+    });
     res.json(chatID);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve chat ID.' });
@@ -211,17 +220,30 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
 
 const createChatMessages = async (req, res) => {
   try {
-    const { sender_id, receiver_id, product_id, content } = req.body;
+    const { sender_id, receiver_id, product_id, content, offer_price } = req.body;
 
     // Store the message in the database regardless of the WebSocket condition
     const chatId = await createChatId(sender_id, receiver_id, product_id);
+
+    const messageContent = `<h6>₱${offer_price}</h6>` || content;
+
     const message = await messagesModel.create({
       chat_id: chatId,
       sender_id,
       receiver_id,
       product_id,
-      content,
+      content: messageContent,
     });
+
+
+    await offersModel.create({
+      chat_id: chatId,
+      buyer_id: sender_id,
+      seller_id: receiver_id,
+      product_id: product_id,
+      offer_price,
+    })
+
 
     // Store participants in the chat_participants table
     await participantModel.bulkCreate([
