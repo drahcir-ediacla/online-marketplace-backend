@@ -152,9 +152,9 @@ const getChatId = async (req, res) => {
 
   try {
     const { chat_id } = req.params;
-    const chatID = await chatsModel.findOne({ 
-      where: { 
-        chat_id 
+    const chatID = await chatsModel.findOne({
+      where: {
+        chat_id
       },
       include: {
         model: offersModel,
@@ -225,7 +225,12 @@ const createChatMessages = async (req, res) => {
     // Store the message in the database regardless of the WebSocket condition
     const chatId = await createChatId(sender_id, receiver_id, product_id);
 
-    const messageContent = `<h6>₱${offer_price}</h6>` || content;
+    let messageContent;
+    if (offer_price) {
+      messageContent = `<h6>₱${offer_price}</h6>`;
+    } else {
+      messageContent = content;
+    }
 
     const message = await messagesModel.create({
       chat_id: chatId,
@@ -241,7 +246,7 @@ const createChatMessages = async (req, res) => {
       buyer_id: sender_id,
       seller_id: receiver_id,
       product_id: product_id,
-      offer_price,
+      offer_price: offer_price || null,
     })
 
 
@@ -266,7 +271,17 @@ const createChatMessages = async (req, res) => {
 
 const sendChatMessages = async (req, res) => {
   try {
-    const { chat_id, sender_id, receiver_id, product_id, content } = req.body;
+    const { chat_id, sender_id, receiver_id, product_id, content, offer_price } = req.body;
+
+    let messageContent;
+    if (offer_price) {
+      messageContent = `<h6>₱${offer_price}</h6>`;
+    } else {
+      messageContent = content;
+    }
+
+    // Use Sequelize transaction to ensure data integrity
+    const transaction = await sequelize.transaction();
 
     // Store the message in the database regardless of the WebSocket condition
     // const chatId = await useChatId(sender_id, receiver_id, product_id);
@@ -275,8 +290,28 @@ const sendChatMessages = async (req, res) => {
       sender_id,
       receiver_id,
       product_id,
-      content,
+      content: messageContent,
+    }, { transaction });
+
+
+    const existingOffer = await offersModel.findOne({
+      where: {
+        chat_id,
+      },
     });
+
+
+    if (!existingOffer) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Offer not found' });
+    }
+
+
+    await existingOffer.update({
+      offer_price: offer_price || null,
+    }, { transaction })
+
+    await transaction.commit();
 
     res.status(201).json(message);
   } catch (error) {
