@@ -158,7 +158,7 @@ const getChatId = async (req, res) => {
       },
       include: {
         model: offersModel,
-        attributes: ['chat_id', 'buyer_id', 'seller_id', 'product_id', 'offer_price'],
+        attributes: ['chat_id', 'buyer_id', 'seller_id', 'product_id', 'offer_price', 'offer_status'],
         as: 'offers',
       }
     });
@@ -271,7 +271,36 @@ const createChatMessages = async (req, res) => {
 
 const sendChatMessages = async (req, res) => {
   try {
-    const { chat_id, sender_id, receiver_id, product_id, content, offer_price } = req.body;
+    const { chat_id, sender_id, receiver_id, product_id, content } = req.body;
+
+    
+    // Store the message in the database regardless of the WebSocket condition
+    // const chatId = await useChatId(sender_id, receiver_id, product_id);
+    const message = await messagesModel.create({
+      chat_id,
+      sender_id,
+      receiver_id,
+      product_id,
+      content,
+    });
+
+
+    res.status(201).json(message);
+  } catch (error) {
+    console.error('Detailed Error:', error); // Log detailed error
+    res.status(500).json({ error: 'Failed to create message.' });
+  }
+};
+
+
+
+
+//-----------------------SEND OFFER TO EXISTING CHAT  ----------------------------//
+
+
+const sendOfferMessages = async (req, res) => {
+  try {
+    const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
 
     let messageContent;
     if (offer_price) {
@@ -309,6 +338,7 @@ const sendChatMessages = async (req, res) => {
 
     await existingOffer.update({
       offer_price: offer_price || null,
+      offer_status,
     }, { transaction })
 
     await transaction.commit();
@@ -358,6 +388,7 @@ module.exports = {
   getAllUserChat,
   createChatMessages,
   sendChatMessages,
+  sendOfferMessages,
   getMessages,
   getAllChat
 }

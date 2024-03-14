@@ -7,6 +7,7 @@ router.get('/api/check/chatid', MessagesController.checkChatId)
 router.get('/api/get/chat/:chat_id', MessagesController.getChatId)
 router.post('/api/create/chat', MessagesController.createChatMessages);
 router.post('/api/send/messages', MessagesController.sendChatMessages);
+router.post('/api/send-offer/messages', MessagesController.sendOfferMessages);
 router.get('/api/get-all/user-chat', MessagesController.getAllUserChat)
 router.get('/api/get-all/chats', MessagesController.getAllChat)
 router.get('/api/get/messages/:chat_id', isParticipant, MessagesController.getMessages)

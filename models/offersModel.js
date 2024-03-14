@@ -27,6 +27,11 @@ const defineOffersModel = (sequelize) => {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: true,
         },
+        offer_status: {
+            type: DataTypes.ENUM('None','Pending','Accepted','Declined'), 
+            defaultValue: 'None',
+            allowNull: false,
+        },
     }, {
         tableName: 'offers',
         timestamps: false,
