@@ -303,52 +303,59 @@ const sendOrCancelOffer = async (req, res) => {
     const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
 
     let messageContent;
-    if (offer_price) {
+    if (offer_status === 'Pending') {
       messageContent = `<h6 style="color: #035956; font-weight: 600;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
     } else {
-      messageContent = `<h6 style="color: red; font-weight: 500;">Offer Cancelled</h6><span style="font-weight: 600;">${content}</span>`;
+      if (offer_status === 'Cancelled') {
+        messageContent = `<h6 style="color: red; font-weight: 500;">Offer Cancelled</h6><span style="font-weight: 600;">${content}</span>`;
+      }
+      else if (offer_status === 'Accepted') {
+        messageContent = `<h6 style="color: green; font-weight: 500;">Offer Accepted</h6><span style="font-weight: 600;">${content}</span>`;
+      }
+      else if (offer_status === 'Declined') {
+        messageContent = `<h6 style="color: red; font-weight: 500;">Offer Declined</h6><span style="font-weight: 600;">${content}</span>`;
+      }
     }
 
-    // Use Sequelize transaction to ensure data integrity
     const transaction = await sequelize.transaction();
 
-    // Store the message in the database regardless of the WebSocket condition
-    // const chatId = await useChatId(sender_id, receiver_id, product_id);
-    const message = await messagesModel.create({
-      chat_id,
-      sender_id,
-      receiver_id,
-      product_id,
-      content: messageContent,
-    }, { transaction });
-
-
-    const existingOffer = await offersModel.findOne({
-      where: {
+    try {
+      const message = await messagesModel.create({
         chat_id,
-      },
-    });
+        sender_id,
+        receiver_id,
+        product_id,
+        content: messageContent,
+      }, { transaction });
 
+      const existingOffer = await offersModel.findOne({
+        where: { chat_id }
+      });
 
-    if (!existingOffer) {
+      if (!existingOffer) {
+        await transaction.rollback();
+        return res.status(404).json({ error: 'Offer not found' });
+      }
+
+      await existingOffer.update({
+        offer_price: offer_price || null,
+        offer_status
+      }, { transaction });
+
+      await transaction.commit();
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error('Detailed Error:', error);
       await transaction.rollback();
-      return res.status(404).json({ error: 'Offer not found' });
+      res.status(500).json({ error: 'Failed to create message.' });
     }
-
-
-    await existingOffer.update({
-      offer_price: offer_price || null,
-      offer_status,
-    }, { transaction })
-
-    await transaction.commit();
-
-    res.status(201).json(message);
   } catch (error) {
-    console.error('Detailed Error:', error); // Log detailed error
-    res.status(500).json({ error: 'Failed to create message.' });
+    console.error('Top-level Error:', error);
+    res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
 
 
 
@@ -361,9 +368,9 @@ const acceptOrDeclineOffer = async (req, res) => {
 
     let messageContent;
     if (offer_price) {
-      messageContent = offer_price;
+      messageContent = `<h6 style="color: #035956; font-weight: 600;">Offer Accepted</h6><span style="font-weight: 600;">${offer_price}</span>`;
     } else {
-      messageContent = content;
+      messageContent = `<h6 style="color: red; font-weight: 500;">Offer Declined</h6><span style="font-weight: 600;">${content}</span>`;
     }
 
     // Use Sequelize transaction to ensure data integrity

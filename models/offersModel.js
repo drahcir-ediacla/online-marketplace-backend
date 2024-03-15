@@ -28,7 +28,7 @@ const defineOffersModel = (sequelize) => {
             allowNull: true,
         },
         offer_status: {
-            type: DataTypes.ENUM('None','Pending','Accepted','Declined'), 
+            type: DataTypes.ENUM('None','Pending','Cancelled','Accepted','Declined'), 
             defaultValue: 'None',
             allowNull: false,
         },
