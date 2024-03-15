@@ -295,16 +295,73 @@ const sendChatMessages = async (req, res) => {
 
 
 
-//-----------------------SEND OFFER TO EXISTING CHAT  ----------------------------//
+//-----------------------SEND OR CANCEL OFFER IN EXISTING CHAT  ----------------------------//
 
 
-const sendOfferMessages = async (req, res) => {
+const sendOrCancelOffer = async (req, res) => {
   try {
     const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
 
     let messageContent;
     if (offer_price) {
-      messageContent = `<h6>₱${offer_price}</h6>`;
+      messageContent = `<h6 style="color: #035956; font-weight: 600;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
+    } else {
+      messageContent = `<h6 style="color: red; font-weight: 500;">Offer Cancelled</h6><span style="font-weight: 600;">${content}</span>`;
+    }
+
+    // Use Sequelize transaction to ensure data integrity
+    const transaction = await sequelize.transaction();
+
+    // Store the message in the database regardless of the WebSocket condition
+    // const chatId = await useChatId(sender_id, receiver_id, product_id);
+    const message = await messagesModel.create({
+      chat_id,
+      sender_id,
+      receiver_id,
+      product_id,
+      content: messageContent,
+    }, { transaction });
+
+
+    const existingOffer = await offersModel.findOne({
+      where: {
+        chat_id,
+      },
+    });
+
+
+    if (!existingOffer) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Offer not found' });
+    }
+
+
+    await existingOffer.update({
+      offer_price: offer_price || null,
+      offer_status,
+    }, { transaction })
+
+    await transaction.commit();
+
+    res.status(201).json(message);
+  } catch (error) {
+    console.error('Detailed Error:', error); // Log detailed error
+    res.status(500).json({ error: 'Failed to create message.' });
+  }
+};
+
+
+
+//----------------------- ACCEPT OR DECLINE OFFER IN EXISTING CHAT  ----------------------------//
+
+
+const acceptOrDeclineOffer = async (req, res) => {
+  try {
+    const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
+
+    let messageContent;
+    if (offer_price) {
+      messageContent = offer_price;
     } else {
       messageContent = content;
     }
@@ -353,7 +410,6 @@ const sendOfferMessages = async (req, res) => {
 
 
 
-
 const getMessages = async (req, res) => {
 
   try {
@@ -388,7 +444,8 @@ module.exports = {
   getAllUserChat,
   createChatMessages,
   sendChatMessages,
-  sendOfferMessages,
+  sendOrCancelOffer,
+  acceptOrDeclineOffer,
   getMessages,
   getAllChat
 }
