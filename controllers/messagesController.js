@@ -220,16 +220,24 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
 
 const createChatMessages = async (req, res) => {
   try {
-    const { sender_id, receiver_id, product_id, content, offer_price } = req.body;
+    const { sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
 
     // Store the message in the database regardless of the WebSocket condition
     const chatId = await createChatId(sender_id, receiver_id, product_id);
 
     let messageContent;
     if (offer_price) {
-      messageContent = `<h6>₱${offer_price}</h6>`;
+      messageContent = `<h6 style="color: #035956; font-weight: 600;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
     } else {
       messageContent = content;
+    }
+
+
+    let offerStatus;
+    if (offer_price) {
+      offerStatus = 'Pending';
+    } else {
+      offerStatus = 'None';
     }
 
     const message = await messagesModel.create({
@@ -247,6 +255,7 @@ const createChatMessages = async (req, res) => {
       seller_id: receiver_id,
       product_id: product_id,
       offer_price: offer_price || null,
+      offer_status: offerStatus,
     })
 
 
@@ -304,7 +313,7 @@ const sendOrCancelOffer = async (req, res) => {
 
     let messageContent;
     if (offer_status === 'Pending') {
-      messageContent = `<h6 style="color: #035956; font-weight: 600;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
+      messageContent = `<h6 style="color: #035956; font-weight: 500;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
     } else {
       if (offer_status === 'Cancelled') {
         messageContent = `<h6 style="color: red; font-weight: 500;">Offer Cancelled</h6><span style="font-weight: 600;">${content}</span>`;
