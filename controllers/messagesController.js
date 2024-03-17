@@ -307,7 +307,7 @@ const sendChatMessages = async (req, res) => {
 //-----------------------SEND OR CANCEL OFFER IN EXISTING CHAT  ----------------------------//
 
 
-const sendOrCancelOffer = async (req, res) => {
+const handleOfferOptions = async (req, res) => {
   try {
     const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
 
@@ -460,7 +460,7 @@ module.exports = {
   getAllUserChat,
   createChatMessages,
   sendChatMessages,
-  sendOrCancelOffer,
+  handleOfferOptions,
   acceptOrDeclineOffer,
   getMessages,
   getAllChat
