@@ -52,7 +52,7 @@ const defineProductModel = (sequelize) => {
         },
     }, {
         tableName: 'products', // Specify the actual table name in your database
-        timestamps: false, // Add this line to disable timestamps
+        // timestamps: false, // Add this line to disable timestamps
     })
 
     return productModel;

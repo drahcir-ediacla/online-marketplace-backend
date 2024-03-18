@@ -9,7 +9,7 @@ const createReviews = async (req, res) => {
 
 
         const userId = req.user.id;
-        const { target_id, role, rating, comment } = req.body;
+        const { target_id, role, product_id, rating, comment } = req.body;
 
         // Validate rating range (1 to 5)
         if (rating < 1 || rating > 5) {
@@ -26,6 +26,7 @@ const createReviews = async (req, res) => {
             reviewer_id: userId,
             target_id,
             role,
+            product_id,
             rating,
             comment,
         });

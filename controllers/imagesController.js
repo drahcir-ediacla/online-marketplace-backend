@@ -1,6 +1,7 @@
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const cloudinaryConfig = require('../config/cloudinaryConfig');
+const { reviewImagesModel } = require('../config/sequelizeConfig');
 
 cloudinary.config(cloudinaryConfig);
 

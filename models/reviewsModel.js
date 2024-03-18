@@ -22,6 +22,11 @@ const defineReviewsModel = (sequelize) => {
             type: DataTypes.ENUM('Buyer', 'Seller'),
             allowNull: false,
         },
+        product_id: {
+            type: DataTypes.INTEGER,
+            unique: false,
+            allowNull: false,
+        },
         rating: {
             type: DataTypes.TINYINT,
             unique: false,
@@ -34,7 +39,7 @@ const defineReviewsModel = (sequelize) => {
         },
     }, {
         tableName: 'reviews',
-        timestamps: false,
+        // timestamps: false,
     });
     
     

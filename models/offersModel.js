@@ -34,7 +34,7 @@ const defineOffersModel = (sequelize) => {
         },
     }, {
         tableName: 'offers',
-        timestamps: false,
+        // timestamps: false,
     });
 
     return offersModel;
