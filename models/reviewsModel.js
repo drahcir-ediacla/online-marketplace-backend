@@ -13,6 +13,11 @@ const defineReviewsModel = (sequelize) => {
             unique: false,
             allowNull: false,
         },
+        reviewer_name: {
+            type: DataTypes.STRING,
+            unique: false,
+            allowNull: true,
+        },
         target_id: {
             type: DataTypes.BIGINT,
             unique: false,
@@ -41,8 +46,8 @@ const defineReviewsModel = (sequelize) => {
         tableName: 'reviews',
         // timestamps: false,
     });
-    
-    
+
+
     return reviewsModel;
 }
 

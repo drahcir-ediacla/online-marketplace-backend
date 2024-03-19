@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, participantModel, offersModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, participantModel, offersModel, reviewsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -149,24 +149,42 @@ const getAllUserChat = async (req, res) => {
 
 // --------------- GET CHAT BY ID  --------------- //
 const getChatId = async (req, res) => {
-
   try {
     const { chat_id } = req.params;
+    const { sender_id } = req.params;
     const chatID = await chatsModel.findOne({
       where: {
         chat_id
       },
-      include: {
-        model: offersModel,
-        attributes: ['chat_id', 'buyer_id', 'seller_id', 'product_id', 'offer_price', 'offer_status'],
-        as: 'offers',
-      }
+      include: [
+        {
+          model: offersModel,
+          attributes: ['chat_id', 'buyer_id', 'seller_id', 'product_id', 'offer_price', 'offer_status'],
+          as: 'offers',
+        },
+        {
+          model: reviewsModel,
+          attributes: ['review_id', 'reviewer_id'],
+          as: 'review',
+          where: {
+            chat_id: chat_id,
+            reviewer_id: sender_id,
+          },
+          required: false, // Set required to false to return even if reviewsModel doesn't have the chat ID
+        }
+      ]
     });
+    
+    if (!chatID) {
+      return res.status(404).json({ error: 'Chat ID not found.' });
+    }
+
     res.json(chatID);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve chat ID.' });
   }
 };
+
 
 
 // --------------- CREATE NEW CHAT MESSAGES  --------------- //
@@ -282,7 +300,7 @@ const sendChatMessages = async (req, res) => {
   try {
     const { chat_id, sender_id, receiver_id, product_id, content } = req.body;
 
-    
+
     // Store the message in the database regardless of the WebSocket condition
     // const chatId = await useChatId(sender_id, receiver_id, product_id);
     const message = await messagesModel.create({

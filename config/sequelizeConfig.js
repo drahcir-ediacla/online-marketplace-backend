@@ -79,16 +79,17 @@ chatsModel.hasMany(messagesModel, { foreignKey: 'chat_id', as: 'messages', onDel
 messagesModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat', onDelete: 'NO ACTION' });
 
 chatsModel.hasMany(offersModel, { foreignKey: 'chat_id', as: 'offers', onDelete: 'CASCADE' });
-offersModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat', onDelete: 'NO ACTION' });
+offersModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
 
-participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'authenticatedParticipant', onDelete: 'NO ACTION' });
-participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'otherParticipant', onDelete: 'NO ACTION' });
-participantModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat', onDelete: 'NO ACTION' });
+participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'authenticatedParticipant' });
+participantModel.belongsTo(userModel, { foreignKey: 'user_id', as: 'otherParticipant' });
+participantModel.belongsTo(chatsModel, { foreignKey: 'chat_id', as: 'chat' });
 
 followersModel.belongsTo(userModel, { foreignKey: 'follower_id', as: 'followerInfo' });
 followersModel.belongsTo(userModel, { foreignKey: 'following_id', as: 'followingInfo' });
 
 reviewsModel.hasMany(reviewImagesModel, { foreignKey: 'review_id', as: 'images', onDelete: 'CASCADE' });
+chatsModel.hasMany(reviewsModel, { foreignKey: 'chat_id', as: 'review' });
 
 
 
