@@ -42,6 +42,11 @@ const defineReviewsModel = (sequelize) => {
             unique: false,
             allowNull: true,
         },
+        profile_pic: {
+            type: DataTypes.STRING,
+            unique: false,
+            allowNull: true,
+        },
     }, {
         tableName: 'reviews',
         // timestamps: false,

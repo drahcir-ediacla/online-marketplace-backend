@@ -8,7 +8,7 @@ const createReviews = async (req, res) => {
 
 
         const userId = req.user.id;
-        const { reviewer_name, target_id, role, product_id, chat_id, rating, comment, imageUrls } = req.body;
+        const { reviewer_name, target_id, role, product_id, chat_id, rating, comment, profile_pic, imageUrls } = req.body;
 
         // Validate rating range (1 to 5)
         if (rating < 1 || rating > 5) {
@@ -30,28 +30,29 @@ const createReviews = async (req, res) => {
             product_id,
             rating,
             comment,
+            profile_pic,
         });
 
         // Insert associated image and video URLs for the product
-    if (imageUrls && imageUrls.length > 0) {
-        const imageInsertPromises = [];
-  
-        imageUrls.forEach((mediaUrl) => {
-            imageInsertPromises.push(
-                reviewImagesModel.create({
-                review_id: newReview.review_id,
-                image_url: mediaUrl,
-              })
-            );
-        });
-  
-        console.log('File URLs for images:', imageInsertPromises);
-  
-        await Promise.all(imageInsertPromises);
-  
-        newReview.file_urls = imageUrls;
-        console.log('Product with files:', newReview);
-      }
+        if (imageUrls && imageUrls.length > 0) {
+            const imageInsertPromises = [];
+
+            imageUrls.forEach((mediaUrl) => {
+                imageInsertPromises.push(
+                    reviewImagesModel.create({
+                        review_id: newReview.review_id,
+                        image_url: mediaUrl,
+                    })
+                );
+            });
+
+            console.log('File URLs for images:', imageInsertPromises);
+
+            await Promise.all(imageInsertPromises);
+
+            newReview.file_urls = imageUrls;
+            console.log('Product with files:', newReview);
+        }
 
         res.status(201).json({ success: true, newReview });
     } catch (error) {
@@ -61,16 +62,17 @@ const createReviews = async (req, res) => {
 };
 
 
-// --------------- GET REVIEWS BY TARGET ID  --------------- //
+
 // --------------- GET REVIEWS BY TARGET ID  --------------- //
 const getReviewsTargetId = async (req, res) => {
     try {
-        const { target_id } = req.params; // Extract target_id from params
+        const { targetId } = req.params; // Extract target_id from params
+        console.log('target_id:', targetId )
 
         const reviewsTargetId = await reviewsModel.findAll({
-            attributes: ['review_id', 'target_id', 'reviewer_name', 'role', 'rating', 'comment', 'createdAt', 'updateAt'],
+            attributes: ['review_id', 'target_id', 'reviewer_name', 'role', 'rating', 'comment', 'profile_pic', 'createdAt'],
             where: {
-                target_id: target_id, // Use the extracted target_id
+                target_id: targetId , // Use the extracted target_id
             },
             include: [
                 {
@@ -92,7 +94,7 @@ const getReviewsTargetId = async (req, res) => {
     }
 };
 
-  
+
 
 
 module.exports = { createReviews, getReviewsTargetId };
