@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, participantModel, offersModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, participantModel, offersModel, reviewsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
 
 
 
@@ -149,15 +149,42 @@ const getAllUserChat = async (req, res) => {
 
 // --------------- GET CHAT BY ID  --------------- //
 const getChatId = async (req, res) => {
-
   try {
     const { chat_id } = req.params;
-    const chatID = await chatsModel.findOne({ where: { chat_id } });
+    const { sender_id } = req.params;
+    const chatID = await chatsModel.findOne({
+      where: {
+        chat_id
+      },
+      include: [
+        {
+          model: offersModel,
+          attributes: ['chat_id', 'buyer_id', 'seller_id', 'product_id', 'offer_price', 'offer_status'],
+          as: 'offers',
+        },
+        {
+          model: reviewsModel,
+          attributes: ['review_id', 'reviewer_id'],
+          as: 'review',
+          where: {
+            chat_id: chat_id,
+            reviewer_id: sender_id,
+          },
+          required: false, // Set required to false to return even if reviewsModel doesn't have the chat ID
+        }
+      ]
+    });
+    
+    if (!chatID) {
+      return res.status(404).json({ error: 'Chat ID not found.' });
+    }
+
     res.json(chatID);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve chat ID.' });
   }
 };
+
 
 
 // --------------- CREATE NEW CHAT MESSAGES  --------------- //
@@ -211,12 +238,25 @@ const createChatId = async (sender_id, receiver_id, product_id) => {
 
 const createChatMessages = async (req, res) => {
   try {
-    const { sender_id, receiver_id, product_id, content, offer_price } = req.body;
+    const { sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
 
     // Store the message in the database regardless of the WebSocket condition
     const chatId = await createChatId(sender_id, receiver_id, product_id);
 
-    const messageContent = offer_price || content;
+    let messageContent;
+    if (offer_price) {
+      messageContent = `<h6 style="color: #035956; font-weight: 600;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
+    } else {
+      messageContent = content;
+    }
+
+
+    let offerStatus;
+    if (offer_price) {
+      offerStatus = 'Pending';
+    } else {
+      offerStatus = 'None';
+    }
 
     const message = await messagesModel.create({
       chat_id: chatId,
@@ -232,7 +272,8 @@ const createChatMessages = async (req, res) => {
       buyer_id: sender_id,
       seller_id: receiver_id,
       product_id: product_id,
-      offer_price,
+      offer_price: offer_price || null,
+      offer_status: offerStatus,
     })
 
 
@@ -259,6 +300,7 @@ const sendChatMessages = async (req, res) => {
   try {
     const { chat_id, sender_id, receiver_id, product_id, content } = req.body;
 
+
     // Store the message in the database regardless of the WebSocket condition
     // const chatId = await useChatId(sender_id, receiver_id, product_id);
     const message = await messagesModel.create({
@@ -269,6 +311,7 @@ const sendChatMessages = async (req, res) => {
       content,
     });
 
+
     res.status(201).json(message);
   } catch (error) {
     console.error('Detailed Error:', error); // Log detailed error
@@ -276,6 +319,127 @@ const sendChatMessages = async (req, res) => {
   }
 };
 
+
+
+
+//-----------------------SEND OR CANCEL OFFER IN EXISTING CHAT  ----------------------------//
+
+
+const handleOfferOptions = async (req, res) => {
+  try {
+    const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
+
+    let messageContent;
+    if (offer_status === 'Pending') {
+      messageContent = `<h6 style="color: #035956; font-weight: 500;">Offered Price</h6><span style="font-weight: 600;">${offer_price}</span>`;
+    } else {
+      if (offer_status === 'Cancelled') {
+        messageContent = `<h6 style="color: red; font-weight: 500;">Offer Cancelled</h6><span style="font-weight: 600;">${content}</span>`;
+      }
+      else if (offer_status === 'Accepted') {
+        messageContent = `<h6 style="color: green; font-weight: 500;">Offer Accepted</h6><span style="font-weight: 600;">${content}</span>`;
+      }
+      else if (offer_status === 'Declined') {
+        messageContent = `<h6 style="color: red; font-weight: 500;">Offer Declined</h6><span style="font-weight: 600;">${content}</span>`;
+      }
+    }
+
+    const transaction = await sequelize.transaction();
+
+    try {
+      const message = await messagesModel.create({
+        chat_id,
+        sender_id,
+        receiver_id,
+        product_id,
+        content: messageContent,
+      }, { transaction });
+
+      const existingOffer = await offersModel.findOne({
+        where: { chat_id }
+      });
+
+      if (!existingOffer) {
+        await transaction.rollback();
+        return res.status(404).json({ error: 'Offer not found' });
+      }
+
+      await existingOffer.update({
+        offer_price: offer_price || null,
+        offer_status
+      }, { transaction });
+
+      await transaction.commit();
+
+      res.status(201).json(message);
+    } catch (error) {
+      console.error('Detailed Error:', error);
+      await transaction.rollback();
+      res.status(500).json({ error: 'Failed to create message.' });
+    }
+  } catch (error) {
+    console.error('Top-level Error:', error);
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+};
+
+
+
+
+//----------------------- ACCEPT OR DECLINE OFFER IN EXISTING CHAT  ----------------------------//
+
+
+const acceptOrDeclineOffer = async (req, res) => {
+  try {
+    const { chat_id, sender_id, receiver_id, product_id, content, offer_price, offer_status } = req.body;
+
+    let messageContent;
+    if (offer_price) {
+      messageContent = `<h6 style="color: #035956; font-weight: 600;">Offer Accepted</h6><span style="font-weight: 600;">${offer_price}</span>`;
+    } else {
+      messageContent = `<h6 style="color: red; font-weight: 500;">Offer Declined</h6><span style="font-weight: 600;">${content}</span>`;
+    }
+
+    // Use Sequelize transaction to ensure data integrity
+    const transaction = await sequelize.transaction();
+
+    // Store the message in the database regardless of the WebSocket condition
+    // const chatId = await useChatId(sender_id, receiver_id, product_id);
+    const message = await messagesModel.create({
+      chat_id,
+      sender_id,
+      receiver_id,
+      product_id,
+      content: messageContent,
+    }, { transaction });
+
+
+    const existingOffer = await offersModel.findOne({
+      where: {
+        chat_id,
+      },
+    });
+
+
+    if (!existingOffer) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Offer not found' });
+    }
+
+
+    await existingOffer.update({
+      offer_price: offer_price || null,
+      offer_status,
+    }, { transaction })
+
+    await transaction.commit();
+
+    res.status(201).json(message);
+  } catch (error) {
+    console.error('Detailed Error:', error); // Log detailed error
+    res.status(500).json({ error: 'Failed to create message.' });
+  }
+};
 
 
 
@@ -314,6 +478,8 @@ module.exports = {
   getAllUserChat,
   createChatMessages,
   sendChatMessages,
+  handleOfferOptions,
+  acceptOrDeclineOffer,
   getMessages,
   getAllChat
 }

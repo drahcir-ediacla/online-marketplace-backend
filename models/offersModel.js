@@ -9,6 +9,7 @@ const defineOffersModel = (sequelize) => {
         },
         chat_id: {
             type: DataTypes.STRING,
+            unique: true,
             allowNull: false,
         },
         buyer_id: {

@@ -143,10 +143,6 @@ const getAllUserChat = async (req, res) => {
 
 
 
-
-
-
-
 // --------------- GET CHAT BY ID  --------------- //
 const getChatId = async (req, res) => {
   try {
@@ -174,7 +170,7 @@ const getChatId = async (req, res) => {
         }
       ]
     });
-    
+
     if (!chatID) {
       return res.status(404).json({ error: 'Chat ID not found.' });
     }
@@ -289,6 +285,10 @@ const createChatMessages = async (req, res) => {
     res.status(500).json({ error: 'Failed to create message.' });
   }
 };
+
+
+
+
 
 
 

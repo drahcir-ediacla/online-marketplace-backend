@@ -87,7 +87,17 @@ const getReviewsTargetId = async (req, res) => {
             return res.status(404).json({ error: 'No reviews found.' });
         }
 
-        res.json(reviewsTargetId);
+        // Calculate total average rating
+        let totalRating = 0;
+        reviewsTargetId.forEach(review => {
+            totalRating += review.rating;
+        });
+        const averageRating = (totalRating / reviewsTargetId.length).toFixed(1);
+        const totalReviews = reviewsTargetId.length
+
+        // Respond with reviews and average rating
+        res.json({ reviewsTargetId, averageRating, totalReviews });
+
     } catch (error) {
         console.error(error); // Log the error for debugging
         res.status(500).json({ error: 'Failed to retrieve reviews.' });
