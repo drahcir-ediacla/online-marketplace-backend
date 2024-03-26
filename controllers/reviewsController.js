@@ -83,20 +83,35 @@ const getReviewsTargetId = async (req, res) => {
             ]
         });
 
-        if (reviewsTargetId.length === 0) {
-            return res.status(404).json({ error: 'No reviews found.' });
-        }
+        // Initialize object to store rating breakdown
+        let ratingBreakdown = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0
+        };
 
         // Calculate total average rating
         let totalRating = 0;
         reviewsTargetId.forEach(review => {
             totalRating += review.rating;
+
+            // Increment count for corresponding rating category
+            ratingBreakdown[review.rating]++;
         });
-        const averageRating = (totalRating / reviewsTargetId.length).toFixed(1);
+        
+        let averageRating = totalRating / reviewsTargetId.length;
+        if (isNaN(averageRating)) {
+            averageRating = 0; // Set average rating to 0 if it's NaN
+        } else {
+            averageRating = averageRating.toFixed(1);
+        }
+
         const totalReviews = reviewsTargetId.length
 
         // Respond with reviews and average rating
-        res.json({ reviewsTargetId, averageRating, totalReviews });
+        res.json({ reviewsTargetId, averageRating, totalReviews, ratingBreakdown });
 
     } catch (error) {
         console.error(error); // Log the error for debugging
