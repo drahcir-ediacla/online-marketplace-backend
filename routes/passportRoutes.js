@@ -95,7 +95,7 @@ router.get("/login/success", (req, res) => {
 
 
     // PASSPORT FACEBOOK
-  router.get("/facebook", passport.authenticate("facebook", { scope: ["profile", "email"] }));
+  router.get("/facebook", passport.authenticate("facebook", { scope: ["public_profile", "email"] }));
 
   router.get(
     "/facebook/callback",
