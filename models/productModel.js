@@ -35,6 +35,11 @@ const defineProductModel = (sequelize) => {
             unique: false,
             allowNull: false,
         },
+        mailing_delivery: {
+            type: DataTypes.STRING,
+            unique: false,
+            allowNull: false,
+        },
         youtube_link: {
             type: DataTypes.STRING,
             unique: false,
