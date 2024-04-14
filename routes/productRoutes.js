@@ -27,7 +27,7 @@ router.get('/api/getcategory/:id', ProductController.getCategoryById);
 router.post('/api/addwishlist/product-:id', ProductController.addWishList);
 router.post('/api/removewishlist/product-:id', ProductController.removeWishList);
 router.get('/api/getallwishlist', ProductController.getAllWishlist);
-router.get('/api/getuserwishlist/:user_id', ProductController.getWishlistByUserId);
+router.get('/api/getuserwishlist', ProductController.getWishlistByUserId);
 
 // Product view routes
 router.post('/api/product/view/:id', ProductController.addProductView);

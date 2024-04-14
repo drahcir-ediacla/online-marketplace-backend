@@ -161,9 +161,6 @@ const updateUser = async (req, res) => {
   if (req.isAuthenticated()) {
     // The user is authenticated, so you can access req.user to get the current user
 
-    // Log user information for debugging
-    console.log('Authenticated user:', req.user);
-    console.log('User ID from session:', req.user);
 
     try {
       // You can access the updated user data from req.body

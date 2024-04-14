@@ -740,42 +740,48 @@ const getAllWishlist = async (req, res) => {
 // ------------------- GET WISHLIST BY USER ID------------------- //
 
 const getWishlistByUserId = async (req, res) => {
-  try {
-    const userId = req.params.user_id;
+  if (req.isAuthenticated()) {
+    try {
+      const userId = req.user.id;
 
-    const product = await productModel.findAll({
-      attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'status', 'createdAt'],
-      order: [['createdAt', 'DESC']],
-      include: [
-        {
-          model: userModel,
-          attributes: ['city', 'region'],
-          as: 'seller',
-          where: { id: Sequelize.col('Product.seller_id') },
-        },
-        {
-          model: productImagesModel,
-          attributes: ['id', 'image_url'],
-          as: 'images',
-        },
-        {
-          model: wishListModel,
-          attributes: ['product_id', 'user_id'],
-          where: { user_id: userId },
-          as: 'wishlist',
-        },
-      ],
-    });
+      const product = await productModel.findAll({
+        attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'status', 'createdAt'],
+        order: [['createdAt', 'DESC']],
+        include: [
+          {
+            model: userModel,
+            attributes: ['city', 'region'],
+            as: 'seller',
+            where: { id: Sequelize.col('Product.seller_id') },
+          },
+          {
+            model: productImagesModel,
+            attributes: ['id', 'image_url'],
+            as: 'images',
+          },
+          {
+            model: wishListModel,
+            attributes: ['product_id', 'user_id'],
+            where: { user_id: userId },
+            as: 'wishlist',
+          },
+        ],
+      });
 
 
-    if (product.length === 0) {
-      return res.status(404).json({ error: 'No items in the wishlist' });
+      if (product.length === 0) {
+        return res.status(404).json({ error: 'No items in the wishlist' });
+      }
+
+      res.status(200).json(product);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).json({ error: 'An error occurred while fetching products.' });
     }
-
-    res.status(200).json(product);
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'An error occurred while fetching products.' });
+  } else {
+    // If not authenticated, send an error response
+    console.log('User not authenticated');
+    res.status(401).json({ success: false, message: 'User not authenticated' });
   }
 };
 
@@ -981,7 +987,7 @@ const markSoldProduct = async (req, res) => {
 
     const sellerId = req.user.id;
     const productId = req.params.productId;
-    const newStatus  = 'Sold';
+    const newStatus = 'Sold';
 
     // Use Sequelize transaction to ensure data integrity
     const transaction = await sequelize.transaction();
@@ -999,10 +1005,10 @@ const markSoldProduct = async (req, res) => {
         return res.status(404).json({ error: 'Product not found or you do not have permission to update it.' });
       }
 
-       // Assuming newStatus is a string with values 'Available' or 'Sold'
+      // Assuming newStatus is a string with values 'Available' or 'Sold'
       await existingProduct.update({
         status: newStatus,
-      }, {transaction});
+      }, { transaction });
 
       // Commit the transaction after a successful update
       await transaction.commit();
