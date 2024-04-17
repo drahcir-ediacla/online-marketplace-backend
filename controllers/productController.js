@@ -1,8 +1,34 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, chatsModel, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
+const { sequelize, notificationModel, followersModel, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const { v4: uuidv4 } = require('uuid');
 
+
+
+const getFollowers = async (userId) => {
+  try {
+
+    const followers = await followersModel.findAll({
+      where: {
+        following_id: userId,
+      },
+      include: [
+        {
+          model: userModel,
+          attributes: ['id', 'display_name', 'profile_pic'],
+          as: 'followerInfo'
+        }
+      ]
+    });
+
+    // Extract and return the follower objects
+    return followers.map(follower => follower.followerInfo);
+
+  } catch (error) {
+    console.error('Error fetching followers:', error);
+    throw error;
+  }
+};
 
 // --------------- ADD NEW PRODUCT  --------------- //
 const addNewProduct = async (req, res) => {
@@ -67,6 +93,21 @@ const addNewProduct = async (req, res) => {
       console.log('Product with files:', newProduct);
     }
 
+    // Get followers of the user who posted the listing
+    const followers = await getFollowers(sellerId);
+
+    // Send notifications to followers
+    followers.forEach(async (follower) => {
+      try {
+        await notificationModel.create({
+          recipient_id: follower.id,
+          message: `${req.user.display_name || 'Seller'} posted a new product listing: ${product_name}`
+        });
+      } catch (error) {
+        console.error('Error sending notification:', error);
+        // Handle error if notification fails to send (optional)
+      }
+    });
 
     res.status(201).json(newProduct);
   } catch (error) {

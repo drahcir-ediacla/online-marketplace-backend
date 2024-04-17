@@ -14,6 +14,7 @@ const defineParticipantModel = require('../models/participantModel')
 const defineFollowersModel = require('../models/followersModel')
 const defineReviewsModel = require('../models/reviewsModel')
 const defineReviewImagesModel = require('../models/reviewImagesModel')
+const defineNotificationModel = require('../models/notificationModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -46,6 +47,7 @@ const offersModel = defineOffersModel(sequelize);
 const followersModel = defineFollowersModel(sequelize);
 const reviewsModel = defineReviewsModel(sequelize);
 const reviewImagesModel = defineReviewImagesModel(sequelize);
+const notificationModel = defineNotificationModel(sequelize);
 
 
 // Define association after defining all models
@@ -131,5 +133,6 @@ const initializeDatabase = async () => {
     offersModel,
     followersModel,
     reviewsModel,
-    reviewImagesModel
+    reviewImagesModel,
+    notificationModel
   };
