@@ -93,6 +93,8 @@ followersModel.belongsTo(userModel, { foreignKey: 'following_id', as: 'following
 reviewsModel.hasMany(reviewImagesModel, { foreignKey: 'review_id', as: 'images', onDelete: 'CASCADE' });
 chatsModel.hasMany(reviewsModel, { foreignKey: 'chat_id', as: 'review' });
 
+notificationModel.belongsTo(userModel, { foreignKey: 'subject_user_id', as: 'subjectUser' });
+
 
 
 const initializeDatabase = async () => {

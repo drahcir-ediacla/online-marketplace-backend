@@ -101,7 +101,8 @@ const addNewProduct = async (req, res) => {
       try {
         await notificationModel.create({
           recipient_id: follower.id,
-          message: `${req.user.display_name || 'Seller'} posted a new product listing: ${product_name}`
+          subject_user_id: sellerId,
+          message: `<span style="font-weight: 600;">${req.user.display_name || 'Seller'}</span> posted a new product listing: <span style="font-weight: 600;">${product_name}</span>`
         });
       } catch (error) {
         console.error('Error sending notification:', error);

@@ -11,6 +11,10 @@ const defineNotificationModel = (sequelize) => {
             type: DataTypes.BIGINT,
             allowNull: false,
         },
+        subject_user_id: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+        },
         message: {
             type: DataTypes.TEXT,
             allowNull: false,
