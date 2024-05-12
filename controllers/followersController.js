@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { sequelize, followersModel, userModel } = require('../config/sequelizeConfig')
+const { sequelize, followersModel, userModel, notificationModel } = require('../config/sequelizeConfig')
 
 
 
@@ -16,6 +16,24 @@ const followUser = async (req, res) => {
             follower_id: followerId,
             following_id: followingId,
         });
+
+        // Retrieve the user being followed
+        const followedUser = await userModel.findOne({ where: { id: followingId } });
+
+        if (!followedUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Send notifications to user that has beend followed
+            try {
+                await notificationModel.create({
+                    recipient_id: followingId,
+                    subject_user_id: followerId,
+                    message: `<a href='/profile/${followerId}'><span style="font-weight: 600;">${req.user.display_name || 'Seller'}</span> started following you.</a>`
+                });
+            } catch (error) {
+                console.error('Error sending notification:', error);
+            }
 
         res.status(200).json({ message: 'User followed successfully' });
 

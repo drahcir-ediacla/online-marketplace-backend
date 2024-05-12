@@ -79,6 +79,11 @@ const getUnreadNotifications = async (req, res) => {
         recipient_id: userId,
         read: 0,
       },
+      include: [{
+        model: userModel,
+        as: 'subjectUser', // Alias for the user model in the notification model
+        attributes: ['profile_pic'], // Select the profile_pic attribute only
+      }],
     })
 
     res.status(200).json(unreadNotifications)
