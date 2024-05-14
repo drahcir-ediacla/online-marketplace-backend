@@ -17,12 +17,12 @@ const followUser = async (req, res) => {
             following_id: followingId,
         });
 
-        // Retrieve the user being followed
-        const followedUser = await userModel.findOne({ where: { id: followingId } });
+        // // Retrieve the user being followed
+        // const followedUser = await userModel.findOne({ where: { id: followingId } });
 
-        if (!followedUser) {
-            return res.status(404).json({ error: 'User not found' });
-        }
+        // if (!followedUser) {
+        //     return res.status(404).json({ error: 'User not found' });
+        // }
 
         // Send notifications to user that has beend followed
             try {

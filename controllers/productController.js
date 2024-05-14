@@ -720,6 +720,39 @@ const addWishList = async (req, res) => {
       product_id: productId,
     });
 
+
+    //Retrieve the seller ID
+    const wishlistedProduct = await productModel.findOne({
+      where:
+      {
+        id: productId
+      },
+      attributes: ['product_name', 'seller_id']
+    })
+
+    if (!wishlistedProduct) {
+      return res.status(404).json({ error: 'Product not found' })
+    }
+
+    // Send notifications to user that has beend followed
+    try {
+
+      let message;
+      if (userId === wishlistedProduct.seller_id) {
+        message = `<a href='/productdetails/${productId}/${encodeURIComponent(wishlistedProduct.product_name)}'><span style="font-weight: 600;">You</span> added your item <span style="font-weight: 600;">${wishlistedProduct.product_name}</span> to your wishlist.</a>`;
+      } else {
+        message = `<a href='/productdetails/${productId}/${encodeURIComponent(wishlistedProduct.product_name)}'><span style="font-weight: 600;">${req.user.display_name}</span> added your item <span style="font-weight: 600;">${wishlistedProduct.product_name}</span> to their wishlist.</a>`;
+      }
+
+      await notificationModel.create({
+        recipient_id: wishlistedProduct.seller_id,
+        subject_user_id: userId,
+        message: message
+      });
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+
     res.send('Item added to wishlist');
   } catch (error) {
     console.error('Error:', error);
