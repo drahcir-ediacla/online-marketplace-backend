@@ -414,7 +414,7 @@ const deleteProductById = async (req, res) => {
   try {
 
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Authentication required to update a product.' });
+      return res.status(401).json({ error: 'Authentication required to delete the product.' });
     }
 
     const sellerId = req.user.id;
