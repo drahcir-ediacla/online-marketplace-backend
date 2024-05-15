@@ -25,7 +25,7 @@ const imagesRoutes = require('./routes/imagesRoutes')
 const sessionStore = require('./config/sessionsConfig');
 const followerRoutes = require('./routes/followerRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
-const notificationRoutes = require('./routes/notificationRoutes')
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const port = process.env.PORT || 8081;
 

@@ -29,6 +29,37 @@ const getNotificationsByUserId = async (req, res) => {
 
 
 
+const getUnreadNotifications = async (req, res) => {
+  try {
+    // Check if the user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication is required to get unread notifications.' });
+    }
+
+    const userId = req.user.id;
+
+    const unreadNotifications = await notificationModel.findAll({
+      where: {
+        recipient_id: userId,
+        read: 0,
+      },
+      include: [{
+        model: userModel,
+        as: 'subjectUser', // Alias for the user model in the notification model
+        attributes: ['profile_pic'], // Select the profile_pic attribute only
+      }],
+    })
+
+    res.status(200).json(unreadNotifications)
+
+  } catch (error) {
+    console.error('Error fetching user unread notifications:', error);
+    res.status(500).json({ error: 'An error occurred while fetching unread notifications.' });
+  }
+}
+
+
+
 const readNotification = async (req, res) => {
   try {
     // Check if the user is authenticated
@@ -64,35 +95,37 @@ const readNotification = async (req, res) => {
 }
 
 
-
-const getUnreadNotifications = async (req, res) => {
+const readAllNotification = async (req, res) => {
   try {
-    // Check if the user is authenticated
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Authentication is required to get unread notifications.' });
+      return res.status(401).json({ error: 'Authentication is required to mark notifications as read.' })
     }
 
     const userId = req.user.id;
 
-    const unreadNotifications = await notificationModel.findAll({
+    const notifications = await notificationModel.findAll({
       where: {
-        recipient_id: userId,
-        read: 0,
-      },
-      include: [{
-        model: userModel,
-        as: 'subjectUser', // Alias for the user model in the notification model
-        attributes: ['profile_pic'], // Select the profile_pic attribute only
-      }],
+        recipient_id: userId
+      }
     })
 
-    res.status(200).json(unreadNotifications)
+    if (!notifications || notifications.length === 0) {
+      return res.status(404).json({ error: 'No Notifications found' });
+    }
 
+    // Update all notification to mark it as read
+    for (const notification of notifications) {
+      await notification.update({ read: true });
+    }
+
+    res.status(200).json({ message: 'All notification marked as read successfully.' })
   } catch (error) {
-    console.error('Error fetching user unread notifications:', error);
-    res.status(500).json({ error: 'An error occurred while fetching unread notifications.' });
+    console.error('Error marking all notification as read:', error);
+    res.status(500).json({ error: 'An error occurred while marking all notifications as read.' })
   }
 }
+
+
 
 
 const deleteNotificationbyId = async (req, res) => {
@@ -128,10 +161,44 @@ const deleteNotificationbyId = async (req, res) => {
 }
 
 
+const deleteAllNotifications = async (req, res) => {
+try {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json ({error: 'Authentication required to delete the all notifications.'})
+  }
+
+  const userId = req.user.id;
+
+  const notifications = await notificationModel.findAll({
+    where: {
+      recipient_id: userId
+    }
+  })
+
+  if (!notifications || notifications.length === 0) {
+    return res.status(404).json({ error: 'No Notifications found' });
+  }
+
+  // Delete all notifications to mark it as read
+  for (const notification of notifications) {
+    await notification.destroy();
+  }
+
+  res.status(200).json({ message: 'All notifications has been successfully deleted.' })
+  
+} catch (error) {
+  console.error('Error:', error)
+  res.status(500).json({error: 'An error occurred while deleting all notifications.'})
+}
+}
+
+
 
 module.exports = {
   getNotificationsByUserId,
   readNotification,
+  readAllNotification,
   getUnreadNotifications,
-  deleteNotificationbyId
+  deleteNotificationbyId,
+  deleteAllNotifications
 }
