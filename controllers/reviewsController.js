@@ -69,10 +69,18 @@ const getReviewsTargetId = async (req, res) => {
         const { targetId } = req.params; // Extract target_id from params
         console.log('target_id:', targetId )
 
+        let whereClause = {}; // Initialize an empty where clause
+
+        // Check if role is provided in request params
+        if (req.params.role) {
+            whereClause.role = req.params.role;
+        }
+
         const reviewsTargetId = await reviewsModel.findAll({
             attributes: ['review_id', 'target_id', 'reviewer_name', 'role', 'rating', 'comment', 'profile_pic', 'createdAt'],
             where: {
                 target_id: targetId , // Use the extracted target_id
+                ...whereClause, // Spread the whereClause object to include its properties
             },
             include: [
                 {
@@ -81,6 +89,14 @@ const getReviewsTargetId = async (req, res) => {
                     as: 'images',
                 },
             ]
+        });
+
+
+        const allReviewsTargetId = await reviewsModel.findAll({
+            attributes: ['rating'],
+            where: {
+                target_id: targetId , // Use the extracted target_id
+            },
         });
 
         // Initialize object to store rating breakdown
@@ -94,24 +110,24 @@ const getReviewsTargetId = async (req, res) => {
 
         // Calculate total average rating
         let totalRating = 0;
-        reviewsTargetId.forEach(review => {
+        allReviewsTargetId.forEach(review => {
             totalRating += review.rating;
 
             // Increment count for corresponding rating category
             ratingBreakdown[review.rating]++;
         });
         
-        let averageRating = totalRating / reviewsTargetId.length;
+        let averageRating = totalRating / allReviewsTargetId.length;
         if (isNaN(averageRating)) {
             averageRating = 0; // Set average rating to 0 if it's NaN
         } else {
             averageRating = averageRating.toFixed(1);
         }
 
-        const totalReviews = reviewsTargetId.length
+        const totalReviews = allReviewsTargetId.length
 
         // Respond with reviews and average rating
-        res.json({ reviewsTargetId, averageRating, totalReviews, ratingBreakdown });
+        res.json({ reviewsTargetId, allReviewsTargetId, averageRating, totalReviews, ratingBreakdown });
 
     } catch (error) {
         console.error(error); // Log the error for debugging
