@@ -27,6 +27,10 @@ const defineMessagesModel = (sequelize) => {
             type: DataTypes.TEXT,
             allowNull: false,
         },
+        read: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
         timestamp: {
             type: DataTypes.DATE,
             defaultValue: Sequelize.NOW,

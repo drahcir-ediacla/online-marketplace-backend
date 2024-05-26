@@ -1,5 +1,6 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, messagesModel, chatsModel, participantModel, offersModel, reviewsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig')
+const { sequelize, messagesModel, chatsModel, participantModel, offersModel, reviewsModel, productModel, productImagesModel, userModel } = require('../config/sequelizeConfig');
+const { response } = require('express');
 
 
 
@@ -71,7 +72,7 @@ const getAllUserChat = async (req, res) => {
               },
               {
                 model: messagesModel,
-                attributes: ['sender_id', 'receiver_id', 'content', 'timestamp'],
+                attributes: ['id', 'sender_id', 'receiver_id', 'content', 'read', 'timestamp'],
                 as: 'messages',
               },
             ],
@@ -468,8 +469,63 @@ const getAllChat = async (req, res) => {
 
 
 
+const getUnreadMessages = async (req, res) => {
+  try {
+
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication is required to get unread messages.' })
+    }
+
+    const userId = req.user.id
+
+    const unreadMessages = await messagesModel.findAll({
+      where: {
+        receiver_id: userId,
+        read: 0,
+      }
+    })
+
+    res.status(200).json(unreadMessages)
+
+  } catch (error) {
+    console.error('Error fetching user unread messages:', error);
+    res.status(500).json({ error: 'An error occurred while fetching unread messages.' });
+  }
+}
 
 
+const readMessageByChatId = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication is required to mark notifications as read.' })
+    }
+
+    const userId = req.user.id;
+    const { chat_id } = req.params;
+
+    const userUnreadMessage = await messagesModel.findAll({
+      where: {
+        chat_id,
+        receiver_id: userId,
+      }
+    })
+
+    if (!userUnreadMessage || userUnreadMessage.length === 0) {
+      return res.status(404).json({ error: 'Chat message not found' });
+    }
+
+    // Update all message by chat ID to mark it as read
+    for (const message of userUnreadMessage)
+      await message.update({ read: true });
+
+    // Return a success message
+    res.status(200).json({ message: 'Chat message marked as read successfully.' });
+
+  } catch (error) {
+    console.error('Error marking chat message as read:', error);
+    res.status(500).json({ error: 'An error occurred while marking chat message as read.' });
+  }
+}
 
 
 module.exports = {
@@ -481,5 +537,7 @@ module.exports = {
   handleOfferOptions,
   acceptOrDeclineOffer,
   getMessages,
-  getAllChat
+  getAllChat,
+  getUnreadMessages,
+  readMessageByChatId
 }

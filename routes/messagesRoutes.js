@@ -11,6 +11,7 @@ router.post('/api/send-offer/messages', MessagesController.handleOfferOptions);
 router.get('/api/get-all/user-chat', MessagesController.getAllUserChat)
 router.get('/api/get-all/chats', MessagesController.getAllChat)
 router.get('/api/get/messages/:chat_id', isParticipant, MessagesController.getMessages)
+router.put('/api/read-message/:chat_id', MessagesController.readMessageByChatId);
 
 
 module.exports = router;
