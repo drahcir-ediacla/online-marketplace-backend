@@ -15,6 +15,7 @@ const configureSocket = (server) => {
     // Join chat room based on chat_id
     socket.on('joinChat', (chatId) => {
       socket.join(chatId);  // Join the room based on chat_id
+      io.emit('updateChats');
     });
 
     // Handle sending messages to a specific chat room (chat_id)
@@ -23,6 +24,7 @@ const configureSocket = (server) => {
       if (data.chat_id && data.content) {
         // Emit message to the specific chat room (chat_id)
         io.to(data.chat_id).emit('receive_message', data);
+        io.emit('updateChats');
       } else {
         // Handle error if chat_id or content is missing
         console.error('Invalid data received for sending message:', data);
