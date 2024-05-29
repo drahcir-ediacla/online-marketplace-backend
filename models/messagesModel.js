@@ -31,6 +31,10 @@ const defineMessagesModel = (sequelize) => {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
+        archived: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
         timestamp: {
             type: DataTypes.DATE,
             defaultValue: Sequelize.NOW,

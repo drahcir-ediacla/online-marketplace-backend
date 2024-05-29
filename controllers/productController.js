@@ -102,7 +102,7 @@ const addNewProduct = async (req, res) => {
         await notificationModel.create({
           recipient_id: follower.id,
           subject_user_id: sellerId,
-          message: `<a href='/productdetails/${newProduct.id}/${encodeURIComponent(product_name)}'><span style="font-weight: 600;">${req.user.display_name || 'Seller'}</span> posted a new product listing: <span style="font-weight: 600;">${product_name}</span></a>`
+          message: `<a href=/productdetails/${newProduct.id}/${encodeURIComponent(product_name)}><span style="font-weight: 600;">${req.user.display_name || 'Seller'}</span> posted a new product listing: <span style="font-weight: 600;">${product_name}</span></a>`
         });
       } catch (error) {
         console.error('Error sending notification:', error);
@@ -739,9 +739,9 @@ const addWishList = async (req, res) => {
 
       let message;
       if (userId === wishlistedProduct.seller_id) {
-        message = `<a href='/productdetails/${productId}/${encodeURIComponent(wishlistedProduct.product_name)}'><span style="font-weight: 600;">You</span> added your item <span style="font-weight: 600;">${wishlistedProduct.product_name}</span> to your wishlist.</a>`;
+        message = `<a href=/productdetails/${productId}/${encodeURIComponent(wishlistedProduct.product_name)}><span style="font-weight: 600;">You</span> added your item <span style="font-weight: 600;">${wishlistedProduct.product_name}</span> to your wishlist.</a>`;
       } else {
-        message = `<a href='/productdetails/${productId}/${encodeURIComponent(wishlistedProduct.product_name)}'><span style="font-weight: 600;">${req.user.display_name}</span> added your item <span style="font-weight: 600;">${wishlistedProduct.product_name}</span> to their wishlist.</a>`;
+        message = `<a href=/productdetails/${productId}/${encodeURIComponent(wishlistedProduct.product_name)}><span style="font-weight: 600;">${req.user.display_name}</span> added your item <span style="font-weight: 600;">${wishlistedProduct.product_name}</span> to their wishlist.</a>`;
       }
 
       await notificationModel.create({

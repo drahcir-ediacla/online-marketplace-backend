@@ -12,6 +12,7 @@ router.get('/api/get-all/user-chat', MessagesController.getAllUserChat)
 router.get('/api/get-all/chats', MessagesController.getAllChat)
 router.get('/api/get/messages/:chat_id', isParticipant, MessagesController.getMessages)
 router.put('/api/read-message/:chat_id', MessagesController.readMessageByChatId);
+router.put('/api/archive-message/:chat_id', MessagesController.archiveChat);
 
 
 module.exports = router;

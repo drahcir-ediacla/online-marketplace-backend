@@ -29,7 +29,7 @@ const followUser = async (req, res) => {
                 await notificationModel.create({
                     recipient_id: followingId,
                     subject_user_id: followerId,
-                    message: `<a href='/profile/${followerId}'><span style="font-weight: 600;">${req.user.display_name || 'Seller'}</span> started following you.</a>`
+                    message: `<a href=/profile/${followerId}><span style="font-weight: 600;">${req.user.display_name || 'Seller'}</span> started following you.</a>`
                 });
             } catch (error) {
                 console.error('Error sending notification:', error);
