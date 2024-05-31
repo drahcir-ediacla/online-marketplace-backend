@@ -15,6 +15,15 @@ const defineParticipantModel = (sequelize) => {
             type: DataTypes.BIGINT,
             allowNull: false,
         },
+        product_id: {
+            type: DataTypes.INTEGER,
+            unique: true,
+            allowNull: false,
+          },
+        deleted: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
     }, {
         tableName: 'chat_participants',
         timestamps: false,

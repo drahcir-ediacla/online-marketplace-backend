@@ -45,7 +45,8 @@ const getAllUserChat = async (req, res) => {
       const existingChats = await participantModel.findAll({
         attributes: ['chat_id'],
         where: {
-          user_id: authenticatedUserId
+          user_id: authenticatedUserId,
+          deleted: false,
         },
         include: [
           {
@@ -528,10 +529,11 @@ const readMessageByChatId = async (req, res) => {
 }
 
 
+
 const archiveChat = async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Authentication is required to archive chat.' })
+      return res.status(401).json({ error: 'Authentication is required to archive chat.' });
     }
 
     const userId = req.user.id;
@@ -542,56 +544,68 @@ const archiveChat = async (req, res) => {
         chat_id,
         receiver_id: userId,
       }
-    })
+    });
 
     if (!chatMessages || chatMessages.length === 0) {
-      return res.status(404).json({ error: 'Chat message not found' })
+      return res.status(404).json({ error: 'Chat message not found' });
     }
 
-    // Archive all messages by chat ID 
-    for (const message of chatMessages)
-      await message.update({ archived: true });
+    // Check the current archived status of the first message
+    const currentArchivedStatus = chatMessages[0].archived;
 
-    // Return a success message
-    res.status(200).json({ message: 'Chat messages archived successfully.' });
+    // Toggle the archived status for all messages by chat ID
+    for (const message of chatMessages) {
+      await message.update({ archived: !currentArchivedStatus });
+    }
+
+    // Return a success message with the new archived status
+    res.status(200).json({
+      message: `Chat messages ${currentArchivedStatus ? 'unarchived' : 'archived'} successfully.`,
+      newArchivedStatus: !currentArchivedStatus
+    });
   } catch (error) {
-    console.error('Error archive message to true:', error);
-    res.status(500).json({ error: 'An error occurred while archiving chat messages.' });
+    console.error('Error toggling archive status:', error);
+    res.status(500).json({ error: 'An error occurred while toggling archive status of chat messages.' });
   }
-}
+};
 
 
-const unArchiveChat = async (req, res) => {
+
+
+const deleteChatById = async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
-      return res.status(401).json({ error: 'Authentication is required to archive chat.' })
+      return res.status(401).json({ error: 'Authentication is required to delete chat.' });
     }
 
-    const userId = req.user.id;
+    const authenticatedUserId = req.user.id;
     const { chat_id } = req.params;
 
-    const chatMessages = await messagesModel.findAll({
+    // Verify the authenticated user is a participant in the chat
+    const chatAuthUserParticipant = await participantModel.findOne({
       where: {
         chat_id,
-        receiver_id: userId,
+        user_id: authenticatedUserId,
       }
-    })
+    });
 
-    if (!chatMessages || chatMessages.length === 0) {
-      return res.status(404).json({ error: 'Chat message not found' })
+    if (!chatAuthUserParticipant) {
+      return res.status(404).json({ error: 'Chat not found or user not authorized to delete chat.' });
     }
 
-    // Archive all messages by chat ID 
-    for (const message of chatMessages)
-      await message.update({ archived: false });
+    // Mark the chat as deleted for the authenticated user
+    await participantModel.update(
+      { deleted: true },
+      { where: { chat_id, user_id: authenticatedUserId } }
+    );
 
-    // Return a success message
-    res.status(200).json({ message: 'Chat messages archived successfully.' });
+    res.status(200).json({ message: 'Chat successfully marked as deleted for the user.' });
   } catch (error) {
-    console.error('Error archive message to true:', error);
-    res.status(500).json({ error: 'An error occurred while archiving chat messages.' });
+    console.error('Error deleting chat:', error);
+    res.status(500).json({ error: 'An error occurred while deleting the chat.' });
   }
-}
+};
+
 
 
 
@@ -607,5 +621,6 @@ module.exports = {
   getAllChat,
   getUnreadMessages,
   readMessageByChatId,
-  archiveChat
+  archiveChat,
+  deleteChatById
 }

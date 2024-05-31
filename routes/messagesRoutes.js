@@ -13,6 +13,7 @@ router.get('/api/get-all/chats', MessagesController.getAllChat)
 router.get('/api/get/messages/:chat_id', isParticipant, MessagesController.getMessages)
 router.put('/api/read-message/:chat_id', MessagesController.readMessageByChatId);
 router.put('/api/archive-message/:chat_id', MessagesController.archiveChat);
+router.put('/api/delete-chat/:chat_id', MessagesController.deleteChatById);
 
 
 module.exports = router;
