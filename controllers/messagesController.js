@@ -561,6 +561,39 @@ const archiveChat = async (req, res) => {
 }
 
 
+const unArchiveChat = async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ error: 'Authentication is required to archive chat.' })
+    }
+
+    const userId = req.user.id;
+    const { chat_id } = req.params;
+
+    const chatMessages = await messagesModel.findAll({
+      where: {
+        chat_id,
+        receiver_id: userId,
+      }
+    })
+
+    if (!chatMessages || chatMessages.length === 0) {
+      return res.status(404).json({ error: 'Chat message not found' })
+    }
+
+    // Archive all messages by chat ID 
+    for (const message of chatMessages)
+      await message.update({ archived: false });
+
+    // Return a success message
+    res.status(200).json({ message: 'Chat messages archived successfully.' });
+  } catch (error) {
+    console.error('Error archive message to true:', error);
+    res.status(500).json({ error: 'An error occurred while archiving chat messages.' });
+  }
+}
+
+
 
 module.exports = {
   checkChatId,
