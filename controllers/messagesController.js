@@ -291,10 +291,6 @@ const createChatMessages = async (req, res) => {
 
 
 
-
-
-
-
 //-----------------------SEND MESSAGE TO EXISTING CHAT  ----------------------------//
 
 
@@ -313,6 +309,10 @@ const sendChatMessages = async (req, res) => {
       content,
     });
 
+    await participantModel.update(
+      { deleted: false },
+      {where: {chat_id}}
+    );
 
     res.status(201).json(message);
   } catch (error) {
