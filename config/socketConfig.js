@@ -1,7 +1,11 @@
 const socketIo = require('socket.io');
 require('dotenv').config();
+const { userModel } = require('../config/sequelizeConfig')
 
-const configureSocket = (server) => {
+
+
+
+const configureSocket = (server, req) => {
   const io = socketIo(server, {
     cors: {
       origin: process.env.CLIENT_URL, // Update with your React app URL
@@ -10,7 +14,20 @@ const configureSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('New client connected');
+    console.log(`User connected: ${socket.id}`);
+
+    // Assuming user authentication is done and user ID is available
+    const userId = socket.handshake.query.id;
+    console.log('userId:', userId)
+
+
+    if (userId) {
+      // Update user status to 'online'
+      userModel.upsert({ id: userId, status: 'online' }).then(() => {
+        // Broadcast user status change
+        io.emit('updateUserStatus', { id: userId, status: 'online' });
+      }).catch((err) => console.error('Error updating user status:', err));
+    }
 
     // Join chat room based on chat_id
     socket.on('joinChat', (chatId) => {
@@ -30,9 +47,17 @@ const configureSocket = (server) => {
         console.error('Invalid data received for sending message:', data);
       }
     });
+    
 
     socket.on('disconnect', () => {
       console.log('Client disconnected');
+       if (userId) {
+        // Update user status to 'offline'
+        userModel.upsert({ id: userId, status: 'offline' }).then(() => {
+          // Broadcast user status change
+          io.emit('updateUserStatus', { id: userId, status: 'offline' });
+        }).catch((err) => console.error('Error updating user status:', err));
+      }
     });
   });
 

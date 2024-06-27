@@ -130,7 +130,7 @@ const getUsersById = async (req, res) => {
 
     // Use Sequelize to fetch user data and associated products
     const user = await userModel.findByPk(userID, {
-      attributes: ['id', 'fb_id', 'email', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'region', 'city', 'phone', 'gender', 'birthday', 'password', 'profile_pic', 'cover_photo', 'createdAt', 'updatedAt'], // Include only necessary attributes
+      attributes: ['id', 'fb_id', 'email', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'region', 'city', 'phone', 'gender', 'birthday', 'status', 'profile_pic', 'cover_photo', 'createdAt', 'updatedAt'], // Include only necessary attributes
     });
 
     if (!user) {

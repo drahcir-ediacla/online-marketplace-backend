@@ -76,6 +76,11 @@ const defineUserModel = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    status: {
+      type: DataTypes.ENUM('online', 'offline'),
+      allowNull: false,
+      defaultValue: 'offline' // Set default status to offline
+    },
     profile_pic: {
       type: DataTypes.STRING,
       unique: false,

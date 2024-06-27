@@ -1,5 +1,4 @@
 const passport = require('passport');
-const db = require('../config/dbConfig');
 const { userModel, refreshTokenModel } = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils'); // You need to implement token utility functions
@@ -72,6 +71,13 @@ const loginUser = async (req, res) => {
         res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
         res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
 
+        // // Update user status to 'online'
+        // await userModel.upsert({ id: user.id, status: 'online' });
+
+        // // Emit user online event
+        // const io = req.io;
+        // io.emit('updateUserStatus', { id: user.id, status: 'online' });
+
         // Send success response
         res.status(200).json({
           success: true,
@@ -113,6 +119,13 @@ const logoutUser = async (req, res) => {
       } else {
         console.log('Refresh token deleted successfully.');
       }
+
+      // Update user status to 'offline'
+      await userModel.upsert({ id: userId, status: 'offline' });
+
+      // Emit user offline event
+      const io = req.io;
+      io.emit('updateUserStatus', { id: userId, status: 'offline' });
 
     } catch (error) {
       console.error('Error deleting refresh token:', error);
