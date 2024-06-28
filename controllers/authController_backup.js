@@ -1,8 +1,6 @@
 const passport = require('passport');
 const { userModel, refreshTokenModel } = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer')
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils'); // You need to implement token utility functions
 
 // Function to register a new user
@@ -11,7 +9,7 @@ const registerUser = async (req, res) => {
 
   try {
     // Check if the email already exists using Sequelize
-    const existingUser = await userModel.findOne({ where: { email, email_verified: true } });
+    const existingUser = await userModel.findOne({ where: { email } });
 
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' });
@@ -24,73 +22,16 @@ const registerUser = async (req, res) => {
     await userModel.create({
       email,
       password: hashedPassword,
-      email_verified: true,
     });
 
     // Send success response
-    res.status(201).json({ message: 'User created successfully. Please verify your email with the OTP sent to your email address.' });
+    res.status(201).json({ message: 'User created successfully' });
 
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ message: 'Error creating user' });
   }
 };
-
-
-const sendRegistrationOTP = async (req, res) => {
-  const { email } = req.body;
-  try {
-    // Check if the email already exists and email_verified is false
-    const user = await userModel.findOne({ where: { email } });
-
-    if (user && user.email_verified) {
-      return res.status(400).json({ message: 'Email already exists and is verified' });
-    }
-
-    // Generate OTP
-    const otp = crypto.randomBytes(3).toString('hex');
-    const otp_expires = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
-
-    // Send OTP via email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL,
-      to: email,
-      subject: 'Your OTP Code',
-      text: `Your OTP code is ${otp}. It will expire in 2 minutes.`,
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    if (user && !user.email_verified) {
-      // Update the existing user's OTP and otp_expires
-      user.otp = otp;
-      user.otp_expires = otp_expires;
-      await user.save();
-    } else {
-      // Create a new user
-      await userModel.create({
-        email,
-        otp,
-        otp_expires,
-        email_verified: false,
-      });
-    }
-
-    res.status(201).json({ message: 'OTP created successfully. Please check your inbox for the verification code sent to your email address.' });
-  } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ message: 'Error creating user' });
-  }
-};
-
 
 
 
@@ -127,8 +68,8 @@ const loginUser = async (req, res) => {
         });
 
         // Set cookie with access token
-        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
 
         // Update user status to 'online'
         await userModel.upsert({ id: user.id, status: 'online' });
@@ -198,4 +139,4 @@ const logoutUser = async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser, logoutUser, sendRegistrationOTP };
+module.exports = { registerUser, loginUser, logoutUser };

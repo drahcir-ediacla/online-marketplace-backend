@@ -21,6 +21,11 @@ const defineUserModel = (sequelize) => {
         isEmail: true,
       },
     },
+    email_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
     display_name: {
       type: DataTypes.STRING,
       unique: false,
@@ -74,6 +79,14 @@ const defineUserModel = (sequelize) => {
     },
     password: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    otp: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    otp_expires : {
+      type: DataTypes.DATE,
       allowNull: true,
     },
     status: {
