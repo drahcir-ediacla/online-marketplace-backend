@@ -243,3 +243,11 @@
 20240125	14:50:23	9ba2e86b-8a97-44b2-8688-665024850be1	TypeError: undefined is not a function
 20240125	14:50:48	ac2b07d8-cb07-4136-82d8-3153405f00f6	TypeError: productDetail.toJSON is not a function
 20240125	15:03:18	25fe4682-ca1f-4e34-99f0-14cdfe3ea2bb	SequelizeDatabaseError: Unknown column 'Views.category_id' in 'where clause'
+20240628	09:34:16	bdf7daa4-92c6-4e14-8efe-24d4d4c5cc99	TypeError: Cannot read properties of undefined (reading 'emit')
+20240628	09:34:16	886959aa-45ac-47f6-9b44-c6fe3682e9ae	TypeError: Cannot set properties of undefined (setting 'id')
+20240628	09:39:06	5251ee49-3000-4630-8c3a-b637f9786a8c	TypeError: Cannot read properties of undefined (reading 'emit')
+20240628	09:39:06	98f91e8b-20f2-4c26-95f7-f987fecce69a	TypeError: Cannot set properties of undefined (setting 'id')
+20240628	09:44:12	4352f336-d54d-463d-8f52-aa4752bacf42	TypeError: Cannot read properties of undefined (reading 'emit')
+20240628	09:44:12	d823d72f-968d-4f89-afd4-326a8a6d9234	TypeError: Cannot set properties of undefined (setting 'id')
+20240628	09:48:59	218d31e1-bb9f-48f1-8519-06fef7070121	TokenError: Bad Request
+20240628	09:48:59	3b94f406-bc03-4eea-af94-375dac6ee006	TypeError: Cannot set properties of undefined (setting 'id')

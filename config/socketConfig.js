@@ -51,13 +51,13 @@ const configureSocket = (server, req) => {
 
     socket.on('disconnect', () => {
       console.log('Client disconnected');
-       if (userId) {
-        // Update user status to 'offline'
-        userModel.upsert({ id: userId, status: 'offline' }).then(() => {
-          // Broadcast user status change
-          io.emit('updateUserStatus', { id: userId, status: 'offline' });
-        }).catch((err) => console.error('Error updating user status:', err));
-      }
+      //  if (userId) {
+      //   // Update user status to 'offline'
+      //   userModel.upsert({ id: userId, status: 'offline' }).then(() => {
+      //     // Broadcast user status change
+      //     io.emit('updateUserStatus', { id: userId, status: 'offline' });
+      //   }).catch((err) => console.error('Error updating user status:', err));
+      // }
     });
   });
 

@@ -1,10 +1,9 @@
 const passport = require("passport");
-const db = require('../config/dbConfig')
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils')
-const {userModel, refreshTokenModel} = require('../config/sequelizeConfig')
+const { userModel, refreshTokenModel } = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
@@ -89,7 +88,7 @@ passport.use(
         // Return the user
         user.accessToken = accessTokenValue;
         user.refreshToken = refreshTokenValue;
-        
+
         return done(null, user);
 
       } catch (error) {
@@ -102,7 +101,7 @@ passport.use(
 
 
 
-  
+
 
 passport.use(
   new FacebookStrategy(
@@ -114,7 +113,7 @@ passport.use(
       scope: ['email'], // Request email permission
     },
     async (accessToken, refreshToken, profile, done) => {
-        console.log('accessToken:', accessToken);
+      console.log('accessToken:', accessToken);
       console.log('refreshToken:', refreshToken);
       console.log('profile:', profile);
 
@@ -162,23 +161,23 @@ passport.use(
 // ...
 
 
-  // Serialize and deserialize user for sessions (if needed)
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
-  
-  
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const user = await userModel.findByPk(id);
-  
-      if (!user) {
-        done(new Error('User not found'), null);
-      } else {
-        done(null, user);
-      }
-    } catch (error) {
-      done(error, null);
+// Serialize and deserialize user for sessions (if needed)
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await userModel.findByPk(id);
+
+    if (!user) {
+      done(new Error('User not found'), null);
+    } else {
+      done(null, user);
     }
-  });
-  
+  } catch (error) {
+    done(error, null);
+  }
+});
+

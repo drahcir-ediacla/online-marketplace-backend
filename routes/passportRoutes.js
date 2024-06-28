@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const passport = require("passport");
+const {userModel} = require('../config/sequelizeConfig')
 require('dotenv').config();
 
 
@@ -25,8 +26,9 @@ router.get("/check-auth", (req, res) => {
 });
 
 
-router.get("/login/success", (req, res) => {
+router.get("/login/success", async (req, res) => {
     if (req.user) {
+
       res.status(200).json({
         success: true,
         message: "successfull",
@@ -80,8 +82,17 @@ router.get("/login/success", (req, res) => {
   router.get(
     "/google/callback",
     passport.authenticate("google", { session: true }),
-    (req, res) => {
+    async (req, res) => {
+
+      const userId = req.user.id;
       const accessToken = req.user.accessToken;
+
+      // Update user status to 'online'
+      await userModel.upsert({ id: userId, status: 'online' });
+
+      // Emit user online event
+      const io = req.io;
+      io.emit('updateUserStatus', { id: userId, status: 'online' });
   
       // Set the refresh token and access token as cookies
       res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });  //maxAge is equivalent to 24 hours

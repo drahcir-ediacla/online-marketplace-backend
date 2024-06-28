@@ -71,12 +71,12 @@ const loginUser = async (req, res) => {
         res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
         res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
 
-        // // Update user status to 'online'
-        // await userModel.upsert({ id: user.id, status: 'online' });
+        // Update user status to 'online'
+        await userModel.upsert({ id: user.id, status: 'online' });
 
-        // // Emit user online event
-        // const io = req.io;
-        // io.emit('updateUserStatus', { id: user.id, status: 'online' });
+        // Emit user online event
+        const io = req.io;
+        io.emit('updateUserStatus', { id: user.id, status: 'online' });
 
         // Send success response
         res.status(200).json({
