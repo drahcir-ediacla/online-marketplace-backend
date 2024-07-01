@@ -7,28 +7,37 @@ const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUti
 
 // Function to register a new user
 const registerUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, otp } = req.body;
 
   try {
-    // Check if the email already exists using Sequelize
-    const existingUser = await userModel.findOne({ where: { email, email_verified: true } });
 
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already exists' });
+    const user = await userModel.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Email not exists' });
     }
+    
+    if (user.email_verified === true) {
+      return res.status(409).json({ message: 'Email already exists' })
+    }
+
+    if (user.otp !== otp || Date.now() > new Date(user.otp_expires).getTime()) {
+      return res.status(401).json({ message: 'Invalid or expired OTP' });
+    }
+
 
     // If the email is unique, hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create a new user using Sequelize
-    await userModel.create({
-      email,
-      password: hashedPassword,
-      email_verified: true,
-    });
-
+    // Clear OTP fields and set emailVerified to true after successful verification
+    user.otp = null;
+    user.otp_expires = null;
+    user.email_verified = true;
+    user.password= hashedPassword;
+    await user.save();
+   
     // Send success response
-    res.status(201).json({ message: 'User created successfully. Please verify your email with the OTP sent to your email address.' });
+    res.status(201).json({ message: 'User created successfully.' });
 
   } catch (error) {
     console.error('Error creating user:', error);
@@ -44,12 +53,12 @@ const sendRegistrationOTP = async (req, res) => {
     const user = await userModel.findOne({ where: { email } });
 
     if (user && user.email_verified) {
-      return res.status(400).json({ message: 'Email already exists and is verified' });
+      return res.status(409).json({ message: 'Email already exists' });
     }
 
     // Generate OTP
     const otp = crypto.randomBytes(3).toString('hex');
-    const otp_expires = Date.now() + 2 * 60 * 1000; // OTP expires in 2 minutes
+    const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
 
     // Send OTP via email
     const transporter = nodemailer.createTransport({
@@ -84,10 +93,10 @@ const sendRegistrationOTP = async (req, res) => {
       });
     }
 
-    res.status(201).json({ message: 'OTP created successfully. Please check your inbox for the verification code sent to your email address.' });
+    res.status(201).json({ message: 'OTP send successfully. Please check your inbox for the verification code sent to your email address.' });
   } catch (error) {
-    console.error('Error creating user:', error);
-    res.status(500).json({ message: 'Error creating user' });
+    console.error('Error sending otp:', error);
+    res.status(500).json({ message: 'Error sending otp' });
   }
 };
 
@@ -130,12 +139,12 @@ const loginUser = async (req, res) => {
         res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
         res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
 
-        // Update user status to 'online'
-        await userModel.upsert({ id: user.id, status: 'online' });
+        // // Update user status to 'online'
+        // await userModel.upsert({ id: user.id, status: 'online' });
 
-        // Emit user online event
-        const io = req.io;
-        io.emit('updateUserStatus', { id: user.id, status: 'online' });
+        // // Emit user online event
+        // const io = req.io;
+        // io.emit('updateUserStatus', { id: user.id, status: 'online' });
 
         // Send success response
         res.status(200).json({
