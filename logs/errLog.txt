@@ -251,3 +251,6 @@
 20240628	09:44:12	d823d72f-968d-4f89-afd4-326a8a6d9234	TypeError: Cannot set properties of undefined (setting 'id')
 20240628	09:48:59	218d31e1-bb9f-48f1-8519-06fef7070121	TokenError: Bad Request
 20240628	09:48:59	3b94f406-bc03-4eea-af94-375dac6ee006	TypeError: Cannot set properties of undefined (setting 'id')
+20240703	16:52:43	600800cc-dcef-4869-8e02-e6d7c3a20f14	TypeError: Cannot set properties of undefined (setting 'id')
+20240703	17:24:56	557ad03d-27f8-4d8c-9474-3c05b085eaba	TypeError: Cannot set properties of undefined (setting 'id')
+20240703	17:25:05	994953d5-281a-48d8-925e-24b6472bf189	TypeError: Cannot set properties of undefined (setting 'id')

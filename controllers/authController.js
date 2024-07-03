@@ -2,7 +2,7 @@ const passport = require('passport');
 const { userModel, refreshTokenModel } = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer')
+const transPorter = require('../config/emailConfig')
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils'); // You need to implement token utility functions
 
 // Function to register a new user
@@ -16,7 +16,7 @@ const registerUser = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'Email not exists' });
     }
-    
+
     if (user.email_verified === true) {
       return res.status(409).json({ message: 'Email already exists' })
     }
@@ -25,7 +25,6 @@ const registerUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid or expired OTP' });
     }
 
-
     // If the email is unique, hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -33,9 +32,9 @@ const registerUser = async (req, res) => {
     user.otp = null;
     user.otp_expires = null;
     user.email_verified = true;
-    user.password= hashedPassword;
+    user.password = hashedPassword;
     await user.save();
-   
+
     // Send success response
     res.status(201).json({ message: 'User created successfully.' });
 
@@ -60,23 +59,14 @@ const sendRegistrationOTP = async (req, res) => {
     const otp = crypto.randomBytes(3).toString('hex');
     const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
 
-    // Send OTP via email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-    });
-
     const mailOptions = {
       from: process.env.EMAIL,
       to: email,
-      subject: 'Your OTP Code',
+      subject: `${otp} is your OTP Code`,
       text: `Your OTP code is ${otp}. It will expire in 2 minutes.`,
     };
 
-    await transporter.sendMail(mailOptions);
+    await transPorter.sendMail(mailOptions);
 
     if (user && !user.email_verified) {
       // Update the existing user's OTP and otp_expires
@@ -205,6 +195,78 @@ const logoutUser = async (req, res) => {
 };
 
 
+const resetPassword = async (req, res) => {
+  const { email, password, otp } = req.body
+  try {
+    const user = await userModel.findOne({ where: { email, email_verified: true } });
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+    if (user.otp !== otp || Date.now() > new Date(user.otp_expires).getTime()) {
+      return res.status(401).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // If the email is unique, hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Clear OTP fields and set emailVerified to true after successful verification
+    user.otp = null;
+    user.otp_expires = null;
+    user.email_verified = true;
+    user.password = hashedPassword;
+    await user.save();
+
+    // Send success response
+    res.status(201).json({ message: 'Password successfully updated.' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Error updating password.' });
+  }
+}
+
+const resetPasswordOTP = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await userModel.findOne({ where: { email, email_verified: true } })
+
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found.' });
+    }
+
+    // Generate OTP
+    const otp = crypto.randomBytes(3).toString('hex');
+    const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
+
+    const mailOptions = {
+      from: 'Yogeek',
+      to: email,
+      subject: `${otp} is your OTP Code`,
+      text: `Your OTP code is ${otp}. It will expire in 2 minutes.`,
+    };
+
+    await transPorter.sendMail(mailOptions);
+
+    if (user) {
+      // Update the existing user's OTP and otp_expires
+      user.otp = otp;
+      user.otp_expires = otp_expires;
+      await user.save();
+    }
+
+    res.status(201).json({ message: 'OTP send successfully. Please check your inbox for the verification code sent to your email address.' });
+  } catch (error) {
+    console.error('Error sending otp:', error);
+    res.status(500).json({ message: 'Error sending otp' });
+  }
+}
 
 
-module.exports = { registerUser, loginUser, logoutUser, sendRegistrationOTP };
+
+module.exports = {
+  registerUser,
+  loginUser,
+  logoutUser,
+  sendRegistrationOTP,
+  resetPassword,
+  resetPasswordOTP
+};
