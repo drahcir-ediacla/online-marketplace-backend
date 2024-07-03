@@ -16,7 +16,6 @@ const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
-const otpRoutes = require('./routes/otpRoutes');
 const passportRoutes = require('./routes/passportRoutes');
 const refreshRoutes = require('./routes/refreshRoutes');
 const searchRoutes = require('./routes/searchRoutes')
@@ -64,7 +63,6 @@ app.use((req, res, next) => {
 });
 
 //Routes
-app.use('/', otpRoutes);
 app.use('/', authRoutes);
 app.use('/auth', passportRoutes);
 app.use('/', refreshRoutes);
