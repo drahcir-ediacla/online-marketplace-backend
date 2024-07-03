@@ -87,7 +87,7 @@ const getAllUserChat = async (req, res) => {
       });
 
       if (existingChats.length === 0) {
-        return res.status(200).json({ message: 'No chats found.' });
+        return res.status(200).json([]);
       }
 
       // Fetch chats for other participants with the same chat_id
@@ -311,7 +311,7 @@ const sendChatMessages = async (req, res) => {
 
     await participantModel.update(
       { deleted: false },
-      {where: {chat_id}}
+      { where: { chat_id } }
     );
 
     res.status(201).json(message);
