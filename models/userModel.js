@@ -15,7 +15,7 @@ const defineUserModel = (sequelize) => {
     email: {
       type: DataTypes.STRING,
       unique: true,
-      allowNull: false,
+      allowNull: true,
       trim: true,
       validate: {
         isEmail: true,
@@ -63,9 +63,14 @@ const defineUserModel = (sequelize) => {
       allowNull: true,
     },
     phone: {
-      type: DataTypes.STRING,
-      unique: false,
+      type: DataTypes.INTEGER,
+      unique: true,
       allowNull: true,
+    },
+    phone_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
     },
     gender: {
       type: DataTypes.STRING,
