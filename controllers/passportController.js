@@ -67,6 +67,7 @@ passport.use(
           // Create a new user if not found
           user = await userModel.create({
             email,
+            email_verified: true,
             display_name: displayName,
             profile_pic: photos,
           });
@@ -137,6 +138,7 @@ passport.use(
             user = new userModel({
               fb_id: facebookId,
               email: email,
+              email_verified: true,
               display_name: displayName,
               // Additional user data can be populated here
             });

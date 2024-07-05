@@ -111,10 +111,10 @@ const registerUserByPhone = async (req, res) => {
       return res.status(401).json({ message: 'Invalid or expired OTP' });
     }
 
-    // If the email is unique, hash the password
+    // If the phone is unique, hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Clear OTP fields and set emailVerified to true after successful verification
+    // Clear OTP fields and set phone_verified to true after successful verification
     user.otp = null;
     user.otp_expires = null;
     user.phone_verified = true;
@@ -145,7 +145,7 @@ const sendPhoneRegistrationOTP = async (req, res) => {
     const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
 
     const sendSmsOptions = {
-      from: 'Yogeek',
+      from: "Yogeek",
       to: `63${phone}`,
       text: `[Yogeek] ${otp} is your verification code. Valid for 2 minutes. To keep your account safe, never share this code`,
     };
@@ -173,6 +173,124 @@ const sendPhoneRegistrationOTP = async (req, res) => {
     res.status(500).json({ message: 'Error sending otp' });
   }
 }
+
+
+const sendLoginOtp = async (req, res) => {
+  const { phone } = req.body
+  try {
+    const user = await userModel.findOne({ where: { phone } })
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
+
+    const sendSmsOptions = {
+      from: "Yogeek",
+      to: `63${phone}`,
+      text: `[Yogeek] ${otp} is your verification code. Valid for 2 minutes. To keep your account safe, never share this code`,
+    };
+
+    await vonage.sms.send(sendSmsOptions);
+
+    if (user) {
+      // Update the existing user's OTP and otp_expires
+      user.otp = otp;
+      user.otp_expires = otp_expires;
+      await user.save();
+    } else {
+      // Create a new user
+      await userModel.create({
+        phone,
+        otp,
+        otp_expires,
+        phone_verified: false,
+      });
+    }
+
+    res.status(201).json({ message: 'OTP sent successfully to the phone number.' });
+  } catch (error) {
+    console.error('Error sending otp:', error);
+    res.status(500).json({ message: 'Error sending otp' });
+  }
+}
+
+
+// Function to verify OTP and log in the user
+const verifyOtpAndLogin = async (req, res) => {
+  const { phone, otp } = req.body;
+
+  try {
+    const user = await userModel.findOne({ where: { phone } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Invalid Verification Code' });
+    }
+
+    // Check if OTP matches and is not expired
+    if (user.otp !== otp || Date.now() > new Date(user.otp_expires).getTime()) {
+      return res.status(401).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // Clear OTP fields and set phone_verified to true after successful verification
+    user.otp = null;
+    user.otp_expires = null;
+    user.phone_verified = true;
+    await user.save();
+
+    // OTP is valid, log the user in
+    req.logIn(user, async (loginErr) => {
+      if (loginErr) {
+        console.error('Error during login:', loginErr);
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      // Generate tokens
+      const accessToken = generateAccessToken(user.id);
+      const refreshToken = generateRefreshToken(user.id);
+      const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+      try {
+        // Store the refresh token
+        await refreshTokenModel.create({
+          user_id: user.id,
+          token: refreshToken,
+          expiration_date: expirationDate,
+        });
+
+        // Set cookies with tokens
+        res.cookie('refreshJWT', refreshToken, {
+          httpOnly: true,
+          sameSite: 'none',
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+          path: '/',
+        });
+        res.cookie('jwt', accessToken, {
+          httpOnly: true,
+          sameSite: 'none',
+          secure: false,
+          maxAge: 24 * 60 * 60 * 1000,
+          path: '/',
+        });
+
+        // Send success response
+        res.status(200).json({
+          success: true,
+          message: 'Successfully authenticated',
+          user,
+          accessToken,
+          refreshToken,
+        });
+      } catch (storeErr) {
+        console.error('Error storing refresh token:', storeErr);
+        return res.status(500).json({ message: 'Error storing refresh token' });
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 
 // Function to authenticate and login a user
 const loginUser = async (req, res) => {
@@ -276,7 +394,7 @@ const logoutUser = async (req, res) => {
 };
 
 
-const resetPassword = async (req, res) => {
+const resetPasswordByEmail = async (req, res) => {
   const { email, password, otp } = req.body
   try {
     const user = await userModel.findOne({ where: { email, email_verified: true } });
@@ -305,7 +423,7 @@ const resetPassword = async (req, res) => {
   }
 }
 
-const resetPasswordOTP = async (req, res) => {
+const resetPasswordOtpByEmail = async (req, res) => {
   const { email } = req.body;
   try {
     const user = await userModel.findOne({ where: { email, email_verified: true } })
@@ -342,6 +460,70 @@ const resetPasswordOTP = async (req, res) => {
 }
 
 
+const resetPasswordByPhone = async (req, res) => {
+  const { phone, password, otp } = req.body
+  try {
+    const user = await userModel.findOne({ where: { phone, phone_verified: true } });
+    if (!user) {
+      return res.status(404).json({ message: 'Phone number not found' });
+    }
+    if (user.otp !== otp || Date.now() > new Date(user.otp_expires).getTime()) {
+      return res.status(401).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // If the phone is unique, hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Clear OTP fields and set phone_verified to true after successful verification
+    user.otp = null;
+    user.otp_expires = null;
+    user.phone_verified = true;
+    user.password = hashedPassword;
+    await user.save();
+
+    // Send success response
+    res.status(201).json({ message: 'Password successfully updated.' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Error updating password.' });
+  }
+}
+
+
+const resetPasswordOtpByPhone = async (req, res) => {
+  const { phone } = req.body;
+  try {
+    const user = await userModel.findOne({ where: { phone, phone_verified: true } })
+
+    if (!user) {
+      return res.status(404).json({ message: 'Phone not found.' });
+    }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
+
+    const sendSmsOptions = {
+      from: 'Yogeek',
+      to: `63${phone}`,
+      text: `[Yogeek] ${otp} is your password recovery code. Valid for 2 minutes. To keep your account safe, never share this code.`,
+    };
+
+    await vonage.sms.send(sendSmsOptions);
+
+    if (user) {
+      // Update the existing user's OTP and otp_expires
+      user.otp = otp;
+      user.otp_expires = otp_expires;
+      await user.save();
+    }
+
+    res.status(201).json({ message: 'OTP sent successfully to the phone number.' });
+  } catch (error) {
+    console.error('Error sending otp:', error);
+    res.status(500).json({ message: 'Error sending otp' });
+  }
+}
 
 module.exports = {
   registerUserByEmail,
@@ -350,6 +532,10 @@ module.exports = {
   logoutUser,
   sendEmailRegistrationOTP,
   sendPhoneRegistrationOTP,
-  resetPassword,
-  resetPasswordOTP
+  sendLoginOtp,
+  verifyOtpAndLogin,
+  resetPasswordByEmail,
+  resetPasswordOtpByEmail,
+  resetPasswordByPhone,
+  resetPasswordOtpByPhone
 };
