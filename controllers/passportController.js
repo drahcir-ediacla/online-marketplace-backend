@@ -9,6 +9,7 @@ require('dotenv').config();
 
 
 passport.use(
+  'local-email',
   new LocalStrategy(
     {
       usernameField: 'email', // Field in the request body for the username (email)
@@ -22,6 +23,41 @@ passport.use(
         if (!user) {
           // User not found
           return done(null, false, { message: 'User not found' });
+        }
+
+        // Compare the provided password with the stored hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+          // Incorrect password
+          return done(null, false, { message: 'Incorrect password' });
+        }
+
+        // Authentication successful, return the user
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+
+passport.use(
+  'local-phone',
+  new LocalStrategy(
+    {
+      usernameField: 'phone', // Field in the request body for the username (email)
+      passwordField: 'password', // Field in the request body for the password
+    },
+    async (phone, password, done) => {
+      try {
+        // Find the user with the provided email
+        const user = await userModel.findOne({ where: { phone, phone_verified: true } });
+
+        if (!user) {
+          // User not found
+          return done(null, false, { message: 'Phone number not found' });
         }
 
         // Compare the provided password with the stored hashed password

@@ -292,9 +292,71 @@ const verifyOtpAndLogin = async (req, res) => {
   }
 };
 
-// Function to authenticate and login a user
-const loginUser = async (req, res) => {
-  passport.authenticate('local', async (authErr, user, info) => {
+// Function to authenticate and login a user by email
+const loginUserByEmail = async (req, res) => {
+  passport.authenticate('local-email', async (authErr, user, info) => {
+    if (authErr) {
+      console.error('Error during authentication:', authErr);
+      return res.status(500).json({ message: 'Internal server error Passport' });
+    }
+
+    if (!user) {
+      // Authentication failed
+      return res.status(401).json({ message: 'Authentication failed. ' + info.message });
+    }
+
+    req.logIn(user, async (loginErr) => {
+      if (loginErr) {
+        console.error('Error during login:', loginErr);
+        return res.status(500).json({ message: 'Internal server error Local' });
+      }
+
+      // If the login is successful, create and return an access token and a refresh token
+      const accessToken = generateAccessToken(user.id);
+      const refreshToken = generateRefreshToken(user.id);
+      const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+      try {
+        // Store the refresh token using Sequelize
+        await refreshTokenModel.create({
+          user_id: user.id,
+          token: refreshToken,
+          expiration_date: expirationDate
+        });
+
+        // Set cookie with access token
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+
+        // // Update user status to 'online'
+        // await userModel.upsert({ id: user.id, status: 'online' });
+
+        // // Emit user online event
+        // const io = req.io;
+        // io.emit('updateUserStatus', { id: user.id, status: 'online' });
+
+        // Send success response
+        res.status(200).json({
+          success: true,
+          message: 'Successfully authenticated',
+          user,
+          accessToken,
+          refreshToken,
+        });
+
+      } catch (storeErr) {
+        console.error('Error storing refresh token:', storeErr);
+        return res.status(500).json({ message: 'Error storing refresh token' });
+      }
+    });
+
+  })(req, res); // Authenticate using the local strategy
+};
+
+
+// Function to authenticate and login a user by email
+const loginUserByPhone = async (req, res) => {
+  passport.authenticate('local-phone', async (authErr, user, info) => {
     if (authErr) {
       console.error('Error during authentication:', authErr);
       return res.status(500).json({ message: 'Internal server error Passport' });
@@ -528,7 +590,8 @@ const resetPasswordOtpByPhone = async (req, res) => {
 module.exports = {
   registerUserByEmail,
   registerUserByPhone,
-  loginUser,
+  loginUserByEmail,
+  loginUserByPhone,
   logoutUser,
   sendEmailRegistrationOTP,
   sendPhoneRegistrationOTP,
