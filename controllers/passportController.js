@@ -146,13 +146,13 @@ passport.use(
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
       callbackURL: "/auth/facebook/callback",
-      profileFields: ['id', 'displayName', 'emails', 'photos'], // Include 'emails' and 'photos' field
+      profileFields: ['displayName', 'emails', 'photos'], // Include 'emails' and 'photos' field
       scope: ['email'], // Request email permission
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         // Access user data from the Facebook profile
-        const facebookId = profile.id;
+        // const facebookId = profile.id;
         const displayName = profile.displayName;
         const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
         const photos = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
@@ -169,7 +169,7 @@ passport.use(
         if (!user) {
           // If the user doesn't exist, create a new user and store their data
           user = await userModel.create({
-            fb_id: facebookId,
+            // fb_id: facebookId,
             email: email,
             email_verified: true,
             display_name: displayName,
