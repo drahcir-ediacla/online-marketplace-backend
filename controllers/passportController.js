@@ -146,57 +146,64 @@ passport.use(
       clientID: process.env.FACEBOOK_APP_ID,
       clientSecret: process.env.FACEBOOK_APP_SECRET,
       callbackURL: "/auth/facebook/callback",
-      profileFields: ['id', 'displayName', 'emails'], // Include 'emails' field
+      profileFields: ['id', 'displayName', 'emails', 'photos'], // Include 'emails' and 'photos' field
       scope: ['email'], // Request email permission
     },
     async (accessToken, refreshToken, profile, done) => {
-      console.log('accessToken:', accessToken);
-      console.log('refreshToken:', refreshToken);
-      console.log('profile:', profile);
-
-      // Access user data from the Facebook profile
-      const facebookId = profile.id;
-      const displayName = profile.displayName;
-      const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
-
       try {
-        if (email) {
-          // Check if the user already exists in the database based on their Facebook ID or email
-          let user = await userModel.findOne({
-            $or: [{ facebookId: facebookId }, { email: email }],
-          });
+        // Access user data from the Facebook profile
+        const facebookId = profile.id;
+        const displayName = profile.displayName;
+        const email = profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null;
+        const photos = profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null;
 
-          if (user) {
-            // If the user exists, log them in
-            done(null, user);
-          } else {
-            // If the user doesn't exist, create a new user and store their data
-            user = new userModel({
-              fb_id: facebookId,
-              email: email,
-              email_verified: true,
-              display_name: displayName,
-              // Additional user data can be populated here
-            });
-
-            // Save the new user to the database
-            await user.save();
-
-            // Log in the new user
-            done(null, user);
-          }
-        } else {
-          // Handle the case where the email is not available in the Facebook profile
-          done(new Error('Email not found in Facebook profile'), null);
+        if (!email) {
+          return done(new Error('Email not found in Facebook profile'), null);
         }
+
+        // Check if the user already exists in the database based on their Facebook ID or email
+        let user = await userModel.findOne({
+          where: { email },
+        });
+
+        if (!user) {
+          // If the user doesn't exist, create a new user and store their data
+          user = await userModel.create({
+            fb_id: facebookId,
+            email: email,
+            email_verified: true,
+            display_name: displayName,
+            profile_pic: photos,
+          });
+        }
+
+        // Generate access and refresh tokens
+        const accessTokenValue = generateAccessToken(user.id);
+        const refreshTokenValue = generateRefreshToken(user.id);
+
+        // Store the refresh token using Sequelize
+        const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+        await refreshTokenModel.create({
+          user_id: user.id,
+          token: refreshTokenValue,
+          expiration_date: expirationDate,
+        });
+
+        // Return the user
+        user.accessToken = accessTokenValue;
+        user.refreshToken = refreshTokenValue;
+
+        return done(null, user);
+
       } catch (error) {
-        done(error, null);
+        console.error('Error in FacebookStrategy:', error);
+        return done(error, null);
       }
     }
   )
 );
 
-// ...
 
 
 // Serialize and deserialize user for sessions (if needed)
