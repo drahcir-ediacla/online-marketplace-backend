@@ -1,8 +1,9 @@
 const { Sequelize } = require('sequelize');
-const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig');
+const geolib = require('geolib');
+const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel, listedLocationsModel } = require('../config/sequelizeConfig');
 
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
-const searchProductsGlobally = async (req, res) => {
+const searchProducts = async (req, res) => {
   try {
     // Extract filters and sorting options from query parameters
     const filters = {
@@ -12,13 +13,34 @@ const searchProductsGlobally = async (req, res) => {
       sort: req.query.sort || '',
     };
 
-    const { keyword, location } = req.query;
+    const { keyword, location, latitude, longitude, radius } = req.query;
+    console.log('Query parameters:', req.query);
+    console.log('latitude:', latitude)
+    console.log('longitude:', longitude)
+    console.log('radius:', radius)
 
-    // Replace 'All of the Philippines' with 'Philippines'
-    const cleanedLocation = location.replace('All of the Philippines', 'Philippines');
+    // Initialize location filter based on provided location
+    let locationFilter = {};
 
-    // Split the cleaned location into an array
-    const locationsArray = cleanedLocation.split(' | ').map(loc => loc.trim());
+    if (location === 'Listing Near Me' && latitude && longitude && radius) {
+      // Skip city, region, and country filters if 'Listing Near Me' is used
+      locationFilter = {};
+    } else {
+      // Replace 'All of the Philippines' with 'Philippines'
+      const cleanedLocation = location.replace('All of the Philippines', 'Philippines');
+
+      // Split the cleaned location into an array
+      const locationsArray = cleanedLocation.split(' | ').map(loc => loc.trim());
+
+      // Build location filter
+      locationFilter = {
+        [Sequelize.Op.or]: [
+          { city: { [Sequelize.Op.in]: locationsArray } },
+          { region: locationsArray },
+          { country: locationsArray },
+        ],
+      };
+    }
 
     // Filtering logic for products
     let productFilter = {
@@ -66,13 +88,12 @@ const searchProductsGlobally = async (req, res) => {
           model: userModel,
           attributes: ['city', 'region', 'country'],
           as: 'seller',
-          where: {
-            [Sequelize.Op.or]: [
-              { city: { [Sequelize.Op.in]: locationsArray } },
-              { region: locationsArray },
-              { country: locationsArray },
-            ],
-          },
+          where: locationFilter,
+        },
+        {
+          model: listedLocationsModel,
+          attributes: ['product_id', 'latitude', 'longitude'],
+          as: 'location',
         },
         {
           model: productImagesModel,
@@ -88,8 +109,28 @@ const searchProductsGlobally = async (req, res) => {
       order: getSortingOrder(filters.sort),
     });
 
+
+    console.log('Initial products:', products.length);
+
+    // Filter products by distance if latitude and longitude are provided
+    let filteredProducts = products;
+    if (latitude && longitude && radius) {
+      const userLocation = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
+      filteredProducts = products.filter(product => {
+        if (!product.location) return false; // Skip products without location
+        const productLocation = { latitude: product.location.latitude, longitude: product.location.longitude };
+        const distance = geolib.getDistance(userLocation, productLocation);
+        console.log(`Product ID ${product.id} distance:`, distance);
+        return distance <= radius * 1000; // radius in kilometers
+      });
+    }
+
+    console.log('Filtered products:', filteredProducts.length);
+
+
+
     // Format the products as per the desired JSON structure
-    const formattedProducts = products.map(product => ({
+    const formattedProducts = filteredProducts.map(product => ({
       id: product.id,
       product_name: product.product_name,
       description: product.description,
@@ -106,6 +147,11 @@ const searchProductsGlobally = async (req, res) => {
         region: product.seller.region,
         country: product.seller.country,
       },
+      listedIn: product.location ? {
+        product_id: product.location.product_id,
+        latitude: product.location.latitude,
+        longitude: product.location.longitude
+      } : null,
       images: product.images.map(image => ({
         id: image.id,
         image_url: image.image_url,
@@ -117,6 +163,7 @@ const searchProductsGlobally = async (req, res) => {
     }));
 
     res.status(200).json(formattedProducts);
+    console.log('formattedProducts:', formattedProducts)
   } catch (error) {
     console.error('Error searching products:', error);
     res.status(500).json({ error: 'An error occurred while searching products.' });
@@ -138,4 +185,4 @@ const getSortingOrder = (sort) => {
   }
 };
 
-module.exports = { searchProductsGlobally };
+module.exports = { searchProducts };

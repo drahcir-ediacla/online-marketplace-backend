@@ -329,7 +329,7 @@ const getProductDetails = async (req, res) => {
       include: [
         {
           model: userModel,
-          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+          attributes: ['id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
           as: 'seller',
         },
         {
@@ -378,7 +378,7 @@ const getProductById = async (req, res) => {
       include: [
         {
           model: userModel,
-          attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+          attributes: ['id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
           as: 'seller',
         },
         {
@@ -579,7 +579,7 @@ const fetchProductsRecursively = async (categoryId, filters) => {
     include: [
       {
         model: userModel,
-        attributes: ['id', 'fb_id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+        attributes: ['id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
         as: 'seller',
         where: { id: Sequelize.col('Product.seller_id') },
       },
