@@ -1,1 +1,0 @@
-const { listedLocationsModel } = require('../config/sequelizeConfig')
