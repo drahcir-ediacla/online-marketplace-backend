@@ -62,6 +62,14 @@ const defineUserModel = (sequelize) => {
       unique: false,
       allowNull: true,
     },
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
     phone: {
       type: DataTypes.INTEGER,
       unique: true,
@@ -90,7 +98,7 @@ const defineUserModel = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    otp_expires : {
+    otp_expires: {
       type: DataTypes.DATE,
       allowNull: true,
     },

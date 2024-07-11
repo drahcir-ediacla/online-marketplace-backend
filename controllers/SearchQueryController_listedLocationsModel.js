@@ -87,9 +87,9 @@ const searchProducts = async (req, res) => {
           where: locationFilter,
         },
         {
-          model: userModel,
-          attributes: ['latitude', 'longitude'],
-          as: 'sellerLocation',
+          model: listedLocationsModel,
+          attributes: ['product_id', 'latitude', 'longitude'],
+          as: 'location',
         },
         {
           model: productImagesModel,
@@ -113,8 +113,8 @@ const searchProducts = async (req, res) => {
     if (latitude && longitude && radius) {
       const userLocation = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
       filteredProducts = products.filter(product => {
-        if (!product.sellerLocation) return false; // Skip products without location
-        const productLocation = { latitude: product.sellerLocation.latitude, longitude: product.sellerLocation.longitude };
+        if (!product.location) return false; // Skip products without location
+        const productLocation = { latitude: product.location.latitude, longitude: product.location.longitude };
         const distance = geolib.getDistance(userLocation, productLocation);
         console.log(`Product ID ${product.id} distance:`, distance);
         return distance <= radius * 1000; // radius in kilometers
@@ -143,9 +143,10 @@ const searchProducts = async (req, res) => {
         region: product.seller.region,
         country: product.seller.country,
       },
-      sellerLocation: product.sellerLocation ? {
-        latitude: product.sellerLocation.latitude,
-        longitude: product.sellerLocation.longitude
+      listedIn: product.location ? {
+        product_id: product.location.product_id,
+        latitude: product.location.latitude,
+        longitude: product.location.longitude
       } : null,
       images: product.images.map(image => ({
         id: image.id,
