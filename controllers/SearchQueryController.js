@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 const geolib = require('geolib');
-const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, productViewModel, listedLocationsModel } = require('../config/sequelizeConfig');
+const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig');
 
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
 const searchProducts = async (req, res) => {
@@ -18,7 +18,7 @@ const searchProducts = async (req, res) => {
     // Initialize location filter based on provided location
     let locationFilter = {};
 
-    if (location === 'Listing Near Me' && latitude && longitude && radius) {
+    if (location === 'Listings Nearby' && latitude && longitude && radius) {
       // Skip city, region, and country filters if 'Listing Near Me' is used
       locationFilter = {};
     } else {
