@@ -329,7 +329,7 @@ const getProductDetails = async (req, res) => {
       include: [
         {
           model: userModel,
-          attributes: ['id', 'display_name', 'profile_pic', 'bio', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'createdAt'],
+          attributes: ['id', 'display_name', 'profile_pic', 'first_name', 'last_name', 'country', 'phone', 'gender', 'birthday', 'city', 'region', 'latitude', 'longitude', 'createdAt'],
           as: 'seller',
         },
         {
