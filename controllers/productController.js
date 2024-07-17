@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { sequelize, notificationModel, followersModel, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel } = require('../config/sequelizeConfig')
+const { sequelize, notificationModel, followersModel, userModel, productModel, categoryModel, productVideosModel, productImagesModel, wishListModel, productViewModel, meetupLocationsModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const { v4: uuidv4 } = require('uuid');
 
@@ -40,7 +40,7 @@ const addNewProduct = async (req, res) => {
 
     // The authenticated user's ID is available as req.user.id
     const sellerId = req.user.id;
-    const { product_name, description, price, category_id, product_condition, mailing_delivery, youtube_link, status, fileUrls } = req.body;
+    const { product_name, description, price, category_id, product_condition, mailing_delivery, youtube_link, status, fileUrls, meetupLocations } = req.body;
 
     if (!product_name || !price || !category_id) {
       return res.status(400).json({ error: 'Name, price, and category are required fields.' });
@@ -59,6 +59,7 @@ const addNewProduct = async (req, res) => {
       youtube_link,
       status,
     });
+
 
     // Insert associated image and video URLs for the product
     if (fileUrls && fileUrls.length > 0) {
@@ -90,7 +91,18 @@ const addNewProduct = async (req, res) => {
       await Promise.all(videoInsertPromises);
 
       newProduct.file_urls = fileUrls;
-      console.log('Product with files:', newProduct);
+
+      // Insert meetup location
+      if (meetupLocations) {
+        const { name, address, latitude, longitude } = meetupLocations;
+        await meetupLocationsModel.create({
+          product_id: newProduct.id,
+          name,
+          address,
+          latitude,
+          longitude,
+        });
+      }
     }
 
     // Get followers of the user who posted the listing
