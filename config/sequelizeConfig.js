@@ -146,5 +146,6 @@ const initializeDatabase = async () => {
     reviewsModel,
     reviewImagesModel,
     notificationModel,
-    listedLocationsModel
+    listedLocationsModel,
+    meetupLocationsModel
   };

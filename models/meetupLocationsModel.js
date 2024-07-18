@@ -3,7 +3,7 @@ const { DataTypes } = require('sequelize');
 
 const defineMeetupLocationsModel = (sequelize) => {
     const meetupLocationsModel = sequelize.define('Meetup', {
-        id: {
+        meetup_id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
@@ -34,6 +34,7 @@ const defineMeetupLocationsModel = (sequelize) => {
         }
     }, {
         tableName: 'meetup_locations',
+        timestamps: false, // Add this line to disable timestamps
     })
 
     return meetupLocationsModel;

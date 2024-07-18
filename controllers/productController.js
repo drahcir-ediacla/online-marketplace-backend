@@ -91,18 +91,21 @@ const addNewProduct = async (req, res) => {
       await Promise.all(videoInsertPromises);
 
       newProduct.file_urls = fileUrls;
+    }
 
-      // Insert meetup location
-      if (meetupLocations) {
-        const { name, address, latitude, longitude } = meetupLocations;
-        await meetupLocationsModel.create({
+     // Insert meetup locations
+     if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
+      const meetupInsertPromises = meetupLocations.map(location => {
+        const { name, address, latitude, longitude } = location;
+        return meetupLocationsModel.create({
           product_id: newProduct.id,
           name,
           address,
           latitude,
           longitude,
         });
-      }
+      });
+      await Promise.all(meetupInsertPromises);
     }
 
     // Get followers of the user who posted the listing
@@ -143,7 +146,7 @@ const updateProduct = async (req, res) => {
     const sellerId = req.user.id;
     const productId = req.params.productId; // Assuming the product ID is in the request parameters
     const productName = req.params.product_name;
-    const { product_name, description, price, category_id, product_condition, mailing_delivery, youtube_link, status, fileUrls } = req.body;
+    const { product_name, description, price, category_id, product_condition, mailing_delivery, youtube_link, status, fileUrls, meetupLocations } = req.body;
 
     // Validate input fields
     if (!product_name || !price || !category_id) {
@@ -225,6 +228,21 @@ const updateProduct = async (req, res) => {
 
         existingProduct.file_urls = fileUrls;
       }
+
+      // Insert meetup locations
+     if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
+      const meetupInsertPromises = meetupLocations.map(location => {
+        const { name, address, latitude, longitude } = location;
+        return meetupLocationsModel.create({
+          product_id: existingProduct.id,
+          name,
+          address,
+          latitude,
+          longitude,
+        }, { transaction });
+      });
+      await Promise.all(meetupInsertPromises);
+    }
 
       // Commit the transaction if everything is successful
       await transaction.commit();
@@ -358,7 +376,12 @@ const getProductDetails = async (req, res) => {
           model: wishListModel,
           attributes: ['user_id', 'product_id'],
           as: 'wishlist',
-        }
+        },
+        {
+          model: meetupLocationsModel,
+          attributes: ['name', 'address', 'latitude', 'longitude'],
+          as: 'meetup',
+        },
       ]
     });
 
