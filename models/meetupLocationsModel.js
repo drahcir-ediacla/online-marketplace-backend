@@ -14,6 +14,11 @@ const defineMeetupLocationsModel = (sequelize) => {
             unique: false,
             allowNull: false,
         },
+        placeId: {
+            type: DataTypes.STRING,
+            unique: true,
+            allowNull: false,
+        },
         name: {
             type: DataTypes.STRING,
             unique: false,

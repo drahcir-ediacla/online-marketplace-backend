@@ -64,7 +64,7 @@ productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'sellerLocation' });
 productModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images', onDelete: 'CASCADE' });
-productModel.hasOne(meetupLocationsModel, { foreignKey: 'product_id', as: 'meetup', onDelete: 'CASCADE' });
+productModel.hasMany(meetupLocationsModel, { foreignKey: 'product_id', as: 'meetup', onDelete: 'CASCADE' });
 productModel.hasOne(listedLocationsModel, { foreignKey: 'product_id', as: 'location', onDelete: 'CASCADE' });
 productModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos', onDelete: 'CASCADE' });
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist',  onDelete: 'CASCADE' });

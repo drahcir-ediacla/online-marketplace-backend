@@ -96,9 +96,10 @@ const addNewProduct = async (req, res) => {
      // Insert meetup locations
      if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
       const meetupInsertPromises = meetupLocations.map(location => {
-        const { name, address, latitude, longitude } = location;
+        const { placeId, name, address, latitude, longitude } = location;
         return meetupLocationsModel.create({
           product_id: newProduct.id,
+          placeId,
           name,
           address,
           latitude,
@@ -226,15 +227,19 @@ const updateProduct = async (req, res) => {
         await Promise.all(imageInsertPromises);
         await Promise.all(videoInsertPromises);
 
-        existingProduct.file_urls = fileUrls;
       }
 
       // Insert meetup locations
      if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
+      
+      // Delete existing meetup locations
+      await meetupLocationsModel.destroy({ where: { product_id: productId }, transaction });
+      
       const meetupInsertPromises = meetupLocations.map(location => {
-        const { name, address, latitude, longitude } = location;
+        const { placeId, name, address, latitude, longitude } = location;
         return meetupLocationsModel.create({
           product_id: existingProduct.id,
+          placeId,
           name,
           address,
           latitude,
@@ -379,7 +384,7 @@ const getProductDetails = async (req, res) => {
         },
         {
           model: meetupLocationsModel,
-          attributes: ['name', 'address', 'latitude', 'longitude'],
+          attributes: ['placeId', 'name', 'address', 'latitude', 'longitude'],
           as: 'meetup',
         },
       ]
@@ -491,6 +496,12 @@ const deleteProductById = async (req, res) => {
         product_id: productID
       }
     });
+
+    await meetupLocationsModel.destroy({
+      where: {
+        product_id: productID
+      }
+    })
 
     // await chatsModel.destroy({
     //   where: {
