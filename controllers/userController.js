@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 
 
 // --------------- FETCH ALL USERS  --------------- //
-const getUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     // Use Sequelize to fetch all users
     const users = await userModel.findAll();
@@ -259,4 +259,4 @@ const changePassword = async (req, res) => {
 
 
 
-module.exports = { getUsers, getUsersById, updateUser, changePassword };
+module.exports = { getAllUsers, getUsersById, updateUser, changePassword };

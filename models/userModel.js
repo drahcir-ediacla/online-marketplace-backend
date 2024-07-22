@@ -7,11 +7,11 @@ const defineUserModel = (sequelize) => {
       primaryKey: true,
       autoIncrement: true,
     },
-    // fb_id: {
-    //   type: DataTypes.STRING,
-    //   unique: true,
-    //   allowNull: true,
-    // },
+    account_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
     email: {
       type: DataTypes.STRING,
       unique: true,

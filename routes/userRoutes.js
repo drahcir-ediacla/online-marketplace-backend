@@ -5,7 +5,7 @@ const cacheMiddleware = require('../middleware/cacheMiddleware')
 
 
 // Define the '/users' route
-router.get('/api/users', cacheMiddleware, UserController.getUsers);
+router.get('/api/users', cacheMiddleware, UserController.getAllUsers);
 router.get('/api/user/:id', UserController.getUsersById);
 
 

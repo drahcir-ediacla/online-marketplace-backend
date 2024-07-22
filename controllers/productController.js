@@ -230,7 +230,7 @@ const updateProduct = async (req, res) => {
       }
 
       // Insert meetup locations
-     if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
+     if (meetupLocations && Array.isArray(meetupLocations) && (meetupLocations.length > 0 || meetupLocations.length === 0)) {
       
       // Delete existing meetup locations
       await meetupLocationsModel.destroy({ where: { product_id: productId }, transaction });
