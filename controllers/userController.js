@@ -181,7 +181,7 @@ const updateUser = async (req, res) => {
 
       // Update the user's profile data
       await user.update({
-        email: updatedUserData.email,
+        // email: updatedUserData.email,
         display_name: updatedUserData.display_name,
         bio: updatedUserData.bio,
         first_name: updatedUserData.first_name,
@@ -191,7 +191,7 @@ const updateUser = async (req, res) => {
         city: updatedUserData.city,
         latitude: updatedUserData.latitude,
         longitude: updatedUserData.longitude,
-        phone: updatedUserData.phone,
+        // phone: updatedUserData.phone,
         gender: updatedUserData.gender,
         birthday: updatedUserData.birthday,
         password: updatedUserData.password,

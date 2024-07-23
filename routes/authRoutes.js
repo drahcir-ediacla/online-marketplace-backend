@@ -16,5 +16,7 @@ router.put('/api/reset-password-phone', AuthController.resetPasswordByPhone);
 router.put('/api/reset-password-otp-phone', AuthController.resetPasswordOtpByPhone);
 router.post('/api/login-verify-otp', AuthController.verifyOtpAndLogin);
 router.post('/api/send-login-otp', AuthController.sendLoginOtp);
+router.post('/api/send-email-update-otp', AuthController.sendEmailUpdateOTP);
+router.put('/api/verify-email-update-otp', AuthController.verifyEmailUpdateOTP);
 
 module.exports = router;

@@ -21,6 +21,11 @@ const defineUserModel = (sequelize) => {
         isEmail: true,
       },
     },
+    new_email: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+    },
     email_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
