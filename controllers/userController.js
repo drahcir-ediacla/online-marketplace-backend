@@ -186,7 +186,7 @@ const updateUser = async (req, res) => {
         bio: updatedUserData.bio,
         first_name: updatedUserData.first_name,
         last_name: updatedUserData.last_name,
-        country: updatedUserData.country,
+        // country: updatedUserData.country,
         region: updatedUserData.region,
         city: updatedUserData.city,
         latitude: updatedUserData.latitude,
