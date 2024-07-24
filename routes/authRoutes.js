@@ -18,5 +18,7 @@ router.post('/api/login-verify-otp', AuthController.verifyOtpAndLogin);
 router.post('/api/send-login-otp', AuthController.sendLoginOtp);
 router.post('/api/send-email-update-otp', AuthController.sendEmailUpdateOTP);
 router.put('/api/verify-email-update-otp', AuthController.verifyEmailUpdateOTP);
+router.post('/api/send-phone-update-otp', AuthController.sendPhoneUpdateOTP);
+router.put('/api/verify-phone-update-otp', AuthController.verifyPhoneUpdateOTP);
 
 module.exports = router;

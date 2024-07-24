@@ -673,6 +673,88 @@ const verifyEmailUpdateOTP = async (req, res) => {
 };
 
 
+const sendPhoneUpdateOTP = async (req, res) => {
+
+  if (req.isAuthenticated()) {
+    const { newPhone } = req.body;
+    const userId = req.user.id
+
+    try {
+      // Check if the new email already exists
+      const existingUser = await userModel.findOne({ where: { phone: newPhone } });
+
+      if (existingUser) {
+        return res.status(409).json({ message: 'Phone already exists' });
+      }
+
+      // Generate OTP
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
+
+      const sendSmsOptions = {
+        from: "Yogeek",
+        to: `63${newPhone}`,
+        text: `[Yogeek] ${otp} is your verification code. Valid for 2 minutes. To keep your account safe, never share this code`,
+      };
+  
+      await vonage.sms.send(sendSmsOptions);
+
+      // Save OTP and otp_expires to the user's record
+      const user = await userModel.findByPk(userId);
+      user.new_phone = newPhone;
+      user.otp = otp;
+      user.otp_expires = otp_expires;
+      await user.save();
+
+      res.status(201).json({ message: 'OTP sent successfully to the new phone number.' });
+    } catch (error) {
+      console.error('Error sending otp:', error);
+      res.status(500).json({ message: 'Error sending otp' });
+    }
+  } else {
+    // If not authenticated, send an error response
+    console.log('User not authenticated');
+    res.status(401).json({ success: false, message: 'User not authenticated' });
+  }
+
+};
+
+// Function to verify OTP and update the email
+const verifyPhoneUpdateOTP = async (req, res) => {
+
+  if (req.isAuthenticated()) {
+    const { otp } = req.body;
+    const userId = req.user.id
+    try {
+      const user = await userModel.findByPk(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      if (user.otp !== otp || Date.now() > new Date(user.otp_expires).getTime()) {
+        return res.status(401).json({ message: 'Invalid or expired OTP' });
+      }
+
+      // Update email and clear OTP fields
+      user.phone = user.new_phone;
+      user.new_phone = null;
+      user.otp = null;
+      user.otp_expires = null;
+      user.account_verified = true;
+      await user.save();
+
+      res.status(200).json({ message: 'Phone updated successfully.' });
+    } catch (error) {
+      console.error('Error updating phone:', error);
+      res.status(500).json({ message: 'Error updating phone' });
+    }
+  } else {
+    // If not authenticated, send an error response
+    console.log('User not authenticated');
+    res.status(401).json({ success: false, message: 'User not authenticated' });
+  }
+};
 
 
 module.exports = {
@@ -690,5 +772,7 @@ module.exports = {
   resetPasswordByPhone,
   resetPasswordOtpByPhone,
   sendEmailUpdateOTP,
-  verifyEmailUpdateOTP
+  verifyEmailUpdateOTP,
+  sendPhoneUpdateOTP,
+  verifyPhoneUpdateOTP
 };

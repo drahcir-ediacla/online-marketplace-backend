@@ -80,6 +80,11 @@ const defineUserModel = (sequelize) => {
       unique: true,
       allowNull: true,
     },
+    new_phone: {
+      type: DataTypes.INTEGER,
+      unique: true,
+      allowNull: true,
+    },
     phone_verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
