@@ -69,11 +69,11 @@ const defineUserModel = (sequelize) => {
     },
     latitude: {
       type: DataTypes.FLOAT,
-      allowNull: true
+      allowNull: true,
     },
     longitude: {
       type: DataTypes.FLOAT,
-      allowNull: true
+      allowNull: true,
     },
     phone: {
       type: DataTypes.INTEGER,
