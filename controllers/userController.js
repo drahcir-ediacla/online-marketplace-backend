@@ -179,30 +179,35 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ success: false, message: 'User not found' });
       }
 
-      // Update the user's profile data
-      await user.update({
-        // email: updatedUserData.email,
-        display_name: updatedUserData.display_name,
-        bio: updatedUserData.bio,
-        first_name: updatedUserData.first_name,
-        last_name: updatedUserData.last_name,
-        // country: updatedUserData.country,
-        region: updatedUserData.region,
-        city: updatedUserData.city,
-        latitude: updatedUserData.latitude,
-        longitude: updatedUserData.longitude,
-        // phone: updatedUserData.phone,
-        gender: updatedUserData.gender,
-        birthday: updatedUserData.birthday,
-        password: updatedUserData.password,
-        profile_pic: updatedUserData.profile_pic,
-        cover_photo: updatedUserData.cover_photo,
-      });
+      if (user.email === null || user.phone === null) {
+        return res.status(401).json({ success: false, message: 'Email or Phone are null' });
+      } else {
+        // Update the user's profile data
+        await user.update({
+          account_verified: true, // Assuming 'true' is a boolean
+          // email: updatedUserData.email,
+          display_name: updatedUserData.display_name,
+          bio: updatedUserData.bio,
+          first_name: updatedUserData.first_name,
+          last_name: updatedUserData.last_name,
+          // country: updatedUserData.country,
+          region: updatedUserData.region,
+          city: updatedUserData.city,
+          latitude: updatedUserData.latitude,
+          longitude: updatedUserData.longitude,
+          // phone: updatedUserData.phone,
+          gender: updatedUserData.gender,
+          birthday: updatedUserData.birthday,
+          password: updatedUserData.password,
+          profile_pic: updatedUserData.profile_pic,
+          cover_photo: updatedUserData.cover_photo,
+        });
 
+        // Send a success response with the updated user data
+        res.status(200).json({ success: true, user: user.toJSON() });
 
+      }
 
-      // Send a success response with the updated user data
-      res.status(200).json({ success: true, user: user.toJSON() });
     } catch (err) {
       // Handle any errors (e.g., validation errors)
       console.error(err);

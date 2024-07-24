@@ -746,3 +746,5 @@
 20240724	10:13:18	0b40b953-a7bb-4309-903c-3ac8cedda5a0	SequelizeForeignKeyConstraintError: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`refresh_tokens`, CONSTRAINT `refresh_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
 20240724	10:22:28	82b0773a-1b38-4842-add6-ca87376fe38a	SequelizeForeignKeyConstraintError: Cannot add or update a child row: a foreign key constraint fails (`yogeek-data`.`refresh_tokens`, CONSTRAINT `refresh_tokens_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE)
 20240724	10:44:13	07886460-19ee-486c-8b4b-777dec6156b1	TokenError: Bad Request
+20240724	16:33:36	20cac186-4c45-40b0-9bc1-bf340d25dcb2	SequelizeValidationError: notNull Violation: User.latitude cannot be null,
+notNull Violation: User.longitude cannot be null
