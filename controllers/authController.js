@@ -681,9 +681,9 @@ const sendPhoneUpdateOTP = async (req, res) => {
 
     try {
       // Check if the new email already exists
-      const existingUser = await userModel.findOne({ where: { phone: newPhone } });
+      const existingPhone = await userModel.findOne({ where: { phone: newPhone } });
 
-      if (existingUser) {
+      if (existingPhone) {
         return res.status(409).json({ message: 'Phone already exists' });
       }
 

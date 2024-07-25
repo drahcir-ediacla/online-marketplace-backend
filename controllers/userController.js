@@ -160,23 +160,15 @@ const getUsersById = async (req, res) => {
 const updateUser = async (req, res) => {
   if (req.isAuthenticated()) {
     // The user is authenticated, so you can access req.user to get the current user
-
-
     try {
       // You can access the updated user data from req.body
       const updatedUserData = req.body;
 
-
       const user = await userModel.findByPk(req.user.id);
-      if (!user) {
-        console.log('User not found in the database');
-        return res.status(404).json({ success: false, message: 'User not found in the database' });
-      }
-
 
       if (!user) {
         // User not found
-        return res.status(404).json({ success: false, message: 'User not found' });
+        return res.status(404).json({ success: false, message: 'User not found in the database' });
       }
 
       if (user.email === null || user.phone === null) {
@@ -198,7 +190,6 @@ const updateUser = async (req, res) => {
           // phone: updatedUserData.phone,
           gender: updatedUserData.gender,
           birthday: updatedUserData.birthday,
-          password: updatedUserData.password,
           profile_pic: updatedUserData.profile_pic,
           cover_photo: updatedUserData.cover_photo,
         });
