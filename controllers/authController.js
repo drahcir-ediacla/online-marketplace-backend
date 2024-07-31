@@ -4,7 +4,10 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const transPorter = require('../config/emailConfig')
 const vonage = require('../config/vonageConfig')
+const { sendSms } = require('../config/moviderConfig');
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils'); // You need to implement token utility functions
+const MOVIDER_API_KEY = process.env.MOVIDER_API_KEY;
+const MOVIDER_API_URL = 'https://api.movider.co/v1/sms/send';
 
 // Function to register a new user
 const registerUserByEmail = async (req, res) => {
@@ -144,13 +147,9 @@ const sendPhoneRegistrationOTP = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
 
-    const sendSmsOptions = {
-      from: "Yogeek",
-      to: `63${phone}`,
-      text: `[Yogeek] ${otp} is your verification code. Valid for 2 minutes. To keep your account safe, never share this code`,
-    };
+    const message = `[Yogeek] ${otp} is your verification code. Valid for 2 minutes. To keep your account safe, never share this code`;
 
-    await vonage.sms.send(sendSmsOptions);
+    await sendSms(`63${phone}`, message);
 
     if (user && !user.phone_verified) {
       // Update the existing user's OTP and otp_expires
