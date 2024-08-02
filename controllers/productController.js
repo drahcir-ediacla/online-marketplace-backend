@@ -93,8 +93,8 @@ const addNewProduct = async (req, res) => {
       newProduct.file_urls = fileUrls;
     }
 
-     // Insert meetup locations
-     if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
+    // Insert meetup locations
+    if (meetupLocations && Array.isArray(meetupLocations) && meetupLocations.length > 0) {
       const meetupInsertPromises = meetupLocations.map(location => {
         const { placeId, name, address, latitude, longitude } = location;
         return meetupLocationsModel.create({
@@ -230,24 +230,24 @@ const updateProduct = async (req, res) => {
       }
 
       // Insert meetup locations
-     if (meetupLocations && Array.isArray(meetupLocations) && (meetupLocations.length > 0 || meetupLocations.length === 0)) {
-      
-      // Delete existing meetup locations
-      await meetupLocationsModel.destroy({ where: { product_id: productId }, transaction });
-      
-      const meetupInsertPromises = meetupLocations.map(location => {
-        const { placeId, name, address, latitude, longitude } = location;
-        return meetupLocationsModel.create({
-          product_id: existingProduct.id,
-          placeId,
-          name,
-          address,
-          latitude,
-          longitude,
-        }, { transaction });
-      });
-      await Promise.all(meetupInsertPromises);
-    }
+      if (meetupLocations && Array.isArray(meetupLocations) && (meetupLocations.length > 0 || meetupLocations.length === 0)) {
+
+        // Delete existing meetup locations
+        await meetupLocationsModel.destroy({ where: { product_id: productId }, transaction });
+
+        const meetupInsertPromises = meetupLocations.map(location => {
+          const { placeId, name, address, latitude, longitude } = location;
+          return meetupLocationsModel.create({
+            product_id: existingProduct.id,
+            placeId,
+            name,
+            address,
+            latitude,
+            longitude,
+          }, { transaction });
+        });
+        await Promise.all(meetupInsertPromises);
+      }
 
       // Commit the transaction if everything is successful
       await transaction.commit();
@@ -581,7 +581,7 @@ const fetchProductsRecursively = async (categoryId, filters) => {
     return [];
   }
 
-  const { minPrice, maxPrice, condition, sort } = filters;
+  const { minPrice, maxPrice, condition, sort, dealOption } = filters;
 
   let productFilter = { category_id: categoryId };
 
@@ -595,6 +595,19 @@ const fetchProductsRecursively = async (categoryId, filters) => {
   if (condition) {
     // Add condition filter
     productFilter.product_condition = condition;
+  }
+
+  if (dealOption) {
+    if (dealOption.includes('Meet Up') && dealOption.includes('Delivery')) {
+      productFilter[Sequelize.Op.or] = [
+        { '$meetup.id$': { [Sequelize.Op.ne]: null } },
+        { mailing_delivery: { [Sequelize.Op.ne]: null } },
+      ];
+    } else if (dealOption.includes('Meet Up')) {
+      productFilter['$meetup.id$'] = { [Sequelize.Op.ne]: null };
+    } else if (dealOption.includes('Delivery')) {
+      productFilter.mailing_delivery = { [Sequelize.Op.ne]: null };
+    }
   }
 
   let order = [];
@@ -639,6 +652,11 @@ const fetchProductsRecursively = async (categoryId, filters) => {
         attributes: ['product_id', 'user_id'],
         as: 'wishlist',
       },
+      {
+        model: meetupLocationsModel,
+        attributes: ['meetup_id', 'name'],
+        as: 'meetup',
+      }
     ],
   });
 
