@@ -1,5 +1,5 @@
 const { Sequelize, Op } = require('sequelize');
-const { userModel, productModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig')
+const { userModel, productModel, productImagesModel, wishListModel, meetupLocationsModel } = require('../config/sequelizeConfig')
 const redisClient = require('../config/redisClient')
 const bcrypt = require('bcrypt');
 
@@ -34,7 +34,7 @@ const fetchProductsRecursively = async (userID, filters) => {
     return [];
   }
 
-  const { minPrice, maxPrice, condition, sort } = filters;
+  const { minPrice, maxPrice, condition, sort, dealOption } = filters;
 
   let productFilter = { seller_id: userID };
 
@@ -48,6 +48,19 @@ const fetchProductsRecursively = async (userID, filters) => {
   if (condition) {
     // Add condition filter
     productFilter.product_condition = condition;
+  }
+
+  if (dealOption) {
+    if (dealOption.includes('Meet Up') && dealOption.includes('Delivery')) {
+      productFilter[Sequelize.Op.or] = [
+        { '$meetup.meetup_id$': { [Sequelize.Op.ne]: null } },
+        { mailing_delivery: { [Sequelize.Op.ne]: null } },
+      ];
+    } else if (dealOption.includes('Meet Up')) {
+      productFilter['$meetup.meetup_id$'] = { [Sequelize.Op.ne]: null };
+    } else if (dealOption.includes('Delivery')) {
+      productFilter.mailing_delivery = { [Sequelize.Op.ne]: null };
+    }
   }
 
   let order = [];
@@ -86,6 +99,11 @@ const fetchProductsRecursively = async (userID, filters) => {
         attributes: ['product_id', 'user_id'],
         as: 'wishlist',
       },
+      {
+        model: meetupLocationsModel,
+        attributes: ['meetup_id', 'name'],
+        as: 'meetup',
+      }
     ],
   });
 
@@ -126,6 +144,7 @@ const getUsersById = async (req, res) => {
       maxPrice: req.query.maxPrice || undefined,
       condition: req.query.condition || '',
       sort: req.query.sort || '',
+      dealOption: req.query.dealOption || '',
     };
 
     // Use Sequelize to fetch user data and associated products
