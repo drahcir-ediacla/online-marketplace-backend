@@ -600,11 +600,11 @@ const fetchProductsRecursively = async (categoryId, filters) => {
   if (dealOption) {
     if (dealOption.includes('Meet Up') && dealOption.includes('Delivery')) {
       productFilter[Sequelize.Op.or] = [
-        { '$meetup.id$': { [Sequelize.Op.ne]: null } },
+        { '$meetup.meetup_id$': { [Sequelize.Op.ne]: null } },
         { mailing_delivery: { [Sequelize.Op.ne]: null } },
       ];
     } else if (dealOption.includes('Meet Up')) {
-      productFilter['$meetup.id$'] = { [Sequelize.Op.ne]: null };
+      productFilter['$meetup.meetup_id$'] = { [Sequelize.Op.ne]: null };
     } else if (dealOption.includes('Delivery')) {
       productFilter.mailing_delivery = { [Sequelize.Op.ne]: null };
     }
@@ -630,6 +630,7 @@ const fetchProductsRecursively = async (categoryId, filters) => {
       break;
   }
 
+  console.log('Product Filter:', productFilter);
 
   // Find products for the category
   const products = await productModel.findAll({
@@ -714,6 +715,7 @@ const getCategoryById = async (req, res) => {
       maxPrice: req.query.maxPrice || undefined,
       condition: req.query.condition || '',
       sort: req.query.sort || '',
+      dealOption: req.query.dealOption || '',
     };
 
     // Use Sequelize to find the category by ID

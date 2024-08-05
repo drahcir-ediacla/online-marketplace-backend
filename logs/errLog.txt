@@ -748,3 +748,4 @@
 20240724	10:44:13	07886460-19ee-486c-8b4b-777dec6156b1	TokenError: Bad Request
 20240724	16:33:36	20cac186-4c45-40b0-9bc1-bf340d25dcb2	SequelizeValidationError: notNull Violation: User.latitude cannot be null,
 notNull Violation: User.longitude cannot be null
+20240805	09:23:13	74964147-de25-4a2a-bbb2-311ee08b65f0	SyntaxError: Unexpected token } in JSON at position 45
