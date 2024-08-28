@@ -16,6 +16,7 @@ const defineReviewsModel = require('../models/reviewsModel')
 const defineReviewImagesModel = require('../models/reviewImagesModel')
 const defineNotificationModel = require('../models/notificationModel')
 const defineMeetupLocationsModel = require('../models/meetupLocationsModel')
+const defineForumCategoryModel = require('../models/forumCategoryModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -50,6 +51,7 @@ const reviewsModel = defineReviewsModel(sequelize);
 const reviewImagesModel = defineReviewImagesModel(sequelize);
 const notificationModel = defineNotificationModel(sequelize);
 const meetupLocationsModel = defineMeetupLocationsModel(sequelize);
+const forumCategoryModel = defineForumCategoryModel(sequelize);
 
 
 // Define association after defining all models
@@ -57,6 +59,7 @@ categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' 
 categoryModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
 categoryModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos' });
 categoryModel.hasMany(categoryModel, { foreignKey: 'parent_id', as: 'subcategories' });
+forumCategoryModel.hasMany(forumCategoryModel, {foreignKey: 'parent_id', as: 'subcategories'})
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
@@ -143,5 +146,6 @@ const initializeDatabase = async () => {
     reviewsModel,
     reviewImagesModel,
     notificationModel,
-    meetupLocationsModel
+    meetupLocationsModel,
+    forumCategoryModel
   };

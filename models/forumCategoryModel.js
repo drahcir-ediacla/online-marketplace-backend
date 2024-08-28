@@ -1,12 +1,17 @@
 const {DataTypes} = require('sequelize')
 
 
-const defineForumCategory = (sequelize) => {
+const defineForumCategoryModel = (sequelize) => {
     const forumCategoryModel = sequelize.define('ForumCategory', {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
+        },
+        parent_id: {
+            type: DataTypes.INTEGER,
+            unique: false,
+            allowNull: true,
         },
         name: {
             type: DataTypes.STRING,
@@ -14,9 +19,14 @@ const defineForumCategory = (sequelize) => {
             allowNull: false,
         },
         description : {
-            type: DataTypes.STRING,
+            type: DataTypes.TEXT,
             unique: false,
             allowNull: true,
+        },
+        icon: {
+            type: DataTypes.TEXT,
+            unique: false,
+            allowNull: false,
         }
     }, {
         tableName: 'forum_categories',
@@ -26,4 +36,4 @@ const defineForumCategory = (sequelize) => {
     return forumCategoryModel;
 }
 
-module.exports = defineForumCategory;
+module.exports = defineForumCategoryModel;
