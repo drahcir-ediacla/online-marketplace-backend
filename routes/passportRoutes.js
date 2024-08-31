@@ -98,7 +98,7 @@ router.get(
     res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });  //maxAge is equivalent to 24 hours
     console.log('jwt:', accessToken)
 
-    res.redirect(process.env.CLIENT_URL); // Redirect to the desired page after successful login
+    res.redirect(`${process.env.CLIENT_URL}/auth/success`);  // Redirect to the desired page after successful login
   }
 );
 
@@ -133,7 +133,7 @@ router.get(
     res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
     console.log('jwt:', accessToken);
 
-    res.redirect(process.env.CLIENT_URL); // Redirect to the desired page after successful login
+    res.redirect(`${process.env.CLIENT_URL}/auth/success`); // Redirect to the desired page after successful login
   }
 );
 

@@ -17,6 +17,8 @@ const defineReviewImagesModel = require('../models/reviewImagesModel')
 const defineNotificationModel = require('../models/notificationModel')
 const defineMeetupLocationsModel = require('../models/meetupLocationsModel')
 const defineForumCategoryModel = require('../models/forumCategoryModel')
+const defineForumDiscussionModel = require('../models/forumDiscussionModel')
+const defineForumPostModel = require('../models/forumPostModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -52,6 +54,8 @@ const reviewImagesModel = defineReviewImagesModel(sequelize);
 const notificationModel = defineNotificationModel(sequelize);
 const meetupLocationsModel = defineMeetupLocationsModel(sequelize);
 const forumCategoryModel = defineForumCategoryModel(sequelize);
+const forumDiscussionModel = defineForumDiscussionModel(sequelize)
+const forumPostModel = defineForumPostModel(sequelize)
 
 
 // Define association after defining all models
@@ -59,7 +63,12 @@ categoryModel.hasMany(productModel, { foreignKey: 'category_id', as: 'products' 
 categoryModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'images' });
 categoryModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos' });
 categoryModel.hasMany(categoryModel, { foreignKey: 'parent_id', as: 'subcategories' });
-forumCategoryModel.hasMany(forumCategoryModel, {foreignKey: 'parent_id', as: 'subcategories'})
+forumCategoryModel.hasMany(forumCategoryModel, {foreignKey: 'parent_id', as: 'subcategories'});
+forumDiscussionModel.hasMany(userModel, {foreignKey: 'user_id', as: 'discussionStarter'});
+forumDiscussionModel.hasMany(forumCategoryModel, {foreignKey: 'forum_category_id', as: 'forumCategory'});
+forumPostModel.hasMany(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
+forumPostModel.hasMany(userModel, {foreignKey: 'user_id', as: 'forumUser'});
+forumPostModel.hasMany(forumPostModel, {foreignKey: 'parent_post_id', as: 'parentPost'});
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
@@ -147,5 +156,7 @@ const initializeDatabase = async () => {
     reviewImagesModel,
     notificationModel,
     meetupLocationsModel,
-    forumCategoryModel
+    forumCategoryModel,
+    forumDiscussionModel,
+    forumPostModel
   };
