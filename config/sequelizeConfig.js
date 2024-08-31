@@ -64,10 +64,10 @@ categoryModel.hasMany(productImagesModel, { foreignKey: 'product_id', as: 'image
 categoryModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos' });
 categoryModel.hasMany(categoryModel, { foreignKey: 'parent_id', as: 'subcategories' });
 forumCategoryModel.hasMany(forumCategoryModel, {foreignKey: 'parent_id', as: 'subcategories'});
-forumDiscussionModel.hasMany(userModel, {foreignKey: 'user_id', as: 'discussionStarter'});
+forumDiscussionModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'discussionStarter'});
 forumDiscussionModel.hasMany(forumCategoryModel, {foreignKey: 'forum_category_id', as: 'forumCategory'});
 forumPostModel.hasMany(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
-forumPostModel.hasMany(userModel, {foreignKey: 'user_id', as: 'forumUser'});
+forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'forumUser'});
 forumPostModel.hasMany(forumPostModel, {foreignKey: 'parent_post_id', as: 'parentPost'});
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
