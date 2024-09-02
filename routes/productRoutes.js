@@ -21,7 +21,6 @@ router.put('/api/mark-sold/:productId', ProductController.markSoldProduct);
 // Category routes
 router.get('/api/getallcategories', cacheMiddleware, ProductController.getAllCategories);
 router.get('/api/getcategory/:id/:value', ProductController.getCategoryById);
-router.get('/api/getcategory/:id', ProductController.getCategoryById);
 
 // Wishlist routes
 router.post('/api/addwishlist/product-:id', ProductController.addWishList);

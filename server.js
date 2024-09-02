@@ -35,7 +35,9 @@ app.use(logger);
 
 app.use(cors(corsOptions));
 
-app.use(bodyParser.json());
+// Increase the body size limit to 10MB
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

@@ -17,7 +17,7 @@ const defineForumPostModel = (sequelize) => {
         },
         parent_post_id: {
             type: DataTypes.BIGINT,
-            allowNull: false,
+            allowNull: true,
         },
         content: {
             type: DataTypes.TEXT,

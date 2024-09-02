@@ -749,3 +749,4 @@
 20240724	16:33:36	20cac186-4c45-40b0-9bc1-bf340d25dcb2	SequelizeValidationError: notNull Violation: User.latitude cannot be null,
 notNull Violation: User.longitude cannot be null
 20240805	09:23:13	74964147-de25-4a2a-bbb2-311ee08b65f0	SyntaxError: Unexpected token } in JSON at position 45
+20240902	13:48:14	ee5c73fa-391b-40b5-9c3f-92d8d1127590	PayloadTooLargeError: request entity too large
