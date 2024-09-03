@@ -78,6 +78,25 @@ const createNewDiscussion = async (req, res) => {
 }
 
 
+// ------------------- GET FORUM CATEGORY ------------------- //
+
+const fetchDiscussionsRecursively = async (categoryId) => {
+    const category = await forumCategoryModel.findByPk(categoryId, {
+        attributes: ['id', 'parent_id', 'name', 'description', 'icon' ],
+    })
+
+    if (!category) {
+        return [];
+      }
+
+      const discussions = await forumDiscussionModel.findAll({
+        where: {id: categoryId}
+      })
+}
+
+
+
+
 const getForumCategory = async (req, res) => {
     try {
         const categoryId = req.params.id;

@@ -750,3 +750,15 @@
 notNull Violation: User.longitude cannot be null
 20240805	09:23:13	74964147-de25-4a2a-bbb2-311ee08b65f0	SyntaxError: Unexpected token } in JSON at position 45
 20240902	13:48:14	ee5c73fa-391b-40b5-9c3f-92d8d1127590	PayloadTooLargeError: request entity too large
+20240903	16:02:21	8394726b-cc65-49da-983e-e8c910743bb9	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:02:22	f08a332b-8194-4514-99e1-7f1be5c6b569	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:08:17	6a168fee-bd19-49dd-b294-ecd40d806c51	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:08:17	2a4d7cf8-4157-44af-9ab2-a63f94e2a3ca	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:24:18	4d01ad3f-1648-4795-93c5-d68a71bc4adb	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:24:18	7373c047-4f57-4d70-a433-57624e3b92ca	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:33:45	bb23de78-552d-48e2-a75c-b3d60ef29a46	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:33:46	51cb2a3c-908a-4eb4-8426-b354cb83e045	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:34:49	3d8a0740-82d0-4ec8-9f7a-2fc0af756eae	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:34:49	27e5f057-febf-46bc-bbc5-79d536b9f5ce	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:57:28	e761a95e-1486-4cc1-aa7d-32cd64107d58	TypeError: Cannot set properties of undefined (setting 'id')
+20240903	16:57:28	bfaf051b-73c3-4237-8edc-032894b471a3	TypeError: Cannot set properties of undefined (setting 'id')
