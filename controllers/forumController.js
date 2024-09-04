@@ -1,3 +1,4 @@
+const { Sequelize } = require('sequelize');
 const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel } = require('../config/sequelizeConfig')
 
 
@@ -82,18 +83,48 @@ const createNewDiscussion = async (req, res) => {
 
 const fetchDiscussionsRecursively = async (categoryId) => {
     const category = await forumCategoryModel.findByPk(categoryId, {
-        attributes: ['id', 'parent_id', 'name', 'description', 'icon' ],
+        attributes: ['id', 'parent_id', 'name', 'description', 'icon'],
     })
 
     if (!category) {
         return [];
-      }
+    }
 
-      const discussions = await forumDiscussionModel.findAll({
-        where: {id: categoryId}
-      })
+    const discussions = await forumDiscussionModel.findAll({
+        where: { forum_category_id: categoryId },
+        attributes: ['id', 'user_id', 'forum_category_id', 'title'],
+        include: [
+            {
+                model: userModel,
+                attributes: ['id', 'display_name', 'profile_pic'],
+                as: 'discussionStarter',
+            },
+            {
+                model: forumPostModel,
+                attributes: ['id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                as: 'post',
+                where: {discussion_id: Sequelize.col('ForumDiscussion.id') },
+                required: false, // Include discussions even if they don't have posts
+            }
+        ]
+    })
+
+
+    const childSubcategories = await forumCategoryModel.findAll({
+        where: { parent_id: categoryId },
+        attributes: ['id', 'name', 'description', 'parent_id'],
+    })
+
+    const subCategoryDiscussions = await Promise.all(
+        childSubcategories.map((subCategory) =>
+            fetchDiscussionsRecursively(subCategory.id)
+        )
+    );
+
+    const allDiscussions = [...discussions, ...subCategoryDiscussions.flat()];
+
+    return allDiscussions
 }
-
 
 
 
@@ -116,11 +147,15 @@ const getForumCategory = async (req, res) => {
             attributes: ['id', 'name', 'description', 'parent_id', 'icon'],
         });
 
+        const allDiscussions = await fetchDiscussionsRecursively(categoryId)
+
         const categoryData = {
             ...category.toJSON(),
             subcategories, // Ensure subcategories is an array even if it's null
+            allDiscussions,
         };
 
+       
         res.status(200).json(categoryData);
 
     } catch (error) {
