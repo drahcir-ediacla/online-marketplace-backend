@@ -35,7 +35,7 @@ const defineForumPostModel = (sequelize) => {
             onUpdate: DataTypes.NOW,
         },
     }, {
-        tableName: 'posts',
+        tableName: 'forum_posts',
         timestamps: false, // Disabling automatic timestamps as we handle them manually
     });
 

@@ -19,6 +19,8 @@ const defineMeetupLocationsModel = require('../models/meetupLocationsModel')
 const defineForumCategoryModel = require('../models/forumCategoryModel')
 const defineForumDiscussionModel = require('../models/forumDiscussionModel')
 const defineForumPostModel = require('../models/forumPostModel')
+const defineTagsModel = require('../models/tagsModel')
+const defineDiscussionTagsModel = require('../models/discussionTagsModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -54,8 +56,10 @@ const reviewImagesModel = defineReviewImagesModel(sequelize);
 const notificationModel = defineNotificationModel(sequelize);
 const meetupLocationsModel = defineMeetupLocationsModel(sequelize);
 const forumCategoryModel = defineForumCategoryModel(sequelize);
-const forumDiscussionModel = defineForumDiscussionModel(sequelize)
-const forumPostModel = defineForumPostModel(sequelize)
+const forumDiscussionModel = defineForumDiscussionModel(sequelize);
+const forumPostModel = defineForumPostModel(sequelize);
+const tagsModel = defineTagsModel(sequelize);
+const discussionTagsModel = defineDiscussionTagsModel(sequelize);
 
 
 // Define association after defining all models
@@ -68,6 +72,7 @@ forumCategoryModel.hasMany(forumCategoryModel, {foreignKey: 'parent_id', as: 'su
 forumDiscussionModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'discussionStarter'});
 forumDiscussionModel.belongsTo(forumCategoryModel, {foreignKey: 'forum_category_id', as: 'forumCategory'});
 forumDiscussionModel.hasMany(forumPostModel, {foreignKey: 'discussion_id', as: 'post'});
+forumDiscussionModel.hasMany(discussionTagsModel, {foreignKey: 'discussion_id', as: 'discussionTags'})
 
 forumPostModel.belongsTo(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
 forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'forumUser'});
@@ -161,5 +166,7 @@ const initializeDatabase = async () => {
     meetupLocationsModel,
     forumCategoryModel,
     forumDiscussionModel,
-    forumPostModel
+    forumPostModel,
+    tagsModel,
+    discussionTagsModel
   };

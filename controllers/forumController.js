@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel } = require('../config/sequelizeConfig')
+const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel } = require('../config/sequelizeConfig')
 
 
 // ------------------- FETCH ALL CATEGORIES ------------------- //
@@ -52,7 +52,7 @@ const createNewDiscussion = async (req, res) => {
         }
 
         const userId = req.user.id;
-        const { forum_category_id, title, content } = req.body;
+        const { forum_category_id, title, content, discussionTags } = req.body;
 
         if (!forum_category_id || !title || !content) {
             return res.status(400).json({ error: 'forum_category_id, title, content are required fields.' });
@@ -64,13 +64,31 @@ const createNewDiscussion = async (req, res) => {
             title,
         })
 
-        await forumPostModel.create({
+        // Create the first post in the discussion
+        const newPost = await forumPostModel.create({
             discussion_id: newDiscussion.id,
             user_id: userId,
             content,
-        })
+        });
 
-        res.status(201).json(newDiscussion)
+
+        if (discussionTags && Array.isArray(discussionTags) && discussionTags.length > 0) {
+            const tagsInsertPromises = discussionTags.map(discussion => {
+                const { tag_id } = discussion;
+                return discussionTagsModel.create({
+                    discussion_id: newDiscussion.id,
+                    tag_id,
+                })
+            })
+            await Promise.all(tagsInsertPromises)
+        }
+
+        // Return the created discussion along with the first post (and potentially more data)
+        res.status(201).json({
+            message: 'Discussion created successfully.',
+            discussion: newDiscussion,
+            post: newPost,
+        });
 
     } catch (error) {
         console.error('Error:', error);
@@ -103,7 +121,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
                 model: forumPostModel,
                 attributes: ['id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
                 as: 'post',
-                where: {discussion_id: Sequelize.col('ForumDiscussion.id') },
+                where: { discussion_id: Sequelize.col('ForumDiscussion.id') },
                 required: false, // Include discussions even if they don't have posts
             }
         ]
@@ -155,7 +173,7 @@ const getForumCategory = async (req, res) => {
             allDiscussions,
         };
 
-       
+
         res.status(200).json(categoryData);
 
     } catch (error) {
