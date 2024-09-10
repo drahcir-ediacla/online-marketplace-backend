@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel } = require('../config/sequelizeConfig')
+const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel } = require('../config/sequelizeConfig')
 
 
 // ------------------- FETCH ALL CATEGORIES ------------------- //
@@ -41,6 +41,16 @@ const fetchForumCategories = async (req, res) => {
     } catch (error) {
         console.error('Error fetching forum categories:', error);
         res.status(500).json({ message: 'Error fetching forum categories' });
+    }
+}
+
+const fetchAllForumTags = async (req, res) => {
+    try {
+        const forumTags = await tagsModel.findAll();
+        res.status(200).json(forumTags);
+    } catch (error) {
+        console.log('Error fetching forum tags:', error)
+        res.status(500).json({ error: 'An error occurred while processing the request.' })
     }
 }
 
@@ -186,5 +196,6 @@ const getForumCategory = async (req, res) => {
 module.exports = {
     fetchForumCategories,
     getForumCategory,
-    createNewDiscussion
+    createNewDiscussion,
+    fetchAllForumTags
 }
