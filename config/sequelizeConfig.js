@@ -86,13 +86,14 @@ productModel.hasMany(meetupLocationsModel, { foreignKey: 'product_id', as: 'meet
 productModel.hasMany(productVideosModel, { foreignKey: 'product_id', as: 'videos', onDelete: 'CASCADE' });
 productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'wishlist',  onDelete: 'CASCADE' });
 productModel.hasMany(productViewModel, { foreignKey: 'product_id', as: 'views', onDelete: 'CASCADE' });
+productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products',  onDelete: 'CASCADE' });
 
 userModel.hasMany(productModel, { foreignKey: 'seller_id', as: 'products' });
 userModel.hasMany(refreshTokenModel, { foreignKey: 'user_id', as: 'refreshToken' });
 userModel.hasMany(followersModel, { foreignKey: 'following_id', as: 'followers' });
 userModel.hasMany(followersModel, { foreignKey: 'follower_id', as: 'following' });
 
-productModel.hasMany(wishListModel, { foreignKey: 'product_id', as: 'products',  onDelete: 'CASCADE' });
+
 
 // No FOREIGN KEY with products table in MySQL
 chatsModel.belongsToMany(productModel, {
