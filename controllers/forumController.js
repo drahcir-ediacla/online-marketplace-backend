@@ -55,6 +55,7 @@ const fetchAllForumTags = async (req, res) => {
 }
 
 
+// ------------------- CREATE NEW DISCUSSION ------------------- //
 const createNewDiscussion = async (req, res) => {
     try {
         if (!req.isAuthenticated()) {
@@ -76,7 +77,7 @@ const createNewDiscussion = async (req, res) => {
 
         // Create the first post in the discussion
         const newPost = await forumPostModel.create({
-            discussion_id: newDiscussion.id,
+            discussion_id: newDiscussion.discussion_id,
             user_id: userId,
             content,
         });
@@ -86,7 +87,7 @@ const createNewDiscussion = async (req, res) => {
             const tagsInsertPromises = discussionTags.map(discussion => {
                 const { tag_id } = discussion;
                 return discussionTagsModel.create({
-                    discussion_id: newDiscussion.id,
+                    discussion_id: newDiscussion.discussion_id,
                     tag_id,
                 })
             })
@@ -106,6 +107,49 @@ const createNewDiscussion = async (req, res) => {
     }
 }
 
+// ------------------- FETCH DISCUSSION BY ID ------------------- //
+
+const getDiscussionById = async (req, res) => {
+    try {
+        const discussionId = req.params.discussion_id;
+
+        const discussionData = await forumDiscussionModel.findOne({
+            where: {
+                discussion_id: discussionId
+            },
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['display_name', 'profile_pic'],
+                    as: 'discussionStarter',
+                },
+                {
+                    model: forumPostModel,
+                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                    as: 'post',
+                    include: [
+                        {
+                            model: userModel,
+                            attributes: ['id', 'display_name', 'profile_pic'],
+                            as: 'postCreator',
+                        }
+                    ]
+                }
+            ]
+        })
+
+        if (!discussionData) {
+            return res.status(404).json({ error: 'Product not found.' })
+        }
+
+        res.status(201).json(discussionData)
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'An error occurred while processing the request.' });
+    }
+}
+
+
 
 // ------------------- GET FORUM CATEGORY ------------------- //
 
@@ -120,7 +164,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
 
     const discussions = await forumDiscussionModel.findAll({
         where: { forum_category_id: categoryId },
-        attributes: ['id', 'user_id', 'forum_category_id', 'title'],
+        attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title'],
         include: [
             {
                 model: userModel,
@@ -129,10 +173,8 @@ const fetchDiscussionsRecursively = async (categoryId) => {
             },
             {
                 model: forumPostModel,
-                attributes: ['id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
                 as: 'post',
-                where: { discussion_id: Sequelize.col('ForumDiscussion.id') },
-                required: false, // Include discussions even if they don't have posts
             }
         ]
     })
@@ -197,5 +239,6 @@ module.exports = {
     fetchForumCategories,
     getForumCategory,
     createNewDiscussion,
+    getDiscussionById,
     fetchAllForumTags
 }

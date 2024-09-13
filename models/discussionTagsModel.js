@@ -9,13 +9,12 @@ const defineDiscussionTagsModel = (sequelize) => {
             autoIncrement: true,
         },
         discussion_id: {
-            type: DataTypes.BIGINT,
-            unique: true,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         tag_id: {
             type: DataTypes.INTEGER,
-            unique: true,
+            unique: false,
             allowNull: false,
         }
     }, {

@@ -2,21 +2,22 @@ const { DataTypes } = require('sequelize');
 
 const defineForumPostModel = (sequelize) => {
     const forumPostModel = sequelize.define('ForumPost', {
-        id: {
-            type: DataTypes.BIGINT,
+        post_id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
+            allowNull: false,
         },
         user_id: {
             type: DataTypes.BIGINT,
             allowNull: false,
         },
         discussion_id: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         parent_post_id: {
-            type: DataTypes.BIGINT,
+            type: DataTypes.STRING,
             allowNull: true,
         },
         content: {

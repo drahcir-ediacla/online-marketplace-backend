@@ -75,7 +75,7 @@ forumDiscussionModel.hasMany(forumPostModel, {foreignKey: 'discussion_id', as: '
 forumDiscussionModel.hasMany(discussionTagsModel, {foreignKey: 'discussion_id', as: 'discussionTags'})
 
 forumPostModel.belongsTo(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
-forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'forumUser'});
+forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'postCreator'});
 forumPostModel.hasMany(forumPostModel, {foreignKey: 'parent_post_id', as: 'parentPost'});
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });

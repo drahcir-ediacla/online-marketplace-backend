@@ -2,10 +2,11 @@ const { DataTypes } = require('sequelize');
 
 const defineForumDiscussionModel = (sequelize) => {
     const forumDiscussionModel = sequelize.define('ForumDiscussion', {
-        id: {
-            type: DataTypes.BIGINT,
+        discussion_id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
-            autoIncrement: true,
+            allowNull: false,
         },
         user_id: {
             type: DataTypes.BIGINT,
