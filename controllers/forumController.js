@@ -1,4 +1,4 @@
-const { Sequelize } = require('sequelize');
+const { Op } = require('sequelize');
 const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel } = require('../config/sequelizeConfig')
 
 
@@ -236,10 +236,44 @@ const getForumCategory = async (req, res) => {
 }
 
 
+// ------------------- TAGS FILTER ------------------- //
+
+
+
+const filterTags = async (req, res) => {
+    try {
+        const selectedTags = req.query.tag_id?.split(',') || [];
+        console.log('selectedTags:', selectedTags)
+
+        const discussions = await discussionTagsModel.findAll({
+            where: {
+                tag_id: selectedTags
+            }, 
+            include: [
+                {
+                    model: forumDiscussionModel,
+                    attributes: ['discussion_id', 'user_id', 'title'],
+                    as: 'allDiscussionsInTag', // Ensure this matches the association alias
+                }
+            ]
+        });
+
+        
+        res.status(201).json(discussions);
+
+    } catch (error) {
+        console.error('Error fetching discussions:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
+
 module.exports = {
     fetchForumCategories,
     getForumCategory,
     createNewDiscussion,
     getDiscussionById,
-    fetchAllForumTags
+    fetchAllForumTags,
+    filterTags
 }

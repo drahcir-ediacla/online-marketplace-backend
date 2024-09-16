@@ -72,7 +72,9 @@ forumCategoryModel.hasMany(forumCategoryModel, {foreignKey: 'parent_id', as: 'su
 forumDiscussionModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'discussionStarter'});
 forumDiscussionModel.belongsTo(forumCategoryModel, {foreignKey: 'forum_category_id', as: 'forumCategory'});
 forumDiscussionModel.hasMany(forumPostModel, {foreignKey: 'discussion_id', as: 'post'});
-forumDiscussionModel.hasMany(discussionTagsModel, {foreignKey: 'discussion_id', as: 'discussionTags'})
+
+discussionTagsModel.belongsTo(forumDiscussionModel, { foreignKey: 'discussion_id', as: 'allDiscussionsInTag' });
+// tagsModel.belongsToMany(forumDiscussionModel, { through: discussionTagsModel, foreignKey: 'tag_id' });
 
 forumPostModel.belongsTo(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
 forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'postCreator'});
