@@ -97,6 +97,7 @@ const createNewDiscussion = async (req, res) => {
         // Return the created discussion along with the first post (and potentially more data)
         res.status(201).json({
             message: 'Discussion created successfully.',
+            discussion_id: newDiscussion.discussion_id,
             discussion: newDiscussion,
             post: newPost,
         });
@@ -164,7 +165,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
 
     const discussions = await forumDiscussionModel.findAll({
         where: { forum_category_id: categoryId },
-        attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title'],
+        attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title', 'created_at', 'updated_at'],
         include: [
             {
                 model: userModel,
