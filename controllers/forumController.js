@@ -243,7 +243,6 @@ const getForumCategory = async (req, res) => {
 const filterTags = async (req, res) => {
     try {
         const selectedTags = req.query.tag_id?.split(',') || [];
-        console.log('selectedTags:', selectedTags)
 
         const discussions = await discussionTagsModel.findAll({
             where: {
@@ -252,8 +251,20 @@ const filterTags = async (req, res) => {
             include: [
                 {
                     model: forumDiscussionModel,
-                    attributes: ['discussion_id', 'user_id', 'title'],
+                    attributes: ['discussion_id', 'user_id', 'title', 'created_at'],
                     as: 'allDiscussionsInTag', // Ensure this matches the association alias
+                    include: [
+                        {
+                            model: userModel,
+                            attributes: ['id', 'display_name', 'profile_pic'],
+                            as: 'discussionStarter',
+                        },
+                        {
+                            model: forumPostModel,
+                            attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                            as: 'post',
+                        }
+                    ]
                 }
             ]
         });
