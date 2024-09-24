@@ -24,6 +24,11 @@ const defineForumPostModel = (sequelize) => {
             type: DataTypes.TEXT,
             allowNull: false,
         },
+        level: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        },
         created_at: {
             type: DataTypes.DATE,
             allowNull: false,

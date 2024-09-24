@@ -126,7 +126,7 @@ const getDiscussionById = async (req, res) => {
                 },
                 {
                     model: forumPostModel,
-                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'level'],
                     as: 'post',
                     include: [
                         {
@@ -149,6 +149,113 @@ const getDiscussionById = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while processing the request.' });
     }
 }
+
+// ------------------- CREATE POST ------------------- //
+
+const createForumPost = async (req, res) => {
+
+    try {
+        if (!req.isAuthenticated()) {
+            return res.status(401).json({ error: 'Authentication required to add a new post.' });
+        }
+        const userId = req.user.id
+        const { content, discussion_id, parent_post_id } = req.body
+
+        if (!parent_post_id || !discussion_id || !content) {
+            return res.status(400).json({ error: 'forum_category_id, content are required fields.' });
+        }
+
+        // Find parent post to determine the level
+        let level = 0;
+        if (parent_post_id) {
+            const parentPost = await forumPostModel.findByPk(parent_post_id);
+            if (parentPost) {
+                level = parentPost.level + 1;
+            }
+        }
+
+        // Limit nesting to 3 levels
+        // if (level > 3) {
+        //     return res.status(400).json({ error: 'Nesting limit exceeded' });
+        // }
+
+        const post = await forumPostModel.create({
+            content,
+            user_id: userId,
+            discussion_id,
+            parent_post_id,
+            level
+        });
+
+        res.status(201).json(post);
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error creating post' });
+    }
+}
+
+
+// ------------------- FETCH FORUM DISCUSSION POSTS ------------------- //
+
+const getDiscussionPosts = async (req, res) => {
+    try {
+        const { discussionId } = req.params;
+
+        // Fetch top-level posts with replies included
+        const posts = await forumPostModel.findAll({
+            where: {
+                discussion_id: discussionId,
+            },
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['id', 'display_name'],
+                    as: 'postCreator',
+                },
+                {
+                    model: forumPostModel,
+                    as: 'replies',
+                    include: [
+                        {
+                            model: userModel,
+                            attributes: ['id', 'display_name'],
+                            as: 'postCreator',
+                        },
+                        {
+                            model: forumPostModel,
+                            as: 'replies',
+                            include: [
+                                {
+                                    model: userModel,
+                                    attributes: ['id', 'display_name'],
+                                    as: 'postCreator',
+                                },
+                                {
+                                    model: forumPostModel,
+                                    as: 'replies',
+                                    include: [
+                                        {
+                                            model: userModel,
+                                            attributes: ['id', 'display_name'],
+                                            as: 'postCreator',
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
+
+        res.status(200).json(posts);
+    } catch (error) {
+        // Log the error message to understand the exact issue
+        console.error('Error fetching posts:', error);
+        res.status(500).json({ error: 'Error fetching posts', details: error.message });
+    }
+};
+
 
 
 
@@ -247,7 +354,7 @@ const filterTags = async (req, res) => {
         const discussions = await discussionTagsModel.findAll({
             where: {
                 tag_id: selectedTags
-            }, 
+            },
             include: [
                 {
                     model: forumDiscussionModel,
@@ -269,7 +376,7 @@ const filterTags = async (req, res) => {
             ]
         });
 
-        
+
         res.status(201).json(discussions);
 
     } catch (error) {
@@ -285,6 +392,8 @@ module.exports = {
     getForumCategory,
     createNewDiscussion,
     getDiscussionById,
+    createForumPost,
+    getDiscussionPosts,
     fetchAllForumTags,
     filterTags
 }

@@ -78,7 +78,8 @@ discussionTagsModel.belongsTo(forumDiscussionModel, { foreignKey: 'discussion_id
 
 forumPostModel.belongsTo(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
 forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'postCreator'});
-forumPostModel.hasMany(forumPostModel, {foreignKey: 'parent_post_id', as: 'parentPost'});
+forumPostModel.hasMany(forumPostModel, {foreignKey: 'parent_post_id', as: 'replies'});
+forumPostModel.belongsTo(forumPostModel, {foreignKey: 'parent_post_id', as: 'parentPost'});
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
