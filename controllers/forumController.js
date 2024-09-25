@@ -197,65 +197,62 @@ const createForumPost = async (req, res) => {
 
 // ------------------- FETCH FORUM DISCUSSION POSTS ------------------- //
 
+const getRepliesRecursive = async (post) => {
+    const replies = await forumPostModel.findAll({
+        where: { parent_post_id: post.post_id },  // Correct parent-child relationship
+        include: [
+            {
+                model: userModel,
+                attributes: ['id', 'display_name'],
+                as: 'postCreator',
+            }
+        ]
+    });
+
+    // Recursively get replies for each reply
+    const nestedReplies = await Promise.all(
+        replies.map(async (reply) => {
+            const repliesForReply = await getRepliesRecursive(reply);
+            return { ...reply.toJSON(), replies: repliesForReply };
+        })
+    );
+
+    return nestedReplies;
+};
+
 const getDiscussionPosts = async (req, res) => {
     try {
         const { discussionId } = req.params;
 
-        // Fetch top-level posts with replies included
-        const posts = await forumPostModel.findAll({
+        // Fetch top-level posts
+        const topLevelPost = await forumPostModel.findAll({
             where: {
                 discussion_id: discussionId,
+                level: 0,  // Fetch only top-level posts
             },
             include: [
                 {
                     model: userModel,
                     attributes: ['id', 'display_name'],
                     as: 'postCreator',
-                },
-                {
-                    model: forumPostModel,
-                    as: 'replies',
-                    include: [
-                        {
-                            model: userModel,
-                            attributes: ['id', 'display_name'],
-                            as: 'postCreator',
-                        },
-                        {
-                            model: forumPostModel,
-                            as: 'replies',
-                            include: [
-                                {
-                                    model: userModel,
-                                    attributes: ['id', 'display_name'],
-                                    as: 'postCreator',
-                                },
-                                {
-                                    model: forumPostModel,
-                                    as: 'replies',
-                                    include: [
-                                        {
-                                            model: userModel,
-                                            attributes: ['id', 'display_name'],
-                                            as: 'postCreator',
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
                 }
             ]
         });
 
-        res.status(200).json(posts);
+        // For each top-level message, recursively get its replies
+        const messagesWithReplies = await Promise.all(
+            topLevelPost.map(async (message) => {
+                const replies = await getRepliesRecursive(message);
+                return { ...message.toJSON(), replies: replies };
+            })
+        );
+
+        res.json(messagesWithReplies);
     } catch (error) {
-        // Log the error message to understand the exact issue
         console.error('Error fetching posts:', error);
         res.status(500).json({ error: 'Error fetching posts', details: error.message });
     }
 };
-
 
 
 
