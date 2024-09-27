@@ -198,6 +198,7 @@ const createForumPost = async (req, res) => {
 // ------------------- FETCH FORUM DISCUSSION POSTS ------------------- //
 
 const getRepliesRecursive = async (post) => {
+    // Fetch the replies for the current post
     const replies = await forumPostModel.findAll({
         where: { parent_post_id: post.post_id },  // Correct parent-child relationship
         include: [
@@ -213,7 +214,15 @@ const getRepliesRecursive = async (post) => {
     const nestedReplies = await Promise.all(
         replies.map(async (reply) => {
             const repliesForReply = await getRepliesRecursive(reply);
-            return { ...reply.toJSON(), replies: repliesForReply };
+            return { 
+                ...reply.toJSON(), 
+                replies: repliesForReply,
+                parentPostContent: post.content, // Add parent post content
+                parentPostCreator: {
+                    id: post.postCreator.id,
+                    display_name: post.postCreator.display_name,
+                } // Add parent post creator details
+            };
         })
     );
 
@@ -225,7 +234,7 @@ const getDiscussionPosts = async (req, res) => {
         const { discussionId } = req.params;
 
         // Fetch top-level posts
-        const topLevelPost = await forumPostModel.findAll({
+        const topLevelPosts = await forumPostModel.findAll({
             where: {
                 discussion_id: discussionId,
                 level: 0,  // Fetch only top-level posts
@@ -241,9 +250,12 @@ const getDiscussionPosts = async (req, res) => {
 
         // For each top-level message, recursively get its replies
         const messagesWithReplies = await Promise.all(
-            topLevelPost.map(async (message) => {
+            topLevelPosts.map(async (message) => {
                 const replies = await getRepliesRecursive(message);
-                return { ...message.toJSON(), replies: replies };
+                return { 
+                    ...message.toJSON(), 
+                    replies: replies 
+                };
             })
         );
 
@@ -253,6 +265,7 @@ const getDiscussionPosts = async (req, res) => {
         res.status(500).json({ error: 'Error fetching posts', details: error.message });
     }
 };
+
 
 
 
@@ -278,6 +291,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
             },
             {
                 model: forumPostModel,
+                where: {parent_post_id: null},
                 attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
                 as: 'post',
             }
