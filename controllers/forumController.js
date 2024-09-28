@@ -162,7 +162,7 @@ const createForumPost = async (req, res) => {
         const { content, discussion_id, parent_post_id } = req.body
 
         if (!parent_post_id || !discussion_id || !content) {
-            return res.status(400).json({ error: 'forum_category_id, content are required fields.' });
+            return res.status(400).json({ error: 'content are required fields.' });
         }
 
         // Find parent post to determine the level
@@ -197,10 +197,10 @@ const createForumPost = async (req, res) => {
 
 // ------------------- FETCH FORUM DISCUSSION POSTS ------------------- //
 
-const getRepliesRecursive = async (post) => {
+const getRepliesRecursive = async (post, parentPostData = null) => {
     // Fetch the replies for the current post
     const replies = await forumPostModel.findAll({
-        where: { parent_post_id: post.post_id },  // Correct parent-child relationship
+        where: { parent_post_id: post.post_id },
         include: [
             {
                 model: userModel,
@@ -210,23 +210,51 @@ const getRepliesRecursive = async (post) => {
         ]
     });
 
-    // Recursively get replies for each reply
-    const nestedReplies = await Promise.all(
+    const allReplies = [];
+
+    await Promise.all(
         replies.map(async (reply) => {
-            const repliesForReply = await getRepliesRecursive(reply);
-            return { 
-                ...reply.toJSON(), 
-                replies: repliesForReply,
-                parentPostContent: post.content, // Add parent post content
-                parentPostCreator: {
-                    id: post.postCreator.id,
-                    display_name: post.postCreator.display_name,
-                } // Add parent post creator details
-            };
+            if (reply.level >= 3) {
+                // Flatten replies for levels 3 and higher
+                allReplies.push({
+                    ...reply.toJSON(),
+                    replies: [],  // No further nesting
+                    parentPostContent: parentPostData?.content || post.content,  // Pass parent content
+                    parentPostCreator: {
+                        id: parentPostData?.postCreator.id || post.postCreator.id,
+                        display_name: parentPostData?.postCreator.display_name || post.postCreator.display_name,
+                    } // Pass parent creator details
+                });
+
+                // Keep checking if there are more nested replies beyond level 3 to flatten them as well
+                const deeperReplies = await getRepliesRecursive(reply, {
+                    content: post.content,
+                    postCreator: post.postCreator,
+                });
+
+                // Flatten the deeper replies
+                allReplies.push(...deeperReplies);
+            } else {
+                // Recursively get nested replies for levels 0-2
+                const nestedReplies = await getRepliesRecursive(reply, {
+                    content: post.content,
+                    postCreator: post.postCreator
+                });
+
+                allReplies.push({
+                    ...reply.toJSON(),
+                    replies: nestedReplies,  // Keep nesting for levels 0-2
+                    parentPostContent: post.content,
+                    parentPostCreator: {
+                        id: post.postCreator.id,
+                        display_name: post.postCreator.display_name,
+                    }
+                });
+            }
         })
     );
 
-    return nestedReplies;
+    return allReplies;
 };
 
 const getDiscussionPosts = async (req, res) => {
@@ -241,6 +269,11 @@ const getDiscussionPosts = async (req, res) => {
             },
             include: [
                 {
+                    model: forumDiscussionModel,
+                    attributes: ['title'],
+                    as: 'discussion'
+                },
+                {
                     model: userModel,
                     attributes: ['id', 'display_name'],
                     as: 'postCreator',
@@ -254,7 +287,7 @@ const getDiscussionPosts = async (req, res) => {
                 const replies = await getRepliesRecursive(message);
                 return { 
                     ...message.toJSON(), 
-                    replies: replies 
+                    replies: replies  // Merged replies (nested + flat)
                 };
             })
         );
@@ -265,6 +298,8 @@ const getDiscussionPosts = async (req, res) => {
         res.status(500).json({ error: 'Error fetching posts', details: error.message });
     }
 };
+
+
 
 
 
