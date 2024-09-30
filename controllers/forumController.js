@@ -204,7 +204,7 @@ const getRepliesRecursive = async (post, parentPostData = null) => {
         include: [
             {
                 model: userModel,
-                attributes: ['id', 'display_name'],
+                attributes: ['id', 'display_name', 'profile_pic'],
                 as: 'postCreator',
             }
         ]
@@ -275,7 +275,7 @@ const getDiscussionPosts = async (req, res) => {
                 },
                 {
                     model: userModel,
-                    attributes: ['id', 'display_name'],
+                    attributes: ['id', 'display_name', 'profile_pic'],
                     as: 'postCreator',
                 }
             ]
