@@ -197,7 +197,7 @@ const createForumPost = async (req, res) => {
 
 // ------------------- FETCH FORUM DISCUSSION POSTS ------------------- //
 
-const getRepliesRecursive = async (post, parentPostData = null) => {
+const getRepliesRecursive = async (post) => {
     // Fetch the replies for the current post
     const replies = await forumPostModel.findAll({
         where: { parent_post_id: post.post_id },
@@ -219,10 +219,10 @@ const getRepliesRecursive = async (post, parentPostData = null) => {
                 allReplies.push({
                     ...reply.toJSON(),
                     replies: [],  // No further nesting
-                    parentPostContent: parentPostData?.content || post.content,  // Pass parent content
+                    parentPostContent: post.content,  // Pass parent content
                     parentPostCreator: {
-                        id: parentPostData?.postCreator.id || post.postCreator.id,
-                        display_name: parentPostData?.postCreator.display_name || post.postCreator.display_name,
+                        id: post.postCreator.id,
+                        display_name: post.postCreator.display_name,
                     } // Pass parent creator details
                 });
 
