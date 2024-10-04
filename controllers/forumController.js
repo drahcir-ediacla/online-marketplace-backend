@@ -214,6 +214,9 @@ const getRepliesRecursive = async (post) => {
 
     await Promise.all(
         replies.map(async (reply) => {
+            // Safe check if postCreator exists before accessing its properties
+            const postCreator = post.postCreator || {};
+
             if (reply.level >= 3) {
                 // Flatten replies for levels 3 and higher
                 allReplies.push({
@@ -221,33 +224,27 @@ const getRepliesRecursive = async (post) => {
                     replies: [],  // No further nesting
                     parentPostContent: post.content,  // Pass parent content
                     parentPostCreator: {
-                        id: post.postCreator.id,
-                        display_name: post.postCreator.display_name,
-                    } // Pass parent creator details
+                        id: postCreator.id || null,
+                        display_name: postCreator.display_name || 'Unknown',  // Safe fallback for missing user data
+                    }
                 });
 
-                // Keep checking if there are more nested replies beyond level 3 to flatten them as well
-                const deeperReplies = await getRepliesRecursive(reply, {
-                    content: post.content,
-                    postCreator: post.postCreator,
-                });
+                // Check for deeper replies
+                const deeperReplies = await getRepliesRecursive(reply);
 
                 // Flatten the deeper replies
                 allReplies.push(...deeperReplies);
             } else {
                 // Recursively get nested replies for levels 0-2
-                const nestedReplies = await getRepliesRecursive(reply, {
-                    content: post.content,
-                    postCreator: post.postCreator
-                });
+                const nestedReplies = await getRepliesRecursive(reply);
 
                 allReplies.push({
                     ...reply.toJSON(),
                     replies: nestedReplies,  // Keep nesting for levels 0-2
                     parentPostContent: post.content,
                     parentPostCreator: {
-                        id: post.postCreator.id,
-                        display_name: post.postCreator.display_name,
+                        id: postCreator.id || null,
+                        display_name: postCreator.display_name || 'Unknown',  // Safe fallback for missing user data
                     }
                 });
             }
@@ -256,6 +253,7 @@ const getRepliesRecursive = async (post) => {
 
     return allReplies;
 };
+
 
 const getDiscussionPosts = async (req, res) => {
     try {
@@ -285,8 +283,8 @@ const getDiscussionPosts = async (req, res) => {
         const messagesWithReplies = await Promise.all(
             topLevelPosts.map(async (message) => {
                 const replies = await getRepliesRecursive(message);
-                return { 
-                    ...message.toJSON(), 
+                return {
+                    ...message.toJSON(),
                     replies: replies  // Merged replies (nested + flat)
                 };
             })
@@ -309,12 +307,13 @@ const getDiscussionPosts = async (req, res) => {
 const fetchDiscussionsRecursively = async (categoryId) => {
     const category = await forumCategoryModel.findByPk(categoryId, {
         attributes: ['id', 'parent_id', 'name', 'description', 'icon'],
-    })
+    });
 
     if (!category) {
         return [];
     }
 
+    // Fetch discussions in the current category
     const discussions = await forumDiscussionModel.findAll({
         where: { forum_category_id: categoryId },
         attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title', 'created_at', 'updated_at'],
@@ -326,18 +325,46 @@ const fetchDiscussionsRecursively = async (categoryId) => {
             },
             {
                 model: forumPostModel,
-                where: {parent_post_id: null},
-                attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                where: { parent_post_id: null },  // Top-level posts only
+                attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views'],
                 as: 'post',
             }
         ]
-    })
+    });
 
+    // Make sure that `discussion.post` is properly extracted and handled
+    const discussionsWithReplies = await Promise.all(
+        discussions.map(async (discussion) => {
+            // Check if `discussion.post` exists and is an array
+            const topLevelPosts = Array.isArray(discussion.post) ? discussion.post : [];
+            console.log('topLevelPosts:', topLevelPosts)
 
+            // Flatten top-level posts array and fetch replies
+            const postsWithReplies = await Promise.all(
+                topLevelPosts.flat().map(async (post) => {
+                    if (post && post.post_id) {
+                        const replies = await getRepliesRecursive(post);  // Get nested replies
+                        return {
+                            ...post.toJSON(),
+                            replies,  // Attach nested/flattened replies
+                        };
+                    }
+                    return post;  // In case `post_id` is missing, just return post as is
+                })
+            );
+
+            return {
+                ...discussion.toJSON(),
+                post: postsWithReplies,  // Attach posts with replies to the discussion
+            };
+        })
+    );
+
+    // Fetch child subcategories of the current category
     const childSubcategories = await forumCategoryModel.findAll({
         where: { parent_id: categoryId },
-        attributes: ['id', 'name', 'description', 'parent_id'],
-    })
+        attributes: ['id', 'name', 'description', 'parent_id', 'icon'],
+    });
 
     const subCategoryDiscussions = await Promise.all(
         childSubcategories.map((subCategory) =>
@@ -345,10 +372,13 @@ const fetchDiscussionsRecursively = async (categoryId) => {
         )
     );
 
-    const allDiscussions = [...discussions, ...subCategoryDiscussions.flat()];
+
+    const allDiscussions = [...discussionsWithReplies, ...subCategoryDiscussions.flat()]
 
     return allDiscussions
-}
+};
+
+
 
 
 
@@ -432,6 +462,27 @@ const filterTags = async (req, res) => {
 }
 
 
+const forumPostViews = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const post = await forumPostModel.findByPk(postId);
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        // Increment the views count
+        post.views += 1;
+        await post.save();
+
+        res.status(200).json({ message: 'Post view updated', views: post.views });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
 
 module.exports = {
     fetchForumCategories,
@@ -441,5 +492,6 @@ module.exports = {
     createForumPost,
     getDiscussionPosts,
     fetchAllForumTags,
-    filterTags
+    filterTags,
+    forumPostViews
 }

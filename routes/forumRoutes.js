@@ -12,5 +12,6 @@ router.get('/api/getdiscussion/:discussion_id', ForumController.getDiscussionByI
 router.get('/api/discussions/:discussionId/posts', ForumController.getDiscussionPosts)
 router.get('/api/fetchforumtags', ForumController.fetchAllForumTags);
 router.get('/api/filtertags', ForumController.filterTags);
+router.post('/api/post/:id/view', ForumController.forumPostViews)
 
 module.exports = router;
