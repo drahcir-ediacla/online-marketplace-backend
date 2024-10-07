@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel } = require('../config/sequelizeConfig')
+const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel, forumPostLikesModel } = require('../config/sequelizeConfig')
 
 
 // ------------------- FETCH ALL CATEGORIES ------------------- //
@@ -206,6 +206,11 @@ const getRepliesRecursive = async (post) => {
                 model: userModel,
                 attributes: ['id', 'display_name', 'profile_pic'],
                 as: 'postCreator',
+            },
+            {
+                model: forumPostLikesModel,
+                attributes: ['user_id'],
+                as: 'likes'
             }
         ]
     });
@@ -275,6 +280,11 @@ const getDiscussionPosts = async (req, res) => {
                     model: userModel,
                     attributes: ['id', 'display_name', 'profile_pic'],
                     as: 'postCreator',
+                },
+                {
+                    model: forumPostLikesModel,
+                    attributes: ['user_id'],
+                    as: 'likes'
                 }
             ]
         });
@@ -328,6 +338,13 @@ const fetchDiscussionsRecursively = async (categoryId) => {
                 where: { parent_post_id: null },  // Top-level posts only
                 attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views'],
                 as: 'post',
+                include: [
+                    {
+                        model: forumPostLikesModel,
+                        attributes: ['user_id'],
+                        as: 'likes',
+                    }
+                ]
             }
         ]
     });
@@ -464,7 +481,7 @@ const filterTags = async (req, res) => {
 
 const forumPostViews = async (req, res) => {
     try {
-        const postId = req.params.id;
+        const postId = req.params.post_id;
         const post = await forumPostModel.findByPk(postId);
 
         if (!post) {
@@ -483,6 +500,38 @@ const forumPostViews = async (req, res) => {
 }
 
 
+const forumPostLikeUnlike = async (req, res) => {
+
+    const userId = req.user.id
+    const { post_id } = req.body;
+
+    try {
+        if (!req.isAuthenticated()) {
+            return res.status(401).json({ error: 'Authentication is required' });
+        }
+
+        const post = await forumPostModel.findByPk(post_id);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        // Check if the user has already liked the post
+        const existingLike = await forumPostLikesModel.findOne({ where: { user_id: userId, post_id } });
+
+        if (!existingLike) {
+            await forumPostLikesModel.create({ user_id: userId, post_id })
+        } else if (existingLike) {
+            await existingLike.destroy(); // Remove the like
+        }
+
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Something went wrong' });
+    }
+}
+
+
 
 module.exports = {
     fetchForumCategories,
@@ -493,5 +542,6 @@ module.exports = {
     getDiscussionPosts,
     fetchAllForumTags,
     filterTags,
-    forumPostViews
+    forumPostViews,
+    forumPostLikeUnlike
 }

@@ -12,6 +12,7 @@ router.get('/api/getdiscussion/:discussion_id', ForumController.getDiscussionByI
 router.get('/api/discussions/:discussionId/posts', ForumController.getDiscussionPosts)
 router.get('/api/fetchforumtags', ForumController.fetchAllForumTags);
 router.get('/api/filtertags', ForumController.filterTags);
-router.post('/api/post/:id/view', ForumController.forumPostViews)
+router.post('/api/post/:post_id/view', ForumController.forumPostViews);
+router.post('/api/forum/post/like', ForumController.forumPostLikeUnlike);
 
 module.exports = router;

@@ -21,6 +21,7 @@ const defineForumDiscussionModel = require('../models/forumDiscussionModel')
 const defineForumPostModel = require('../models/forumPostModel')
 const defineTagsModel = require('../models/tagsModel')
 const defineDiscussionTagsModel = require('../models/discussionTagsModel')
+const defineForumPostLikesModel = require('../models/forumPostLikes')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -60,6 +61,7 @@ const forumDiscussionModel = defineForumDiscussionModel(sequelize);
 const forumPostModel = defineForumPostModel(sequelize);
 const tagsModel = defineTagsModel(sequelize);
 const discussionTagsModel = defineDiscussionTagsModel(sequelize);
+const forumPostLikesModel = defineForumPostLikesModel(sequelize)
 
 
 // Define association after defining all models
@@ -80,6 +82,8 @@ forumPostModel.belongsTo(forumDiscussionModel, {foreignKey: 'discussion_id', as:
 forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'postCreator'});
 forumPostModel.hasMany(forumPostModel, {foreignKey: 'parent_post_id', as: 'replies'});
 forumPostModel.belongsTo(forumPostModel, {foreignKey: 'parent_post_id', as: 'parentPost'});
+forumPostModel.hasMany(forumPostLikesModel, {foreignKey: 'post_id', as: 'likes'})
+
 
 productModel.belongsTo(categoryModel, { foreignKey: 'category_id', as: 'category' });
 productModel.belongsTo(userModel, { foreignKey: 'seller_id', as: 'seller' });
@@ -172,5 +176,6 @@ const initializeDatabase = async () => {
     forumDiscussionModel,
     forumPostModel,
     tagsModel,
-    discussionTagsModel
+    discussionTagsModel,
+    forumPostLikesModel
   };
