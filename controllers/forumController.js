@@ -461,8 +461,15 @@ const filterTags = async (req, res) => {
                         },
                         {
                             model: forumPostModel,
-                            attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id'],
+                            attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views'],
                             as: 'post',
+                            include: [
+                                {
+                                    model: forumPostLikesModel,
+                                    attributes: ['user_id'],
+                                    as: 'likes'
+                                }
+                            ]
                         }
                     ]
                 }
