@@ -526,12 +526,13 @@ const forumPostLikeUnlike = async (req, res) => {
         const existingLike = await forumPostLikesModel.findOne({ where: { user_id: userId, post_id } });
 
         if (!existingLike) {
-            await forumPostLikesModel.create({ user_id: userId, post_id })
-        } else if (existingLike) {
-            await existingLike.destroy(); // Remove the like
+            await forumPostLikesModel.create({ user_id: userId, post_id });
+            return res.status(200).json({ success: true, action: 'liked' });
+        } else {
+            await existingLike.destroy();
+            return res.status(200).json({ success: true, action: 'unliked' });
         }
-
-        res.status(200).json({ success: true });
+       
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Something went wrong' });
