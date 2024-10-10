@@ -336,7 +336,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
             {
                 model: forumPostModel,
                 where: { parent_post_id: null },  // Top-level posts only
-                attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views'],
+                attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views', 'created_at'],
                 as: 'post',
                 include: [
                     {
