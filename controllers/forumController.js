@@ -37,12 +37,30 @@ const fetchForumCategories = async (req, res) => {
         // Process the categories
         const categories = mapCategories(rows);
 
-        res.status(200).json(categories);
+        // Collect all subcategory IDs to fetch discussions
+        const subCategoryIds = categories.flatMap((category) =>
+            category.subcategories.map((subcategory) => subcategory.id)
+        );
+
+        // Fetch discussions for all subcategories
+        const allDiscussions = await Promise.all(
+            subCategoryIds.map((subCategoryId) =>
+                fetchDiscussionsRecursively(subCategoryId)
+            )
+        );
+
+        // Combine categories and discussions
+        const allCategoriesData = {
+            categories,
+            allDiscussions: allDiscussions.flat(), // Flatten the array of discussions
+        };
+
+        res.status(200).json(allCategoriesData);
     } catch (error) {
         console.error('Error fetching forum categories:', error);
         res.status(500).json({ message: 'Error fetching forum categories' });
     }
-}
+};
 
 const fetchAllForumTags = async (req, res) => {
     try {
