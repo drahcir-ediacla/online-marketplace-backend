@@ -15,6 +15,7 @@ const defineFollowersModel = require('../models/followersModel')
 const defineReviewsModel = require('../models/reviewsModel')
 const defineReviewImagesModel = require('../models/reviewImagesModel')
 const defineNotificationModel = require('../models/notificationModel')
+const defineForumNotificationModel = require('../models/forumNotificationModel')
 const defineMeetupLocationsModel = require('../models/meetupLocationsModel')
 const defineForumCategoryModel = require('../models/forumCategoryModel')
 const defineForumDiscussionModel = require('../models/forumDiscussionModel')
@@ -55,6 +56,7 @@ const followersModel = defineFollowersModel(sequelize);
 const reviewsModel = defineReviewsModel(sequelize);
 const reviewImagesModel = defineReviewImagesModel(sequelize);
 const notificationModel = defineNotificationModel(sequelize);
+const forumNotificationModel = defineForumNotificationModel(sequelize);
 const meetupLocationsModel = defineMeetupLocationsModel(sequelize);
 const forumCategoryModel = defineForumCategoryModel(sequelize);
 const forumDiscussionModel = defineForumDiscussionModel(sequelize);
@@ -128,6 +130,7 @@ reviewsModel.hasMany(reviewImagesModel, { foreignKey: 'review_id', as: 'images',
 chatsModel.hasMany(reviewsModel, { foreignKey: 'chat_id', as: 'review' });
 
 notificationModel.belongsTo(userModel, { foreignKey: 'subject_user_id', as: 'subjectUser' });
+forumNotificationModel.belongsTo(userModel, { foreignKey: 'subject_user_id', as: 'subject_User' });
 
 
 
@@ -177,5 +180,6 @@ const initializeDatabase = async () => {
     forumPostModel,
     tagsModel,
     discussionTagsModel,
-    forumPostLikesModel
+    forumPostLikesModel,
+    forumNotificationModel
   };

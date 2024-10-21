@@ -84,9 +84,6 @@ const addNewProduct = async (req, res) => {
         }
       });
 
-      console.log('File URLs for images:', imageInsertPromises);
-      console.log('File URLs for videos:', videoInsertPromises);
-
       await Promise.all(imageInsertPromises);
       await Promise.all(videoInsertPromises);
 

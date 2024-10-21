@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel, forumPostLikesModel } = require('../config/sequelizeConfig')
+const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel, forumPostLikesModel, followersModel, forumNotificationModel } = require('../config/sequelizeConfig')
 
 
 // ------------------- FETCH ALL CATEGORIES ------------------- //
@@ -73,6 +73,31 @@ const fetchAllForumTags = async (req, res) => {
 }
 
 
+const getFollowers = async (userId) => {
+    try {
+
+        const followers = await followersModel.findAll({
+            where: {
+                following_id: userId,
+            },
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['id', 'display_name', 'profile_pic'],
+                    as: 'followerInfo'
+                }
+            ]
+        });
+
+        // Extract and return the follower objects
+        return followers.map(follower => follower.followerInfo);
+
+    } catch (error) {
+        console.error('Error fetching followers:', error);
+        throw error;
+    }
+};
+
 // ------------------- CREATE NEW DISCUSSION ------------------- //
 const createNewDiscussion = async (req, res) => {
     try {
@@ -111,6 +136,24 @@ const createNewDiscussion = async (req, res) => {
             })
             await Promise.all(tagsInsertPromises)
         }
+
+        // Get followers of the user who posted the listing
+        const followers = await getFollowers(userId);
+
+        // Send notifications to followers
+        followers.forEach(async (follower) => {
+            try {
+                await forumNotificationModel.create({
+                    recipient_id: follower.id,
+                    subject_user_id: userId,
+                    message: `<a href=/forum/discussion/${newDiscussion.discussion_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> posted a new discussion: <span style="font-weight: 600;">${title}</span></a>`
+                });
+            } catch (error) {
+                console.error('Error sending notification:', error);
+                // Handle error if notification fails to send (optional)
+            }
+        });
+
 
         // Return the created discussion along with the first post (and potentially more data)
         res.status(201).json({
@@ -550,7 +593,7 @@ const forumPostLikeUnlike = async (req, res) => {
             await existingLike.destroy();
             return res.status(200).json({ success: true, action: 'unliked' });
         }
-       
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Something went wrong' });
