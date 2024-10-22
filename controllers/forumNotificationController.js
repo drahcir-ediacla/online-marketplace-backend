@@ -28,6 +28,40 @@ const getForumNotificationsByUserId = async (req, res) => {
   }
 
 
+  const deleteForumNotificationbyId = async (req, res) => {
+    try {
+  
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Authentication required to delete the notification.' });
+      }
+  
+      const userId = req.user.id;
+      const notificationId = req.params.id;
+  
+      // Use Sequelize to find the product by ID
+      const notification = await forumNotificationModel.findOne({
+        where: {
+          id: notificationId,
+          recipient_id: userId
+        }
+      })
+  
+      if (!notification) {
+        return res.status(404).json({ error: 'Notification not found or already deleted.' });
+      }
+  
+      await notification.destroy();
+  
+      res.status(200).json({ message: 'Notification deleted successfully' });
+  
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ error: 'An error occurred while processing the request.' })
+    }
+  }
+
+
   module.exports = {
-    getForumNotificationsByUserId
+    getForumNotificationsByUserId,
+    deleteForumNotificationbyId
   }
