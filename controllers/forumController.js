@@ -146,7 +146,7 @@ const createNewDiscussion = async (req, res) => {
                 await forumNotificationModel.create({
                     recipient_id: follower.id,
                     subject_user_id: userId,
-                    message: `<a href=/forum/discussion/${newDiscussion.discussion_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> posted a new discussion: <span style="font-weight: 600;">${title}</span></a>`
+                    message: `<a href=/forum/discussion/${newDiscussion.discussion_id}?repliedPostId=${newPost.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> posted a new discussion: <span style="font-weight: 600;">${title}</span></a>`
                 });
             } catch (error) {
                 console.error('Error sending notification:', error);
@@ -370,9 +370,6 @@ const getDiscussionPosts = async (req, res) => {
 
 
 
-
-
-
 // ------------------- GET FORUM CATEGORY ------------------- //
 
 const fetchDiscussionsRecursively = async (categoryId) => {
@@ -458,8 +455,6 @@ const fetchDiscussionsRecursively = async (categoryId) => {
 
 
 
-
-
 const getForumCategory = async (req, res) => {
     try {
         const categoryId = req.params.id;
@@ -498,9 +493,6 @@ const getForumCategory = async (req, res) => {
 
 
 // ------------------- TAGS FILTER ------------------- //
-
-
-
 const filterTags = async (req, res) => {
     try {
         const selectedTags = req.query.tag_id?.split(',') || [];
@@ -571,7 +563,7 @@ const forumPostViews = async (req, res) => {
 const forumPostLikeUnlike = async (req, res) => {
 
     const userId = req.user.id
-    const { post_id } = req.body;
+    const { post_id, discussion_id, title, user_id } = req.body;
 
     try {
         if (!req.isAuthenticated()) {
@@ -588,6 +580,11 @@ const forumPostLikeUnlike = async (req, res) => {
 
         if (!existingLike) {
             await forumPostLikesModel.create({ user_id: userId, post_id });
+            await forumNotificationModel.create({
+                recipient_id: user_id,
+                subject_user_id: userId,
+                message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> liked your post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+            });
             return res.status(200).json({ success: true, action: 'liked' });
         } else {
             await existingLike.destroy();
