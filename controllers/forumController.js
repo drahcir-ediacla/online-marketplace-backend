@@ -220,9 +220,9 @@ const createForumPost = async (req, res) => {
             return res.status(401).json({ error: 'Authentication required to add a new post.' });
         }
         const userId = req.user.id
-        const { content, discussion_id, parent_post_id } = req.body
+        const { content, discussion_id, parent_post_id, title, user_id } = req.body
 
-        if (!parent_post_id || !discussion_id || !content) {
+        if (!parent_post_id || !discussion_id || !content || !title) {
             return res.status(400).json({ error: 'content are required fields.' });
         }
 
@@ -247,6 +247,16 @@ const createForumPost = async (req, res) => {
             parent_post_id,
             level
         });
+
+        if (post && user_id !== userId) {
+            await forumNotificationModel.create({
+                recipient_id: user_id,
+                subject_user_id: userId,
+                message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> commented on your post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+            });
+        } else {
+            return res.status(404).json({ error: 'Post not found' })
+        }
 
         res.status(201).json(post);
 
@@ -578,7 +588,7 @@ const forumPostLikeUnlike = async (req, res) => {
         // Check if the user has already liked the post
         const existingLike = await forumPostLikesModel.findOne({ where: { user_id: userId, post_id } });
 
-        if (!existingLike) {
+        if (!existingLike && user_id !== userId) {
             await forumPostLikesModel.create({ user_id: userId, post_id });
             await forumNotificationModel.create({
                 recipient_id: user_id,
