@@ -126,10 +126,42 @@ const getForumNotificationsByUserId = async (req, res) => {
     }
   }
 
+  const deleteAllForumNotifications = async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json ({error: 'Authentication required to delete the all notifications.'})
+      }
+    
+      const userId = req.user.id;
+    
+      const notifications = await forumNotificationModel.findAll({
+        where: {
+          recipient_id: userId
+        }
+      })
+    
+      if (!notifications || notifications.length === 0) {
+        return res.status(404).json({ error: 'No Notifications found' });
+      }
+    
+      // Delete all notifications to mark it as read
+      for (const notification of notifications) {
+        await notification.destroy();
+      }
+    
+      res.status(200).json({ message: 'All notifications has been successfully deleted.' })
+      
+    } catch (error) {
+      console.error('Error:', error)
+      res.status(500).json({error: 'An error occurred while deleting all notifications.'})
+    }
+    }
+
 
   module.exports = {
     getForumNotificationsByUserId,
     markReadNotification,
     markReadAllNotifications,
-    deleteForumNotificationbyId
+    deleteForumNotificationbyId,
+    deleteAllForumNotifications
   }
