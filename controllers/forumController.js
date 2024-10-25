@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel, forumPostLikesModel, followersModel, forumNotificationModel } = require('../config/sequelizeConfig')
+const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel, forumPostLikesModel, followersModel, forumNotificationModel, forumActivityModel } = require('../config/sequelizeConfig')
 
 
 // ------------------- FETCH ALL CATEGORIES ------------------- //
@@ -146,12 +146,17 @@ const createNewDiscussion = async (req, res) => {
                 await forumNotificationModel.create({
                     recipient_id: follower.id,
                     subject_user_id: userId,
-                    message: `<a href=/forum/discussion/${newDiscussion.discussion_id}?repliedPostId=${newPost.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> posted a new discussion: <span style="font-weight: 600;">${title}</span></a>`
+                    message: `<a href=/forum/discussion/${newDiscussion.discussion_id}?repliedPostId=${newPost.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> created a new discussion: <span style="font-weight: 600;">${title}</span></a>`
                 });
             } catch (error) {
                 console.error('Error sending notification:', error);
                 // Handle error if notification fails to send (optional)
             }
+        });
+
+        await forumActivityModel.create({
+            subject_user_id: userId,
+            message: `<a href=/forum/discussion/${newDiscussion.discussion_id}?repliedPostId=${newPost.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> created a new discussion: <span style="font-weight: 600;">${title}</span></a>`
         });
 
 

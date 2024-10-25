@@ -23,6 +23,7 @@ const defineForumPostModel = require('../models/forumPostModel')
 const defineTagsModel = require('../models/tagsModel')
 const defineDiscussionTagsModel = require('../models/discussionTagsModel')
 const defineForumPostLikesModel = require('../models/forumPostLikes')
+const defineForumActivityModel = require('../models/forumActivityModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -64,6 +65,7 @@ const forumPostModel = defineForumPostModel(sequelize);
 const tagsModel = defineTagsModel(sequelize);
 const discussionTagsModel = defineDiscussionTagsModel(sequelize);
 const forumPostLikesModel = defineForumPostLikesModel(sequelize)
+const forumActivityModel = defineForumActivityModel(sequelize)
 
 
 // Define association after defining all models
@@ -78,7 +80,6 @@ forumDiscussionModel.belongsTo(forumCategoryModel, {foreignKey: 'forum_category_
 forumDiscussionModel.hasMany(forumPostModel, {foreignKey: 'discussion_id', as: 'post'});
 
 discussionTagsModel.belongsTo(forumDiscussionModel, { foreignKey: 'discussion_id', as: 'allDiscussionsInTag' });
-// tagsModel.belongsToMany(forumDiscussionModel, { through: discussionTagsModel, foreignKey: 'tag_id' });
 
 forumPostModel.belongsTo(forumDiscussionModel, {foreignKey: 'discussion_id', as: 'discussion'});
 forumPostModel.belongsTo(userModel, {foreignKey: 'user_id', as: 'postCreator'});
@@ -131,6 +132,7 @@ chatsModel.hasMany(reviewsModel, { foreignKey: 'chat_id', as: 'review' });
 
 notificationModel.belongsTo(userModel, { foreignKey: 'subject_user_id', as: 'subjectUser' });
 forumNotificationModel.belongsTo(userModel, { foreignKey: 'subject_user_id', as: 'subject_User' });
+forumActivityModel.belongsTo(userModel, { foreignKey: 'subject_user_id', as: 'SubjectUser' });
 
 
 
@@ -140,7 +142,6 @@ const initializeDatabase = async () => {
       await sequelize.authenticate();
       console.log('Connection to the database has been established successfully.');
   
-    
   
       // Synchronize the models with the database (creates tables if they do not exist)
       await sequelize.sync({ force: false }); // Set force to true to drop existing tables and recreate them
@@ -181,5 +182,6 @@ const initializeDatabase = async () => {
     tagsModel,
     discussionTagsModel,
     forumPostLikesModel,
-    forumNotificationModel
+    forumNotificationModel,
+    forumActivityModel
   };

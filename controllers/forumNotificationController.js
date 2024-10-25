@@ -1,5 +1,32 @@
-const { forumNotificationModel, userModel } = require('../config/sequelizeConfig')
+const { forumNotificationModel, userModel, forumActivityModel } = require('../config/sequelizeConfig')
 
+const getForumActivitiesByUserId = async (req, res) => {
+  try {
+
+    const userId = req.params.id;
+
+    // Validate userId here if necessary
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required.' });
+    }
+
+    const userActivities = await forumActivityModel.findAll({
+      where: {
+        subject_user_id: userId,
+      },
+      include: [{
+        model: userModel,
+        as: 'SubjectUser', // Alias for the user model in the notification model
+        attributes: ['profile_pic', 'display_name'], // Select the profile_pic attribute only
+      }],
+    })
+
+    res.status(200).json(userActivities || [])
+  } catch (error) {
+    console.error('Error fetching user forum activities:', error);
+    res.status(500).json({ error: 'An error occurred while fetching forum activities.' });
+  }
+}
 
 const getForumNotificationsByUserId = async (req, res) => {
     try {
@@ -159,6 +186,7 @@ const getForumNotificationsByUserId = async (req, res) => {
 
 
   module.exports = {
+    getForumActivitiesByUserId,
     getForumNotificationsByUserId,
     markReadNotification,
     markReadAllNotifications,
