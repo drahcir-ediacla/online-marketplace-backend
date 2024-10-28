@@ -614,7 +614,7 @@ const forumPostLikeUnlike = async (req, res) => {
             
             const activityMessage = user_id === userId
             ? `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked his/her own post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
-            : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked ${postCreatorName}'s post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+            : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked <span style="font-weight: 600;">${postCreatorName}'s</span> post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
 
                 await forumNotificationModel.create({
                 recipient_id: user_id,
