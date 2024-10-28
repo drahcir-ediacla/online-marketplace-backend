@@ -7,10 +7,6 @@ const defineForumActivityModel = (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        target_user_id: {
-            type: DataTypes.BIGINT,
-            allowNull: true,
-        },
         subject_user_id: {
             type: DataTypes.BIGINT,
             allowNull: false,

@@ -225,7 +225,7 @@ const createForumPost = async (req, res) => {
             return res.status(401).json({ error: 'Authentication required to add a new post.' });
         }
         const userId = req.user.id
-        const { content, discussion_id, parent_post_id, title, user_id } = req.body
+        const { content, discussion_id, parent_post_id, title, user_id, postCreatorName } = req.body
 
         if (!parent_post_id || !discussion_id || !content || !title) {
             return res.status(400).json({ error: 'content are required fields.' });
@@ -259,9 +259,16 @@ const createForumPost = async (req, res) => {
                 subject_user_id: userId,
                 message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> commented on your post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
             });
+
+            await forumActivityModel.create({
+                subject_user_id: userId,
+                message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> commented on <span style="font-weight: 600;">${postCreatorName}'s</span> post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+            });
         } else {
             return res.status(404).json({ error: 'Post not found' })
         }
+
+        
 
         res.status(201).json(post);
 
@@ -576,15 +583,19 @@ const forumPostViews = async (req, res) => {
 
 
 const forumPostLikeUnlike = async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Authentication is required' });
+    }
 
-    const userId = req.user.id
-    const { post_id, discussion_id, title, user_id } = req.body;
+    const userId = req.user.id;
+    const { post_id, discussion_id, title, user_id, postCreatorName } = req.body;
+
+    // Validate input parameters
+    if (!post_id || !discussion_id || !title || !user_id) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
 
     try {
-        if (!req.isAuthenticated()) {
-            return res.status(401).json({ error: 'Authentication is required' });
-        }
-
         const post = await forumPostModel.findByPk(post_id);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
@@ -593,24 +604,42 @@ const forumPostLikeUnlike = async (req, res) => {
         // Check if the user has already liked the post
         const existingLike = await forumPostLikesModel.findOne({ where: { user_id: userId, post_id } });
 
-        if (!existingLike && user_id !== userId) {
+        // If the user hasn't liked the post yet
+        if (!existingLike) {
             await forumPostLikesModel.create({ user_id: userId, post_id });
-            await forumNotificationModel.create({
+            
+            const notifMessage = user_id === userId
+                ? `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">You</span> liked your own post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+                : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> liked your post in the discussion: <span style="font-weight: 600;">${title}</span></a>`;
+            
+            const activityMessage = user_id === userId
+            ? `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked his/her own post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+            : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked ${postCreatorName}'s post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+
+                await forumNotificationModel.create({
                 recipient_id: user_id,
                 subject_user_id: userId,
-                message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> liked your post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+                message: notifMessage
             });
+
+            await forumActivityModel.create({
+                subject_user_id: userId,
+                message: activityMessage
+            });
+
             return res.status(200).json({ success: true, action: 'liked' });
         } else {
+            // User has already liked the post, so unlike it
             await existingLike.destroy();
             return res.status(200).json({ success: true, action: 'unliked' });
         }
 
     } catch (error) {
-        console.error(error);
+        console.error('Error in forumPostLikeUnlike:', error);
         res.status(500).json({ error: 'Something went wrong' });
     }
-}
+};
+
 
 
 
