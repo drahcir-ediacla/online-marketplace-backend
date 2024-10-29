@@ -434,8 +434,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
         discussions.map(async (discussion) => {
             // Check if `discussion.post` exists and is an array
             const topLevelPosts = Array.isArray(discussion.post) ? discussion.post : [];
-            console.log('topLevelPosts:', topLevelPosts)
-
+            
             // Flatten top-level posts array and fetch replies
             const postsWithReplies = await Promise.all(
                 topLevelPosts.flat().map(async (post) => {
