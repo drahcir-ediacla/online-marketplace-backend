@@ -264,11 +264,7 @@ const createForumPost = async (req, res) => {
                 subject_user_id: userId,
                 message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> commented on <span style="font-weight: 600;">${postCreatorName}'s</span> post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
             });
-        } else {
-            return res.status(404).json({ error: 'Post not found' })
-        }
-
-        
+        } 
 
         res.status(201).json(post);
 
