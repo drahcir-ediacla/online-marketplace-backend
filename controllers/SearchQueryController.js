@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 const geolib = require('geolib');
-const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel } = require('../config/sequelizeConfig');
+const { sequelize, userModel, productModel, categoryModel, productImagesModel, wishListModel, forumDiscussionModel, forumPostModel, forumPostLikesModel } = require('../config/sequelizeConfig');
 
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
 const searchProducts = async (req, res) => {
@@ -106,8 +106,6 @@ const searchProducts = async (req, res) => {
     });
 
 
-    console.log('Initial products:', products.length);
-
     // Filter products by distance if latitude and longitude are provided
     let filteredProducts = products;
     if (latitude && longitude && radius) {
@@ -120,8 +118,6 @@ const searchProducts = async (req, res) => {
         return distance <= radius * 1000; // radius in kilometers
       });
     }
-
-    console.log('Filtered products:', filteredProducts.length);
 
 
 
@@ -158,7 +154,7 @@ const searchProducts = async (req, res) => {
     }));
 
     res.status(200).json(formattedProducts);
-    console.log('formattedProducts:', formattedProducts)
+
   } catch (error) {
     console.error('Error searching products:', error);
     res.status(500).json({ error: 'An error occurred while searching products.' });
@@ -180,4 +176,82 @@ const getSortingOrder = (sort) => {
   }
 };
 
-module.exports = { searchProducts };
+
+const searchForumPost = async (req, res) => {
+  try {
+    const { keyword } = req.body;
+
+    // Filtering logic based on whether the keyword is in the title or post content
+    const discussionFilter = {
+      [Sequelize.Op.or]: [
+        { title: { [Sequelize.Op.like]: `%${keyword}%` } }, // Check in title
+        { '$post.content$': { [Sequelize.Op.like]: `%${keyword}%` } }, // Check in post content
+      ],
+    };
+
+    const discussions = await forumDiscussionModel.findAll({
+      where: discussionFilter,
+      attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title', 'created_at', 'updated_at'],
+      include: [
+        {
+          model: userModel,
+          attributes: ['id', 'display_name', 'profile_pic'],
+          as: 'discussionStarter',
+        },
+        {
+          model: forumPostModel,
+          required: true,
+          where: {
+            [Sequelize.Op.or]: [
+              {
+                // If keyword is in title, only level 0 posts
+                [Sequelize.Op.and]: [
+                  { '$ForumDiscussion.title$': { [Sequelize.Op.like]: `%${keyword}%` } },
+                  { level: 0 }
+                ]
+              },
+              {
+                // If keyword is in post content, match specific posts with the keyword in content
+                content: { [Sequelize.Op.like]: `%${keyword}%` }
+              }
+            ]
+          },
+          attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'level', 'parent_post_id', 'views', 'created_at'],
+          as: 'post',
+          include: [
+            {
+              model: forumPostLikesModel,
+              attributes: ['user_id'],
+              as: 'likes',
+            }
+          ]
+        }
+      ]
+    });
+
+
+    // Flatten posts within each discussion
+    const flattenedDiscussions = discussions.flatMap(discussion => 
+      discussion.post.map(post => ({
+        discussion_id: discussion.discussion_id,
+        discussion_title: discussion.title,
+        discussion_user_id: discussion.user_id,
+        discussion_category_id: discussion.forum_category_id,
+        discussion_created_at: discussion.created_at,
+        discussion_updated_at: discussion.updated_at,
+        discussionStarter: discussion.discussionStarter,
+        post
+      }))
+    );
+
+    res.status(200).json(flattenedDiscussions);
+
+  } catch (err) {
+    console.error('Error searching forum posts:', err);
+    res.status(500).json({ error: 'An error occurred while searching forum posts.' });
+  }
+};
+
+
+
+module.exports = { searchProducts, searchForumPost };
