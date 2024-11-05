@@ -179,7 +179,7 @@ const getSortingOrder = (sort) => {
 
 const searchForumPost = async (req, res) => {
   try {
-    const { keyword } = req.body;
+    const { keyword } = req.query;
 
     // Filtering logic based on whether the keyword is in the title or post content
     const discussionFilter = {
@@ -231,7 +231,7 @@ const searchForumPost = async (req, res) => {
 
 
     // Flatten posts within each discussion
-    const flattenedDiscussions = discussions.flatMap(discussion => 
+    const flattenedDiscussions = discussions.flatMap(discussion =>
       discussion.post.map(post => ({
         discussion_id: discussion.discussion_id,
         discussion_title: discussion.title,
