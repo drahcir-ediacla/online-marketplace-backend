@@ -49,18 +49,77 @@ const fetchForumCategories = async (req, res) => {
             )
         );
 
-        // Combine categories and discussions
-        const allCategoriesData = {
-            categories,
-            allDiscussions: allDiscussions.flat(), // Flatten the array of discussions
-        };
+        // Flatten discussions and map them by subcategory ID for easier lookup
+        const flatDiscussions = allDiscussions.flat();
+        const discussionsBySubcategory = flatDiscussions.reduce((acc, discussion) => {
+            const { forum_category_id } = discussion;
+            if (!acc[forum_category_id]) acc[forum_category_id] = [];
+            acc[forum_category_id].push(discussion);
+            return acc;
+        }, {});
 
-        res.status(200).json(allCategoriesData);
+        // Add aggregated data to each subcategory
+        const enrichedCategories = categories.map((category) => ({
+            ...category,
+            subcategories: category.subcategories.map((subcategory) => {
+                const matchingDiscussions = discussionsBySubcategory[subcategory.id] || [];
+
+                const getTotalReplies = (posts) => {
+                    let totalReplies = 0;
+
+                    const countReplies = (post) => {
+                        totalReplies += post?.replies?.length || 0;
+                        post?.replies?.forEach(countReplies);
+                    };
+
+                    posts?.forEach(countReplies);
+                    return totalReplies;
+                };
+
+                const totalPosts = matchingDiscussions?.reduce((count, discussion) => {
+                    const topLevelPostsCount = discussion.post?.length || 0;
+                    const repliesCount = getTotalReplies(discussion.post);
+                    return count + topLevelPostsCount + repliesCount;
+                }, 0);
+
+                let totalViews = 0;
+                let latestPostDate = null;
+
+                matchingDiscussions.forEach((discussion) => {
+                    const posts = discussion.post || [];
+
+                    // Count total posts and replies
+                    posts.forEach((post) => {
+
+                        // Track latest post
+                        const allReplies = [post, ...(post.replies || [])];
+                        allReplies.forEach((p) => {
+                            if (!latestPostDate || new Date(p.created_at) > new Date(latestPostDate)) {
+                                latestPostDate = p.created_at;
+                            }
+                        });
+                    });
+
+                    // Accumulate views (assuming views are in the first post of each discussion)
+                    totalViews += posts[0]?.views || 0;
+                });
+
+                return {
+                    ...subcategory,
+                    totalPosts,
+                    totalViews,
+                    latestPost: latestPostDate,
+                };
+            }),
+        }));
+
+        res.status(200).json({ categories: enrichedCategories });
     } catch (error) {
         console.error('Error fetching forum categories:', error);
         res.status(500).json({ message: 'Error fetching forum categories' });
     }
 };
+
 
 const fetchAllForumTags = async (req, res) => {
     try {
@@ -264,7 +323,7 @@ const createForumPost = async (req, res) => {
                 subject_user_id: userId,
                 message: `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post.post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> commented on <span style="font-weight: 600;">${postCreatorName}'s</span> post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
             });
-        } 
+        }
 
         res.status(201).json(post);
 
@@ -390,7 +449,7 @@ const getDiscussionPosts = async (req, res) => {
 
 // ------------------- GET FORUM CATEGORY ------------------- //
 
-const fetchDiscussionsRecursively = async (categoryId) => {
+const fetchDiscussionsRecursively = async (categoryId, limit, offset) => {
     const category = await forumCategoryModel.findByPk(categoryId, {
         attributes: ['id', 'parent_id', 'name', 'description', 'icon'],
     });
@@ -399,7 +458,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
         return [];
     }
 
-    // Fetch discussions in the current category
+    // Fetch discussions in the current category with pagination (limit and offset)
     const discussions = await forumDiscussionModel.findAll({
         where: { forum_category_id: categoryId },
         attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title', 'created_at', 'updated_at'],
@@ -422,7 +481,9 @@ const fetchDiscussionsRecursively = async (categoryId) => {
                     }
                 ]
             }
-        ]
+        ],
+        limit,
+        offset,
     });
 
     // Make sure that `discussion.post` is properly extracted and handled
@@ -430,7 +491,7 @@ const fetchDiscussionsRecursively = async (categoryId) => {
         discussions.map(async (discussion) => {
             // Check if `discussion.post` exists and is an array
             const topLevelPosts = Array.isArray(discussion.post) ? discussion.post : [];
-            
+
             // Flatten top-level posts array and fetch replies
             const postsWithReplies = await Promise.all(
                 topLevelPosts.flat().map(async (post) => {
@@ -458,23 +519,39 @@ const fetchDiscussionsRecursively = async (categoryId) => {
         attributes: ['id', 'name', 'description', 'parent_id', 'icon'],
     });
 
+    // Fetch subcategory discussions with pagination applied to each subcategory
     const subCategoryDiscussions = await Promise.all(
         childSubcategories.map((subCategory) =>
-            fetchDiscussionsRecursively(subCategory.id)
+            fetchDiscussionsRecursively(subCategory.id, limit, offset)  // Apply pagination for each subcategory
         )
     );
 
+    // Combine discussions from the current category and its subcategories
+    const allDiscussions = [...discussionsWithReplies, ...subCategoryDiscussions.flat()];
 
-    const allDiscussions = [...discussionsWithReplies, ...subCategoryDiscussions.flat()]
-
-    return allDiscussions
+    return allDiscussions;
 };
 
 
+// Fetch total discussions count for pagination
+const fetchTotalDiscussions = async (categoryId) => {
+    const totalCount = await forumDiscussionModel.count({
+        where: { forum_category_id: categoryId },
+    });
+    return totalCount;
+};
 
+// Get forum category with pagination support
 const getForumCategory = async (req, res) => {
     try {
         const categoryId = req.params.id;
+
+        // Get pagination parameters from query
+        const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+        const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+
+        // Calculate the offset
+        const offset = (page - 1) * limit;
 
         const category = await forumCategoryModel.findByPk(categoryId, {
             attributes: ['id', 'name', 'description', 'parent_id', 'icon'],
@@ -485,28 +562,44 @@ const getForumCategory = async (req, res) => {
             return res.status(404).json({ error: 'Category not found' });
         }
 
-        // Find sub-category products
+        // Find subcategories
         const subcategories = await forumCategoryModel.findAll({
             where: { parent_id: categoryId },
             attributes: ['id', 'name', 'description', 'parent_id', 'icon'],
         });
 
-        const allDiscussions = await fetchDiscussionsRecursively(categoryId)
+        // Fetch discussions with pagination (limit and offset)
+        const recursiveDiscussions = await fetchDiscussionsRecursively(categoryId, limit, offset);
 
+        const allDiscussions = [...recursiveDiscussions].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        // Count the total number of discussions for pagination metadata
+        const totalDiscussions = await fetchTotalDiscussions(categoryId);
+
+        // Calculate total pages
+        const totalPages = Math.ceil(totalDiscussions / limit);
+
+        // Prepare the response with category data and pagination
         const categoryData = {
             ...category.toJSON(),
             subcategories, // Ensure subcategories is an array even if it's null
             allDiscussions,
+            pagination: {
+                page,
+                limit,
+                totalPages,
+                totalDiscussions,
+            },
         };
 
-
         res.status(200).json(categoryData);
-
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'An error occurred while processing the request.' });
     }
-}
+};
+
+
 
 
 // ------------------- TAGS FILTER ------------------- //
@@ -522,7 +615,7 @@ const filterTags = async (req, res) => {
                 {
                     model: forumDiscussionModel,
                     attributes: ['discussion_id', 'user_id', 'title', 'created_at'],
-                    as: 'allDiscussionsInTag', // Ensure this matches the association alias
+                    as: 'allDiscussionsInTag',
                     include: [
                         {
                             model: userModel,
@@ -543,17 +636,17 @@ const filterTags = async (req, res) => {
                         }
                     ]
                 }
-            ]
+            ],
         });
 
-
-        res.status(201).json(discussions);
+        res.status(200).json(discussions);
 
     } catch (error) {
         console.error('Error fetching discussions:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }
+
 
 
 const forumPostViews = async (req, res) => {
@@ -602,16 +695,16 @@ const forumPostLikeUnlike = async (req, res) => {
         // If the user hasn't liked the post yet
         if (!existingLike) {
             await forumPostLikesModel.create({ user_id: userId, post_id });
-            
+
             const notifMessage = user_id === userId
                 ? `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">You</span> liked your own post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
                 : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name || 'Anonymous'}</span> liked your post in the discussion: <span style="font-weight: 600;">${title}</span></a>`;
-            
-            const activityMessage = user_id === userId
-            ? `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked his/her own post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
-            : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked <span style="font-weight: 600;">${postCreatorName}'s</span> post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
 
-                await forumNotificationModel.create({
+            const activityMessage = user_id === userId
+                ? `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked his/her own post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+                : `<a href=/forum/discussion/${discussion_id}?repliedPostId=${post_id}><span style="font-weight: 600;">${req.user.display_name}</span> liked <span style="font-weight: 600;">${postCreatorName}'s</span> post in the discussion: <span style="font-weight: 600;">${title}</span></a>`
+
+            await forumNotificationModel.create({
                 recipient_id: user_id,
                 subject_user_id: userId,
                 message: notifMessage
