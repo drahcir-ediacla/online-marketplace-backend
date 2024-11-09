@@ -29,6 +29,38 @@ function mapCategories(rows) {
     return topLevelCategories;
 }
 
+const oldFetchForumCategories = async (req, res) => {
+    try {
+        const rows = await forumCategoryModel.findAll();
+
+        // Process the categories
+        const categories = mapCategories(rows);
+
+        // Collect all subcategory IDs to fetch discussions
+        const subCategoryIds = categories.flatMap((category) =>
+            category.subcategories.map((subcategory) => subcategory.id)
+        );
+
+        // Fetch discussions for all subcategories
+        const allDiscussions = await Promise.all(
+            subCategoryIds.map((subCategoryId) =>
+                fetchDiscussionsRecursively(subCategoryId)
+            )
+        );
+
+        // Combine categories and discussions
+        const allCategoriesData = {
+            categories,
+            allDiscussions: allDiscussions.flat(), // Flatten the array of discussions
+        };
+
+        res.status(200).json(allCategoriesData);
+    } catch (error) {
+        console.error('Error fetching forum categories:', error);
+        res.status(500).json({ message: 'Error fetching forum categories' });
+    }
+};
+
 
 const fetchForumCategories = async (req, res) => {
     try {
@@ -232,6 +264,164 @@ const createNewDiscussion = async (req, res) => {
         res.status(500).json({ error: 'An error occurred while processing the request.' });
     }
 }
+
+// ------------------- FETCH USER CREATED DISCUSSIONS ------------------- //
+const getUserCreatedDiscussions = async (req, res) => {
+    try {
+        const userId = req.params.user_id
+
+        const discussions = await forumDiscussionModel.findAll({
+            where: { user_id: userId },
+            attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title', 'created_at', 'updated_at'],
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['id', 'display_name', 'profile_pic'],
+                    as: 'discussionStarter',
+                },
+                {
+                    model: forumPostModel,
+                    where: { parent_post_id: null },  // Top-level posts only
+                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views', 'created_at'],
+                    as: 'post',
+                    include: [
+                        {
+                            model: forumPostLikesModel,
+                            attributes: ['user_id'],
+                            as: 'likes',
+                        }
+                    ]
+                }
+            ],
+        });
+
+        // Make sure that `discussion.post` is properly extracted and handled
+        const createdDiscussions = await Promise.all(
+            discussions.map(async (discussion) => {
+                // Check if `discussion.post` exists and is an array
+                const topLevelPosts = Array.isArray(discussion.post) ? discussion.post : [];
+
+                // Flatten top-level posts array and fetch replies
+                const postsWithReplies = await Promise.all(
+                    topLevelPosts.flat().map(async (post) => {
+                        if (post && post.post_id) {
+                            const replies = await getRepliesRecursive(post);
+                            // const totalLikes = post.likes ? post.likes.length : 0; // Get nested replies
+                            return {
+                                ...post.toJSON(),
+                                // totalLikes,
+                                replies,  // Attach nested/flattened replies
+                            };
+                        }
+                        return post;  // In case `post_id` is missing, just return post as is
+                    })
+                );
+
+                // Calculate total replies for this discussion
+                const totalReplies = postsWithReplies.reduce((sum, post) => {
+                    const countReplies = (p) => 1 + p.replies.reduce((acc, r) => acc + countReplies(r), 0);
+                    return sum + countReplies(post) - 1; // Subtracting 1 for the initial post itself
+                }, 0);
+
+                return {
+                    ...discussion.toJSON(),
+                    // post: postsWithReplies,  // Attach posts with replies to the discussion
+                    totalReplies, // Attach total replies
+                };
+            })
+        );
+
+        res.status(200).json(createdDiscussions)
+    } catch (err) {
+        console.error('Error fetching created discussions:', err);
+        res.status(500).json({ error: 'Error fetching created discussions', details: err.message });
+    }
+}
+
+// ------------------- FETCH USER JOINED DISCUSSIONS ------------------- //
+const getUserJoinedDiscussions = async (req, res) => {
+    try {
+        const userId = Number(req.params.user_id);
+
+        // Fetch discussions where the user has posted or replied
+        const allDiscussions = await forumDiscussionModel.findAll({
+            attributes: ['discussion_id', 'user_id', 'forum_category_id', 'title', 'created_at', 'updated_at'],
+            include: [
+                {
+                    model: userModel,
+                    attributes: ['id', 'display_name', 'profile_pic'],
+                    as: 'discussionStarter',
+                },
+                {
+                    model: forumPostModel,
+                    where: { parent_post_id: null },  // Top-level posts only
+                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'views', 'created_at'],
+                    as: 'post',
+                    include: [
+                        {
+                            model: forumPostLikesModel,
+                            attributes: ['user_id'],
+                            as: 'likes',
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // Attach replies to discussions
+        const discussionsWithReplies = await Promise.all(
+            allDiscussions.map(async (discussion) => {
+                const topLevelPosts = Array.isArray(discussion.post) ? discussion.post : [];
+
+                const postsWithReplies = await Promise.all(
+                    topLevelPosts.map(async (post) => {
+                        if (post && post.post_id) {
+                            const replies = await getRepliesRecursive(post);
+                            return {
+                                ...post.toJSON(),
+                                replies,
+                            };
+                        }
+                        return post;
+                    })
+                );
+
+                // Calculate total replies for this discussion
+                const totalReplies = postsWithReplies.reduce((sum, post) => {
+                    const countReplies = (p) => 1 + p.replies.reduce((acc, r) => acc + countReplies(r), 0);
+                    return sum + countReplies(post) - 1; // Subtracting 1 for the initial post itself
+                }, 0);
+
+                return {
+                    ...discussion.toJSON(),
+                    post: postsWithReplies,
+                    totalReplies,
+                };
+            })
+        );
+
+        // console.log("Discussions with Replies:", JSON.stringify(discussionsWithReplies, null, 2));
+
+        // Filter discussions based on user replies at any reply level
+        const joinedDiscussions = discussionsWithReplies.filter(discussion =>
+            discussion.post?.some(post =>
+                post.replies?.some(levelOneReply => levelOneReply.user_id === userId ||
+                    levelOneReply.replies?.some(levelTwoReply => levelTwoReply.user_id === userId ||
+                        levelTwoReply.replies?.some(levelThreeReply => levelThreeReply.user_id === userId)
+                    )
+                )
+            )
+        );
+
+        // console.log("Joined Discussions:", JSON.stringify(joinedDiscussions, null, 2));
+        res.status(200).json(joinedDiscussions);
+    } catch (err) {
+        console.error('Error fetching joined discussions:', err);
+        res.status(500).json({ error: 'Error fetching joined discussions', details: err.message });
+    }
+};
+
+
 
 // ------------------- FETCH DISCUSSION BY ID ------------------- //
 
@@ -450,13 +640,13 @@ const getDiscussionPosts = async (req, res) => {
 // ------------------- GET FORUM CATEGORY ------------------- //
 
 const fetchDiscussionsRecursively = async (categoryId, limit, offset) => {
-    const category = await forumCategoryModel.findByPk(categoryId, {
-        attributes: ['id', 'parent_id', 'name', 'description', 'icon'],
-    });
+    // const category = await forumCategoryModel.findByPk(categoryId, {
+    //     attributes: ['id', 'parent_id', 'name', 'description', 'icon'],
+    // });
 
-    if (!category) {
-        return [];
-    }
+    // if (!category) {
+    //     return [];
+    // }
 
     // Fetch discussions in the current category with pagination (limit and offset)
     const discussions = await forumDiscussionModel.findAll({
@@ -733,8 +923,11 @@ const forumPostLikeUnlike = async (req, res) => {
 
 module.exports = {
     fetchForumCategories,
+    oldFetchForumCategories,
     getForumCategory,
     createNewDiscussion,
+    getUserCreatedDiscussions,
+    getUserJoinedDiscussions,
     getDiscussionById,
     createForumPost,
     getDiscussionPosts,
