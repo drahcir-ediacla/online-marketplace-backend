@@ -762,3 +762,19 @@ notNull Violation: User.longitude cannot be null
 20240903	16:34:49	27e5f057-febf-46bc-bbc5-79d536b9f5ce	TypeError: Cannot set properties of undefined (setting 'id')
 20240903	16:57:28	e761a95e-1486-4cc1-aa7d-32cd64107d58	TypeError: Cannot set properties of undefined (setting 'id')
 20240903	16:57:28	bfaf051b-73c3-4237-8edc-032894b471a3	TypeError: Cannot set properties of undefined (setting 'id')
+20241112	17:52:12	5d8a3004-7c25-4dc6-955b-b63a080d084c	AggregateError: 
+20241112	17:52:12	824c5ffa-817f-40f1-8a74-ef3e8f0dafdd	AggregateError: 
+20241112	17:52:12	a06272de-bfe6-4997-9701-ae5f2257b498	AggregateError: 
+20241112	17:52:12	ec90ae73-d82a-4e36-a122-796f2d78d1b4	AggregateError: 
+20241112	17:52:12	9169a3b7-8df5-4660-822e-74e4fe505fcb	AggregateError: 
+20241112	17:52:12	193c5c92-0392-4573-b9e7-14d1c2dc685f	AggregateError: 
+20241112	17:52:12	b28d7d88-6a61-44fc-a6e8-a8b9730b4be7	AggregateError: 
+20241112	17:52:12	d0a39340-6199-4b7b-90f0-07453d30806c	AggregateError: 
+20241112	17:52:12	eda37b84-5036-413f-88f9-51cf486d5eea	AggregateError: 
+20241112	17:52:12	3e3b2a14-f124-4255-befe-62b1dfc37bf4	AggregateError: 
+20241112	17:52:12	9a3ca24b-fc47-4f06-a10b-e697abcb3877	AggregateError: 
+20241112	17:52:12	26bb37f7-b7b3-4e4a-a7bf-d08fbbe75326	AggregateError: 
+20241112	17:52:12	0daa6bd8-9737-4c39-9164-e1de0ed9ce35	AggregateError: 
+20241112	17:52:12	0bda8f88-5d63-464e-96b8-746d9cfe5b09	AggregateError: 
+20241112	17:52:12	e6637c30-9131-4d19-820a-554bcd999669	AggregateError: 
+20241112	17:52:17	efd2e313-bc25-47fa-a75c-63b14e0f3aa1	AggregateError: 
