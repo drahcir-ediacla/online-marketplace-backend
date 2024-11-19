@@ -425,14 +425,57 @@ const getUserJoinedDiscussions = async (req, res) => {
 
 // ------------------- FETCH DISCUSSION BY ID ------------------- //
 
-const getDiscussionById = async (req, res) => {
-    try {
-        const discussionId = req.params.discussion_id;
+// const getDiscussionById = async (req, res) => {
+//     try {
+//         const discussionId = req.params.discussion_id;
 
-        const discussionData = await forumDiscussionModel.findOne({
-            where: {
-                discussion_id: discussionId
-            },
+//         const discussionData = await forumDiscussionModel.findOne({
+//             where: {
+//                 discussion_id: discussionId
+//             },
+//             include: [
+//                 {
+//                     model: userModel,
+//                     attributes: ['display_name', 'profile_pic'],
+//                     as: 'discussionStarter',
+//                 },
+//                 {
+//                     model: forumPostModel,
+//                     attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'level'],
+//                     as: 'post',
+//                     include: [
+//                         {
+//                             model: userModel,
+//                             attributes: ['id', 'display_name', 'profile_pic'],
+//                             as: 'postCreator',
+//                         }
+//                     ]
+//                 }
+//             ]
+//         })
+
+//         if (!discussionData) {
+//             return res.status(404).json({ error: 'Product not found.' })
+//         }
+
+//         res.status(201).json(discussionData)
+//     } catch (error) {
+//         console.error('Error:', error);
+//         res.status(500).json({ error: 'An error occurred while processing the request.' });
+//     }
+// }
+
+// ------------------- FETCH ALL DISCUSSIONS ------------------- //
+
+const fetchAllDiscussions = async (req, res) => {
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
+
+    // Calculate the offset
+    const offset = (page - 1) * limit;
+    try {
+        const discussions = await forumDiscussionModel.findAll({
             include: [
                 {
                     model: userModel,
@@ -441,29 +484,54 @@ const getDiscussionById = async (req, res) => {
                 },
                 {
                     model: forumPostModel,
-                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'level'],
+                    attributes: ['post_id', 'discussion_id', 'user_id', 'content', 'parent_post_id', 'level', 'views'],
                     as: 'post',
                     include: [
                         {
                             model: userModel,
                             attributes: ['id', 'display_name', 'profile_pic'],
                             as: 'postCreator',
-                        }
-                    ]
+                        },
+                        {
+                            model: forumPostLikesModel,
+                            attributes: ['user_id'],
+                            as: 'likes',
+                        },
+                    ],
+                },
+            ],
+            limit,
+            offset,
+        });
+
+        // Calculate total likes, views, and posts for each discussion
+        const result = discussions.map((discussion) => {
+            let totalReplies = 0;
+
+            discussion.post.forEach((post) => {
+                if (post.parent_post_id !== null) {
+                    totalReplies += 1;
                 }
-            ]
-        })
+            });
 
-        if (!discussionData) {
-            return res.status(404).json({ error: 'Product not found.' })
-        }
+            // Filter posts with parent_post_id: null
+            const rootPosts = discussion.post.filter(post => post.parent_post_id === null);
 
-        res.status(201).json(discussionData)
-    } catch (error) {
-        console.error('Error:', error);
+            return {
+                ...discussion.toJSON(),
+                post: rootPosts,
+                totalReplies,
+            };
+        });
+        
+
+        res.status(200).json(result);
+    } catch (err) {
+        console.error('Error:', err);
         res.status(500).json({ error: 'An error occurred while processing the request.' });
     }
-}
+};
+
 
 // ------------------- CREATE POST ------------------- //
 
@@ -928,8 +996,8 @@ module.exports = {
     createNewDiscussion,
     getUserCreatedDiscussions,
     getUserJoinedDiscussions,
-    getDiscussionById,
     createForumPost,
+    fetchAllDiscussions,
     getDiscussionPosts,
     fetchAllForumTags,
     filterTags,

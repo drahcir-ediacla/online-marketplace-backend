@@ -11,7 +11,8 @@ router.post('/api/create/newdiscussion', ForumController.createNewDiscussion);
 router.get('/api/:user_id/created/discussion', ForumController.getUserCreatedDiscussions)
 router.get('/api/:user_id/joined/discussion', ForumController.getUserJoinedDiscussions)
 router.post('/api/post/create', ForumController.createForumPost);
-router.get('/api/getdiscussion/:discussion_id', ForumController.getDiscussionById)
+// router.get('/api/getdiscussion/:discussion_id', ForumController.getDiscussionById)
+router.get('/api/get-all-discussions', ForumController.fetchAllDiscussions)
 router.get('/api/discussions/:discussionId/posts', ForumController.getDiscussionPosts)
 router.get('/api/fetchforumtags', ForumController.fetchAllForumTags);
 router.get('/api/filtertags', ForumController.filterTags);
