@@ -778,3 +778,5 @@ notNull Violation: User.longitude cannot be null
 20241112	17:52:12	0bda8f88-5d63-464e-96b8-746d9cfe5b09	AggregateError: 
 20241112	17:52:12	e6637c30-9131-4d19-820a-554bcd999669	AggregateError: 
 20241112	17:52:17	efd2e313-bc25-47fa-a75c-63b14e0f3aa1	AggregateError: 
+20241127	14:09:16	6450438e-ae85-4751-ab92-cd3e19cdc2ba	Error: ER_BAD_FIELD_ERROR: Unknown column 'expiration' in 'field list'
+20241127	14:09:17	54143cab-86d5-473b-be54-ba785939e5da	Error: ER_BAD_FIELD_ERROR: Unknown column 'expiration' in 'field list'
