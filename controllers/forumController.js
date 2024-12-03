@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const redisClient = require('../config/redisClient')
 const { userModel, forumCategoryModel, forumDiscussionModel, forumPostModel, discussionTagsModel, tagsModel, forumPostLikesModel, followersModel, forumNotificationModel, forumActivityModel } = require('../config/sequelizeConfig')
 
 
@@ -145,6 +146,10 @@ const fetchForumCategories = async (req, res) => {
             }),
         }));
 
+        const key = req.originalUrl || req.url;
+
+        // Cache the processed categories array instead of row results
+        redisClient.setex(key, 600, JSON.stringify(enrichedCategories)); // Cache for 10 minutes (600 seconds)
         res.status(200).json({ categories: enrichedCategories });
     } catch (error) {
         console.error('Error fetching forum categories:', error);
@@ -523,7 +528,7 @@ const fetchAllDiscussions = async (req, res) => {
                 totalReplies,
             };
         });
-        
+
 
         res.status(200).json(result);
     } catch (err) {
