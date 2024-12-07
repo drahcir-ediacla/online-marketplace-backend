@@ -27,6 +27,7 @@ const reviewRoutes = require('./routes/reviewRoutes')
 const notificationRoutes = require('./routes/notificationRoutes');
 const forumRoutes = require('./routes/forumRoutes');
 const forumNotificationRoutes = require('./routes/forumNotificationRoutes');
+const testRoutes = require('./routes/testRoutes');
 
 const port = process.env.PORT || 8081;
 
@@ -89,6 +90,7 @@ app.use((req, res, next) => {
 app.use(verifyJWT)
 // Authenticated routes
 app.use('/verify', userRoutes);
+app.use('/', testRoutes);
 
 app.get('/', (req, res) => {
   return res.json('From Backend Side');

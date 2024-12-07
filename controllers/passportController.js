@@ -116,11 +116,24 @@ passport.use(
         // Store the refresh token using Sequelize
         const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
 
-        await refreshTokenModel.create({
-          user_id: user.id,
-          token: refreshTokenValue,
-          expiration_date: expirationDate
+        // Check if a refresh token already exists for the user
+        const existingToken = await refreshTokenModel.findOne({
+          where: { user_id: user.id },
         });
+        if (existingToken) {
+          // Update the existing refresh token
+          await existingToken.update({
+            token: refreshTokenValue,
+            expiration_date: expirationDate,
+          });
+        } else {
+          // Create a new refresh token entry
+          await refreshTokenModel.create({
+            user_id: user.id,
+            token: refreshTokenValue,
+            expiration_date: expirationDate,
+          });
+        }
 
         // Return the user
         user.accessToken = accessTokenValue;
@@ -184,11 +197,24 @@ passport.use(
         // Store the refresh token using Sequelize
         const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
 
-        await refreshTokenModel.create({
-          user_id: user.id,
-          token: refreshTokenValue,
-          expiration_date: expirationDate,
+        // Check if a refresh token already exists for the user
+        const existingToken = await refreshTokenModel.findOne({
+          where: { user_id: user.id },
         });
+        if (existingToken) {
+          // Update the existing refresh token
+          await existingToken.update({
+            token: refreshTokenValue,
+            expiration_date: expirationDate,
+          });
+        } else {
+          // Create a new refresh token entry
+          await refreshTokenModel.create({
+            user_id: user.id,
+            token: refreshTokenValue,
+            expiration_date: expirationDate,
+          });
+        }
 
         // Return the user
         user.accessToken = accessTokenValue;

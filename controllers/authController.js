@@ -317,15 +317,28 @@ const loginUserByEmail = async (req, res) => {
 
       try {
         // Store the refresh token using Sequelize
-        await refreshTokenModel.create({
-          user_id: user.id,
-          token: refreshToken,
-          expiration_date: expirationDate
+        // Check if a refresh token already exists for the user
+        const existingToken = await refreshTokenModel.findOne({
+          where: { user_id: user.id },
         });
+        if (existingToken) {
+          // Update the existing refresh token
+          await existingToken.update({
+            token: refreshToken,
+            expiration_date: expirationDate,
+          });
+        } else {
+          // Create a new refresh token entry
+          await refreshTokenModel.create({
+            user_id: user.id,
+            token: refreshToken,
+            expiration_date: expirationDate,
+          });
+        }
 
         // Set cookie with access token
         res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
 
         // // Update user status to 'online'
         // await userModel.upsert({ id: user.id, status: 'online' });
@@ -379,15 +392,28 @@ const loginUserByPhone = async (req, res) => {
 
       try {
         // Store the refresh token using Sequelize
-        await refreshTokenModel.create({
-          user_id: user.id,
-          token: refreshToken,
-          expiration_date: expirationDate
+        // Check if a refresh token already exists for the user
+        const existingToken = await refreshTokenModel.findOne({
+          where: { user_id: user.id },
         });
+        if (existingToken) {
+          // Update the existing refresh token
+          await existingToken.update({
+            token: refreshToken,
+            expiration_date: expirationDate,
+          });
+        } else {
+          // Create a new refresh token entry
+          await refreshTokenModel.create({
+            user_id: user.id,
+            token: refreshToken,
+            expiration_date: expirationDate,
+          });
+        }
 
         // Set cookie with access token
         res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
 
         // // Update user status to 'online'
         // await userModel.upsert({ id: user.id, status: 'online' });
@@ -421,21 +447,29 @@ const logoutUser = async (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.user.id;
 
-    // Clear Passport session
-    req.logout(); // Since it's asynchronous, you can await this if needed.
+    // Log the user out (asynchronous in newer Passport versions)
+    await req.logout();
 
     try {
       // Delete refresh token using Sequelize
       const deleteResult = await refreshTokenModel.destroy({
         where: {
-          user_id: userId
-        }
+          user_id: userId,
+        },
       });
 
       if (deleteResult === 0) {
         console.log('Token not found or already deleted.');
       } else {
         console.log('Refresh token deleted successfully.');
+      }
+
+      if (req.session) {
+        req.session.destroy(err => {
+          if (err) {
+            console.error('Failed to destroy session:', err);
+          }
+        });
       }
 
       // Update user status to 'offline'
@@ -451,8 +485,15 @@ const logoutUser = async (req, res) => {
     }
   }
 
-  res.redirect(process.env.CLIENT_URL);
+  // Clear cookies
+  res.clearCookie('jwt', { path: '/' }); // Adjust cookie name/path if necessary
+  res.clearCookie('refreshJWT', { path: '/' }); // Adjust cookie name/path if necessary
+  res.clearCookie('connect.sid', { path: '/', httpOnly: true }); // Adjust cookie name/path if necessary
+
+  // Redirect or send response
+  res.redirect(process.env.CLIENT_URL || '/');
 };
+
 
 
 const resetPasswordByEmail = async (req, res) => {
@@ -695,7 +736,7 @@ const sendPhoneUpdateOTP = async (req, res) => {
         to: `63${newPhone}`,
         text: `[Yogeek] ${otp} is your verification code. Valid for 2 minutes. To keep your account safe, never share this code`,
       };
-  
+
       await vonage.sms.send(sendSmsOptions);
 
       // Save OTP and otp_expires to the user's record

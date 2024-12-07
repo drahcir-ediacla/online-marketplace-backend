@@ -1,8 +1,8 @@
-const db = require('../config/dbConfig');
+const { refreshTokenModel } = require('../config/sequelizeConfig');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const handleRefreshToken = (req, res) => {
+const handleRefreshToken = async (req, res) => {
     const cookies = req.cookies;
     if (!cookies?.refreshJWT) {
         return res.sendStatus(401); // Unauthorized
@@ -10,46 +10,67 @@ const handleRefreshToken = (req, res) => {
 
     const refreshToken = cookies.refreshJWT;
 
-    
-    // Query the database to find the user associated with the refreshToken
-    const getUserQuery = 'SELECT * FROM refresh_tokens WHERE token = ?';
-    db.query(getUserQuery, [refreshToken], (getUserErr, user) => {
-        if (getUserErr) {
-            console.error('Error retrieving user:', getUserErr);
-            return res.sendStatus(500); // Internal Server Error
-        }
+    try {
+        // Query the database to find the user associated with the refreshToken
+        const user = await refreshTokenModel.findOne({
+            where: { token: refreshToken },
+        });
 
-        if (!user || user.length === 0) {
-            return res.sendStatus(403); // Forbidden
+        if (!user) {
+            return res.status(403).json({ message: 'Refresh token not found' }); // Forbidden
         }
 
         // Verify the refresh token
-        jwt.verify(
-            refreshToken,
-            process.env.REFRESH_TOKEN_SECRET,
-            (err, decoded) => {
-                if (err || user[0].user_id !== decoded.user_id) {
-                    return res.sendStatus(403); // Forbidden
-                }
-
-                // Generate a new access token with a longer expiration time (e.g., hours)
-                const accessToken = jwt.sign(
-                    { user_id: decoded.user_id },
-                    process.env.ACCESS_TOKEN_SECRET,
-                    { expiresIn: '10s' } // Adjust the expiration time as needed
-                );
-
-                // Set the new access token in the cookie
-                res.cookie('jwt', accessToken, {
-                    httpOnly: true,
-                    // Add other cookie attributes as needed (e.g., domain, path, secure, etc.)
-                });
-
-                // Send the new access token in the response body if needed
-                res.json({ accessToken });
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
+            if (err || user.userId !== decoded.userId) {
+                return res.sendStatus(403); // Forbidden
             }
-        );
-    });
+
+            // Generate a new access token
+            const accessToken = jwt.sign(
+                { userId: decoded.userId },
+                process.env.ACCESS_TOKEN_SECRET,
+                { expiresIn: '15m' } // Adjust the expiration time as needed
+            );
+
+            // Generate a new refresh token (optional)
+            // const newRefreshToken = jwt.sign(
+            //     { userId: decoded.userId },
+            //     process.env.REFRESH_TOKEN_SECRET,
+            //     { expiresIn: '1d' } // Adjust expiration for refresh token
+            // );
+
+            // Update refresh token in the database
+            // user.token = newRefreshToken;
+            // await user.save();
+
+
+            // Set the new access token in the cookie
+            res.cookie('jwt', accessToken, {
+                httpOnly: true,
+                // secure: false,
+                secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
+                sameSite: 'none', 
+                maxAge: 15 * 60 * 1000, // 30 seconds
+                path: '/'
+            });
+
+            // res.cookie('refreshJWT', newRefreshToken, {
+            //     httpOnly: true,
+            //     secure: false,
+            //     // secure: process.env.NODE_ENV === 'production' || process.env.NODE_ENV, // Use Secure flag in production
+            //     // sameSite: 'none', 
+            //     maxAge:  24 * 60 * 60 * 1000, // 7 days
+            //     path: '/'
+            // });
+
+            // Send the new access token in the response body if needed
+            res.json({ accessToken });
+        });
+    } catch (error) {
+        console.error('Error handling refresh token:', error);
+        res.sendStatus(500); // Internal Server Error
+    }
 };
 
 module.exports = { handleRefreshToken };

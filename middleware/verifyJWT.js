@@ -12,15 +12,28 @@ const verifyJWT = (req, res, next) => {
 
   jwt.verify(jwtCookie, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
+      if (err.name === 'TokenExpiredError') {
+        console.error('JWT Token Expired:', err);
+        return res.status(401).json({
+          success: false,
+          message: 'Unauthorized: JWT token has expired. Please refresh your token.',
+        });
+      }
+
       console.error('JWT Verification Error:', err);
-      return res.status(403).json({ success: false, message: 'Forbidden: Invalid JWT token' });
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: Invalid JWT token.',
+      });
     }
 
-    // Attach the user's ID to req.user for use in other middleware or routes.
-    req.user.id = decoded.user_id;
+    // Ensure req.user exists and assign decoded user info
+    req.user = req.user || {};
+    req.user.id = decoded.userId; // Consistent camelCase naming
 
-    // Log the decoded user ID for debugging
-    console.log('Decoded User ID:', decoded.user_id);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Decoded User:', decoded);
+    }
 
     next();
   });
