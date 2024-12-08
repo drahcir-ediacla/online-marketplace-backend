@@ -48,7 +48,6 @@ const handleRefreshToken = async (req, res) => {
             // Set the new access token in the cookie
             res.cookie('jwt', accessToken, {
                 httpOnly: true,
-                // secure: false,
                 secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
                 sameSite: 'none', 
                 maxAge: 15 * 60 * 1000, // 30 seconds
@@ -57,8 +56,7 @@ const handleRefreshToken = async (req, res) => {
 
             // res.cookie('refreshJWT', newRefreshToken, {
             //     httpOnly: true,
-            //     secure: false,
-            //     // secure: process.env.NODE_ENV === 'production' || process.env.NODE_ENV, // Use Secure flag in production
+            //     // secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
             //     // sameSite: 'none', 
             //     maxAge:  24 * 60 * 60 * 1000, // 7 days
             //     path: '/'
