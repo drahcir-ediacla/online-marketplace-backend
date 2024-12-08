@@ -337,8 +337,8 @@ const loginUserByEmail = async (req, res) => {
         }
 
         // Set cookie with access token
-        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'lax', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'lax', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
 
         // // Update user status to 'online'
         // await userModel.upsert({ id: user.id, status: 'online' });

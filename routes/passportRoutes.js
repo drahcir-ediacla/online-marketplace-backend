@@ -96,8 +96,8 @@ router.get(
     io.emit('updateUserStatus', { id: userId, status: 'online' });
 
     // Set the refresh token and access token as cookies
-    res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-    res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });  //maxAge is equivalent to 24 hours
+    res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'lax', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+    res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'lax', secure: true, maxAge: 15 * 60 * 1000, path: '/' });  //maxAge is equivalent to 24 hours
     console.log('jwt:', accessToken)
 
     res.redirect(`${process.env.CLIENT_URL}/auth/success`);  // Redirect to the desired page after successful login
