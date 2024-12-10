@@ -310,11 +310,13 @@ const getAllProducts = async (req, res) => {
 
 const getRandomProducts = async (req, res) => {
   try {
-    // Use Sequelize to fetch random products with associated seller information and images
+    const { offset = 0, limit = 30 } = req.query; // Get offset and limit from query params, default to 2 items per request
+
     const productDetails = await productModel.findAll({
       attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'createdAt'],
-      order: [Sequelize.fn('RAND')], // For PostgreSQL use: [Sequelize.fn('RANDOM')]
-      limit: 30,  // Fetching 10 random products, you can adjust the limit as needed
+      order: [Sequelize.fn('RAND')], // Randomize the results
+      offset: parseInt(offset, 10),  // Skip these many rows
+      limit: parseInt(limit, 10),   // Fetch these many rows
       include: [
         {
           model: userModel,
@@ -341,6 +343,7 @@ const getRandomProducts = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while fetching products.' });
   }
 };
+
 
 
 
