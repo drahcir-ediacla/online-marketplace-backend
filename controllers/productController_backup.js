@@ -384,7 +384,7 @@ const getProductDetails = async (req, res) => {
         },
         {
           model: meetupLocationsModel,
-          attributes: ['meetup_id', 'placeId', 'name', 'address', 'latitude', 'longitude'],
+          attributes: ['placeId', 'name', 'address', 'latitude', 'longitude'],
           as: 'meetup',
         },
       ]
@@ -572,7 +572,7 @@ const getAllCategories = async (req, res) => {
 
 
 // ------------------- GET CATEGORY BY ID ------------------- //
-const fetchProductsRecursively = async (categoryId, filters) => {
+const fetchProductsRecursively = async (categoryId, filters, limit, offset) => {
   const category = await categoryModel.findByPk(categoryId, {
     attributes: ['id', 'label', 'value', 'icon', 'thumbnail_image', 'parent_id'],
   });
@@ -659,6 +659,8 @@ const fetchProductsRecursively = async (categoryId, filters) => {
         as: 'meetup',
       }
     ],
+    limit, // Apply limit
+    offset, // Apply offset
   });
 
 
@@ -671,7 +673,7 @@ const fetchProductsRecursively = async (categoryId, filters) => {
 
   const subcategoryProducts = await Promise.all(
     childSubcategories.map((subCategory) =>
-      fetchProductsRecursively(subCategory.id, filters)
+      fetchProductsRecursively(subCategory.id, filters, limit, offset)
     )
   );
 
@@ -683,19 +685,21 @@ const fetchProductsRecursively = async (categoryId, filters) => {
   allProducts.sort((a, b) => {
     switch (sort) {
       case 'recent':
-        return new Date(b.createdAt) - new Date(a.createdAt);
+        return b.createdAt - a.createdAt;
       case 'highToLow':
-        return b.price - a.price || new Date(b.createdAt) - new Date(a.createdAt);
+        return b.price - a.price || b.createdAt - a.createdAt;
       case 'lowToHigh':
-        return a.price - b.price || new Date(b.createdAt) - new Date(a.createdAt);
+        return a.price - b.price || b.createdAt - a.createdAt;
+      // Add more sorting options as needed
+
       default:
-        return new Date(b.createdAt) - new Date(a.createdAt);
+        // Default to sorting by createdAt in descending order
+        return b.createdAt - a.createdAt;
     }
   });
 
-
   // Ensure combined results respect the limit
-  return allProducts;
+  return allProducts.slice(0, limit);
 
 };
 
@@ -707,7 +711,7 @@ const getCategoryById = async (req, res) => {
     const categoryId = req.params.id;
     // Get pagination parameters from query
     const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-    const limit = parseInt(req.query.limit) || 24; // Default to 10 items per page
+    const limit = parseInt(req.query.limit) || 2; // Default to 10 items per page
 
     if (page <= 0 || limit <= 0) {
       return res.status(400).json({ error: 'Page and limit must be positive integers' });
@@ -744,17 +748,13 @@ const getCategoryById = async (req, res) => {
 
 
     // Fetch and sort products for the specified category
-    const allProducts = await fetchProductsRecursively(categoryId, filters);
-
-    // Apply pagination
-    const paginatedProducts = allProducts.slice(offset, offset + limit);
+    const allProducts = await fetchProductsRecursively(categoryId, filters, limit, offset);
 
 
     const categoryData = {
       ...category.toJSON(),
       subcategories: subcategories || [], // Ensure subcategories is an array
-      paginatedProducts,
-      totalProducts: allProducts.length,
+      allProducts,
     };
 
     res.status(200).json(categoryData);
@@ -763,7 +763,6 @@ const getCategoryById = async (req, res) => {
     res.status(500).json({ error: 'An error occurred while processing the request.' });
   }
 };
-
 
 
 // ------------------- ADD WISHLIST ------------------- //

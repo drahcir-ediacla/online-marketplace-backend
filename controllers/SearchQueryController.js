@@ -5,6 +5,11 @@ const { sequelize, userModel, productModel, categoryModel, productImagesModel, w
 // --------------- SEARCH ITEMS GLOBALLY  --------------- //
 const searchProducts = async (req, res) => {
   try {
+    // Get pagination parameters from query
+    const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+    const limit = parseInt(req.query.limit) || 20; // Default to 2 items per page
+    const offset = (page - 1) * limit;
+
     // Extract filters and sorting options from query parameters
     const filters = {
       minPrice: req.query.minPrice || undefined,
@@ -22,13 +27,9 @@ const searchProducts = async (req, res) => {
       // Skip city, region, and country filters if 'Listing Near Me' is used
       locationFilter = {};
     } else {
-      // Replace 'All of the Philippines' with 'Philippines'
       const cleanedLocation = location.replace('All of the Philippines', 'Philippines');
-
-      // Split the cleaned location into an array
       const locationsArray = cleanedLocation.split(' | ').map(loc => loc.trim());
 
-      // Build location filter
       locationFilter = {
         [Sequelize.Op.or]: [
           { city: { [Sequelize.Op.in]: locationsArray } },
@@ -38,7 +39,6 @@ const searchProducts = async (req, res) => {
       };
     }
 
-    // Filtering logic for products
     let productFilter = {
       [Sequelize.Op.or]: [
         {
@@ -59,20 +59,18 @@ const searchProducts = async (req, res) => {
       ],
     };
 
-    if (filters.minPrice !== undefined && filters.maxPrice !== undefined) {
-      // Add price range filter
+    if (filters.minPrice && filters.maxPrice) {
       productFilter.price = {
         [Sequelize.Op.between]: [filters.minPrice, filters.maxPrice],
       };
     }
 
     if (filters.condition) {
-      // Add condition filter
       productFilter.product_condition = filters.condition;
     }
 
-    // Include category in the search
-    const products = await productModel.findAll({
+    // First query: Fetch all products to apply in-memory distance filtering
+    const allProducts = await productModel.findAll({
       where: productFilter,
       include: [
         {
@@ -105,24 +103,28 @@ const searchProducts = async (req, res) => {
       order: getSortingOrder(filters.sort),
     });
 
-
     // Filter products by distance if latitude and longitude are provided
-    let filteredProducts = products;
+    let filteredProducts = allProducts;
     if (latitude && longitude && radius) {
       const userLocation = { latitude: parseFloat(latitude), longitude: parseFloat(longitude) };
-      filteredProducts = products.filter(product => {
-        if (!product.sellerLocation) return false; // Skip products without location
-        const productLocation = { latitude: product.sellerLocation.latitude, longitude: product.sellerLocation.longitude };
+      filteredProducts = allProducts.filter(product => {
+        if (!product.sellerLocation) return false;
+        const productLocation = {
+          latitude: product.sellerLocation.latitude,
+          longitude: product.sellerLocation.longitude,
+        };
         const distance = geolib.getDistance(userLocation, productLocation);
-        console.log(`Product ID ${product.id} distance:`, distance);
-        return distance <= radius * 1000; // radius in kilometers
+        return distance <= radius * 1000; // Convert radius to meters
       });
     }
 
+    const totalFilteredProducts = filteredProducts.length;
+    const totalPages = Math.ceil(totalFilteredProducts / limit);
 
+    // Apply pagination
+    const paginatedProducts = filteredProducts.slice(offset, offset + limit);
 
-    // Format the products as per the desired JSON structure
-    const formattedProducts = filteredProducts.map(product => ({
+    const formattedProducts = paginatedProducts.map(product => ({
       id: product.id,
       product_name: product.product_name,
       description: product.description,
@@ -141,7 +143,7 @@ const searchProducts = async (req, res) => {
       },
       sellerLocation: product.sellerLocation ? {
         latitude: product.sellerLocation.latitude,
-        longitude: product.sellerLocation.longitude
+        longitude: product.sellerLocation.longitude,
       } : null,
       images: product.images.map(image => ({
         id: image.id,
@@ -153,13 +155,18 @@ const searchProducts = async (req, res) => {
       })),
     }));
 
-    res.status(200).json(formattedProducts);
-
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalProducts: totalFilteredProducts,
+      products: formattedProducts,
+    });
   } catch (error) {
     console.error('Error searching products:', error);
     res.status(500).json({ error: 'An error occurred while searching products.' });
   }
 };
+
 
 // Helper function to get sorting order
 const getSortingOrder = (sort) => {
