@@ -896,6 +896,9 @@ const getWishlistByUserId = async (req, res) => {
   if (req.isAuthenticated()) {
     try {
       const userId = req.user.id;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 30;
+      const offset = (page - 1) * limit;
 
       const product = await productModel.findAll({
         attributes: ['id', 'product_name', 'description', 'price', 'category_id', 'seller_id', 'product_condition', 'youtube_link', 'status', 'createdAt'],
@@ -922,11 +925,22 @@ const getWishlistByUserId = async (req, res) => {
       });
 
 
-      if (product.length === 0) {
-        return res.status(404).json({ error: 'No items in the wishlist' });
-      }
+      // if (product.length === 0) {
+      //   return res.status(404).json({ error: 'No items in the wishlist' });
+      // }
 
-      res.status(200).json(product);
+      const totalWishList = product.length
+      const totalPages = Math.ceil(totalWishList / limit);
+      // Apply pagination
+      const paginatedProducts = product.slice(offset, offset + limit);
+
+      res.status(200).json(
+        {
+          currentPage: page,
+          totalPages,
+          totalWishList,
+          wishlist: paginatedProducts
+        });
     } catch (error) {
       console.error('Error fetching products:', error);
       res.status(500).json({ error: 'An error occurred while fetching products.' });

@@ -187,6 +187,9 @@ const getSortingOrder = (sort) => {
 const searchForumPost = async (req, res) => {
   try {
     const { keyword } = req.query;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
 
     // Filtering logic based on whether the keyword is in the title or post content
     const discussionFilter = {
@@ -233,7 +236,7 @@ const searchForumPost = async (req, res) => {
             }
           ]
         }
-      ]
+      ],
     });
 
 
@@ -251,7 +254,19 @@ const searchForumPost = async (req, res) => {
       }))
     );
 
-    res.status(200).json(flattenedDiscussions);
+    // Apply pagination
+    const paginatedDiscussions = flattenedDiscussions.slice(offset, offset + limit);
+    const totalDiscussions = flattenedDiscussions.length
+    const totalPages = Math.ceil(totalDiscussions / limit);
+
+    
+
+    res.status(200).json({
+      currentPage: page,
+      totalPages,
+      totalDiscussions,
+      discussions: paginatedDiscussions
+    });
 
   } catch (err) {
     console.error('Error searching forum posts:', err);
