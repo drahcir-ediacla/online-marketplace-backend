@@ -5,6 +5,7 @@ const defineUserModel = (sequelize) => {
     id: {
       type: DataTypes.BIGINT,
       primaryKey: true,
+      allowNull: false,
       autoIncrement: true,
     },
     account_verified: {
