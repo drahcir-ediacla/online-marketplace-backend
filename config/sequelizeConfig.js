@@ -32,13 +32,13 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   dialect: 'mysql',
-  pool: {
-    max: 10,            // Maximum number of connections in the pool
-    min: 0,             // Minimum number of connections in the pool
-    acquire: 30000,     // Maximum time, in milliseconds, that a connection can be acquired before an error occurs
-    idle: 10000,        // Maximum time, in milliseconds, that a connection can be idle before being released
-    evict: 60000,       // Time interval, in milliseconds, to run eviction check for idle connections (for Sequelize v7.0.0 and above)
-  },
+  // pool: {
+  //   max: 10,            // Maximum number of connections in the pool
+  //   min: 0,             // Minimum number of connections in the pool
+  //   acquire: 30000,     // Maximum time, in milliseconds, that a connection can be acquired before an error occurs
+  //   idle: 10000,        // Maximum time, in milliseconds, that a connection can be idle before being released
+  //   evict: 60000,       // Time interval, in milliseconds, to run eviction check for idle connections (for Sequelize v7.0.0 and above)
+  // },
 });
 
 const userModel = defineUserModel(sequelize);
