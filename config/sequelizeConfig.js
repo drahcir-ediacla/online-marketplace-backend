@@ -31,6 +31,7 @@ const sequelize = new Sequelize({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   dialect: 'mysql',
   // pool: {
   //   max: 10,            // Maximum number of connections in the pool
