@@ -21,19 +21,19 @@ const sessionStore = new MySQLStore(
   db
 );
 
-// Periodic Cleanup as Fallback
-setInterval(() => {
-  const query = `
-      DELETE FROM sessions 
-      WHERE expires = '0000-00-00 00:00:00' OR expires < NOW()
-  `;
-  db.query(query, (err, result) => {
-    if (err) {
-      console.error('Error clearing invalid sessions:', err);
-    } else {
-      console.log('Invalid sessions cleared:', result.affectedRows);
-    }
-  });
-}, 86400000); // Run cleanup every 1 day
+// // Periodic Cleanup as Fallback
+// setInterval(() => {
+//   const query = `
+//       DELETE FROM sessions 
+//       WHERE expires = '0000-00-00 00:00:00' OR expires < NOW()
+//   `;
+//   db.query(query, (err, result) => {
+//     if (err) {
+//       console.error('Error clearing invalid sessions:', err);
+//     } else {
+//       console.log('Invalid sessions cleared:', result.affectedRows);
+//     }
+//   });
+// }, 86400000); // Run cleanup every 1 day
 
 module.exports = sessionStore;
