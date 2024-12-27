@@ -21,7 +21,7 @@ const registerUserByEmail = async (req, res) => {
       return res.status(404).json({ message: 'Email not exists' });
     }
 
-    if (user.email_verified === true) {
+    if (user.email_verified) {
       return res.status(409).json({ message: 'Email already exists' })
     }
 

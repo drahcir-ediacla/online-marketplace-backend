@@ -27,6 +27,7 @@ const reviewRoutes = require('./routes/reviewRoutes')
 const notificationRoutes = require('./routes/notificationRoutes');
 const forumRoutes = require('./routes/forumRoutes');
 const forumNotificationRoutes = require('./routes/forumNotificationRoutes');
+const adminAuthRoutes = require('./routes/admin/adminAuthRoutes');
 const testRoutes = require('./routes/testRoutes');
 
 const port = process.env.PORT || 8081;
@@ -81,6 +82,7 @@ app.use('/', reviewRoutes);
 app.use('/', notificationRoutes);
 app.use('/', forumRoutes);
 app.use('/', forumNotificationRoutes);
+app.use('/', adminAuthRoutes)
 // Middleware to set Cache-Control header
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');

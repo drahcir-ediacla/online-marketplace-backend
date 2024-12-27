@@ -24,6 +24,8 @@ const defineTagsModel = require('../models/tagsModel')
 const defineDiscussionTagsModel = require('../models/discussionTagsModel')
 const defineForumPostLikesModel = require('../models/forumPostLikes')
 const defineForumActivityModel = require('../models/forumActivityModel')
+const defineRolesModel = require('../models/admin/rolesModel')
+const defineUserRoleModel = require('../models/admin/userRoleModel')
 require('dotenv').config();
 
 const sequelize = new Sequelize({
@@ -67,6 +69,8 @@ const tagsModel = defineTagsModel(sequelize);
 const discussionTagsModel = defineDiscussionTagsModel(sequelize);
 const forumPostLikesModel = defineForumPostLikesModel(sequelize)
 const forumActivityModel = defineForumActivityModel(sequelize)
+const rolesModel = defineRolesModel(sequelize)
+const userRoleModel = defineUserRoleModel(sequelize)
 
 
 // Define association after defining all models
@@ -184,5 +188,7 @@ const initializeDatabase = async () => {
     discussionTagsModel,
     forumPostLikesModel,
     forumNotificationModel,
-    forumActivityModel
+    forumActivityModel,
+    rolesModel,
+    userRoleModel
   };
