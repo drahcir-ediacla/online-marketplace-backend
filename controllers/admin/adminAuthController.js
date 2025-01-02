@@ -5,192 +5,281 @@ const transPorter = require('../../config/emailConfig')
 
 
 const registerAdminUserByEmail = async (req, res) => {
-    const { email, password, role_id, otp } = req.body;
+  const { email, password, role_id, otp } = req.body;
 
-    if (!email || !password || !role_id || !otp) {
-        return res.status(400).json({ message: 'All fields are required.' });
+  if (!email || !password || !role_id || !otp) {
+    return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  try {
+
+    const user = await userModel.findOne({ where: { email } });
+    const roleId = await rolesModel.findOne({ where: { id: role_id } })
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid request or OTP.' });
     }
 
-    try {
-
-        const user = await userModel.findOne({ where: { email } });
-        const roleId = await rolesModel.findOne({ where: { id: role_id } })
-
-        if (!user) {
-            return res.status(400).json({ message: 'Invalid request or OTP.' });
-        }
-
-        if (user.email_verified) {
-            return res.status(409).json({ message: 'Email is already verified.' });
-        }
-
-        if (!roleId) {
-            return res.status(400).json({ message: 'Invalid role' });
-        }
-
-        const isOtpExpired = Date.now() > new Date(user.otp_expires).getTime();
-        if (user.otp !== otp || isOtpExpired) {
-            return res.status(400).json({ message: 'Invalid request or OTP.' });
-        }
-
-        // If the email is unique, hash the password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Update user information atomically
-        await userModel.update({
-            otp: null,
-            otp_expires: null,
-            email_verified: true,
-            password: hashedPassword
-        }, {
-            where: { email }
-        });
-
-        await userRoleModel.create({
-            user_id: user.id,
-            role_id: role_id
-        })
-
-        // Send success response
-        res.status(201).json({ message: 'Admin user created successfully.' });
-
-    } catch (error) {
-        console.error('Error during registration:', error.message);
-        res.status(500).json({ message: 'An error occurred during registration.' });
+    if (user.email_verified) {
+      return res.status(409).json({ message: 'Email is already verified.' });
     }
+
+    if (!roleId) {
+      return res.status(400).json({ message: 'Invalid role' });
+    }
+
+    const isOtpExpired = Date.now() > new Date(user.otp_expires).getTime();
+    if (user.otp !== otp || isOtpExpired) {
+      return res.status(400).json({ message: 'Invalid request or OTP.' });
+    }
+
+    // If the email is unique, hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Update user information atomically
+    await userModel.update({
+      otp: null,
+      otp_expires: null,
+      email_verified: true,
+      password: hashedPassword
+    }, {
+      where: { email }
+    });
+
+    await userRoleModel.create({
+      user_id: user.id,
+      role_id: role_id
+    })
+
+    // Send success response
+    res.status(201).json({ message: 'Admin user created successfully.' });
+
+  } catch (error) {
+    console.error('Error during registration:', error.message);
+    res.status(500).json({ message: 'An error occurred during registration.' });
+  }
 };
 
 
 const sendEmailAdminRegistrationOTP = async (req, res) => {
-    const { email } = req.body;
+  const { email } = req.body;
 
-    // Validate the email field
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return res.status(400).json({ message: 'Invalid email address.' });
+  // Validate the email field
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ message: 'Invalid email address.' });
+  }
+
+  try {
+    // Check if the email already exists and email_verified is false
+    const user = await userModel.findOne({ where: { email } });
+
+    // Prevent OTP sending to verified users
+    if (user && user.email_verified) {
+      return res.status(400).json({ message: 'Invalid request.' });
     }
 
-    try {
-        // Check if the email already exists and email_verified is false
-        const user = await userModel.findOne({ where: { email } });
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_expires = new Date(Date.now() + 15 * 60 * 1000); // OTP expires in 15 minutes
 
-        // Prevent OTP sending to verified users
-        if (user && user.email_verified) {
-            return res.status(400).json({ message: 'Invalid request.' });
-        }
+    const mailOptions = {
+      from: process.env.EMAIL,
+      to: email,
+      subject: `${otp} is your OTP Code`,
+      text: `Your Yogeek admin registration verification code is ${otp}. Valid for 15 minutes.`
+    };
 
-        // Generate OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otp_expires = new Date(Date.now() + 15 * 60 * 1000); // OTP expires in 15 minutes
+    await transPorter.sendMail(mailOptions);
 
-        const mailOptions = {
-            from: process.env.EMAIL,
-            to: email,
-            subject: `${otp} is your OTP Code`,
-            text: `Your Yogeek admin registration verification code is ${otp}. Valid for 15 minutes.`
-        };
-
-        await transPorter.sendMail(mailOptions);
-
-        if (user && !user.email_verified) {
-            // Update the existing user's OTP and expiry
-            await userModel.update(
-                { otp, otp_expires },
-                { where: { email } }
-            );
-        } else {
-            // Create a new user
-            await userModel.create({
-                email,
-                otp,
-                otp_expires,
-                email_verified: false,
-            });
-        }
-
-        res.status(201).json({ message: 'OTP sent successfully. Please check your inbox for the verification code sent to your email address.' });
-    } catch (error) {
-        console.error('Error sending otp:', error);
-        res.status(500).json({ message: 'An error occurred while sending the OTP. Please try again later.' });
+    if (user && !user.email_verified) {
+      // Update the existing user's OTP and expiry
+      await userModel.update(
+        { otp, otp_expires },
+        { where: { email } }
+      );
+    } else {
+      // Create a new user
+      await userModel.create({
+        email,
+        otp,
+        otp_expires,
+        email_verified: false,
+      });
     }
+
+    res.status(201).json({ message: 'OTP sent successfully. Please check your inbox for the verification code sent to your email address.' });
+  } catch (error) {
+    console.error('Error sending otp:', error);
+    res.status(500).json({ message: 'An error occurred while sending the OTP. Please try again later.' });
+  }
 };
 
 
 const loginAdminUserByEmail = async (req, res) => {
-    passport.authenticate('local-admin-email', async (authErr, user, info) => {
-      if (authErr) {
-        console.error('Error during authentication:', authErr);
-        return res.status(500).json({ message: 'Internal server error Passport' });
-      }
-  
-      if (!user) {
-        // Authentication failed
-        return res.status(401).json({ message: 'Authentication failed. ' + info.message });
-      }
-  
-      req.logIn(user, async (loginErr) => {
-        if (loginErr) {
-          console.error('Error during login:', loginErr);
-          return res.status(500).json({ message: 'Internal server error Local' });
-        }
-  
-        // If the login is successful, create and return an access token and a refresh token
-        const accessToken = generateAccessToken(user.id);
-        const refreshToken = generateRefreshToken(user.id);
-        const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
-  
-        try {
-          // Store the refresh token using Sequelize
-          // Check if a refresh token already exists for the user
-          const existingToken = await refreshTokenModel.findOne({
-            where: { user_id: user.id },
-          });
-          if (existingToken) {
-            // Update the existing refresh token
-            await existingToken.update({
-              token: refreshToken,
-              expiration_date: expirationDate,
-            });
-          } else {
-            // Create a new refresh token entry
-            await refreshTokenModel.create({
-              user_id: user.id,
-              token: refreshToken,
-              expiration_date: expirationDate,
-            });
-          }
-  
-          // Set cookie with access token
-          res.cookie('refreshJWT', refreshToken, { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-          res.cookie('jwt', accessToken, { httpOnly: true, secure: false, maxAge: 15 * 60 * 1000, path: '/' });
-  
-          // // Update user status to 'online'
-          // await userModel.upsert({ id: user.id, status: 'online' });
-  
-          // // Emit user online event
-          // const io = req.io;
-          // io.emit('updateUserStatus', { id: user.id, status: 'online' });
-  
-          // Send success response
-          res.status(200).json({
-            success: true,
-            message: 'Successfully authenticated',
-            user,
-            accessToken,
-            refreshToken,
-          });
-  
-        } catch (storeErr) {
-          console.error('Error storing refresh token:', storeErr);
-          return res.status(500).json({ message: 'Error storing refresh token' });
-        }
-      });
-  
-    })(req, res); // Authenticate using the local strategy
-  };
+  passport.authenticate('local-admin-email', async (authErr, user, info) => {
+    if (authErr) {
+      console.error('Error during authentication:', authErr);
+      return res.status(500).json({ message: 'Internal server error Passport' });
+    }
 
+    if (!user) {
+      // Authentication failed
+      return res.status(401).json({ message: 'Authentication failed. ' + info.message });
+    }
+
+    req.logIn(user, async (loginErr) => {
+      if (loginErr) {
+        console.error('Error during login:', loginErr);
+        return res.status(500).json({ message: 'Internal server error Local' });
+      }
+
+      // If the login is successful, create and return an access token and a refresh token
+      const accessToken = generateAccessToken(user.id);
+      const refreshToken = generateRefreshToken(user.id);
+      const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+
+      try {
+        // Store the refresh token using Sequelize
+        // Check if a refresh token already exists for the user
+        const existingToken = await refreshTokenModel.findOne({
+          where: { user_id: user.id },
+        });
+        if (existingToken) {
+          // Update the existing refresh token
+          await existingToken.update({
+            token: refreshToken,
+            expiration_date: expirationDate,
+          });
+        } else {
+          // Create a new refresh token entry
+          await refreshTokenModel.create({
+            user_id: user.id,
+            token: refreshToken,
+            expiration_date: expirationDate,
+          });
+        }
+
+        // Set cookie with access token
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, secure: false, maxAge: 15 * 60 * 1000, path: '/' });
+
+        // // Update user status to 'online'
+        // await userModel.upsert({ id: user.id, status: 'online' });
+
+        // // Emit user online event
+        // const io = req.io;
+        // io.emit('updateUserStatus', { id: user.id, status: 'online' });
+
+        // Send success response
+        res.status(200).json({
+          success: true,
+          message: 'Successfully authenticated',
+          user,
+          accessToken,
+          refreshToken,
+        });
+
+      } catch (storeErr) {
+        console.error('Error storing refresh token:', storeErr);
+        return res.status(500).json({ message: 'Error storing refresh token' });
+      }
+    });
+
+  })(req, res); // Authenticate using the local strategy
+};
+
+
+const resetAdminPasswordByEmail = async (req, res) => {
+  const { email, password, otp } = req.body
+  try {
+    const user = await userModel.findOne({ where: { email, email_verified: true } });
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+    if (user.otp !== otp || Date.now() > new Date(user.otp_expires).getTime()) {
+      return res.status(401).json({ message: 'Invalid or expired OTP' });
+    }
+
+    // If the email is unique, hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Clear OTP fields and set emailVerified to true after successful verification
+    user.otp = null;
+    user.otp_expires = null;
+    user.email_verified = true;
+    user.password = hashedPassword;
+    await user.save();
+
+    // Send success response
+    res.status(201).json({ message: 'Password successfully updated.' });
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'Error updating password.' });
+  }
+}
+
+const sendOtpResetAdminPassword = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required.' });
+  }
+
+  try {
+    const user = await userModel.findOne({
+      where: { email, email_verified: true },
+      include: [
+        {
+          model: userRoleModel,
+          attributes: ['user_id', 'role_id'],
+          include: [{ model: rolesModel, attributes: ['role'] }],
+        },
+      ],
+    })
+
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found or not verified.' });
+    }
+
+
+     // Check if the user has a role assigned
+     const userRole = user.UserRole;
+     const role = userRole?.Role;
+     if (!role) {
+       return res.status(403).json({ message: 'User does not have an assigned role.' });
+     }
+
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp_expires = new Date(Date.now() + 2 * 60 * 1000); // OTP expires in 2 minutes
+
+    const mailOptions = {
+      from: 'Yogeek',
+      to: email,
+      subject: `${otp} is your OTP Code`,
+      text: `Your Yogeek password recovery code is ${otp}. It will expire in 2 minutes.`,
+    };
+
+    await transPorter.sendMail(mailOptions);
+
+    if (user) {
+      // Update the existing user's OTP and otp_expires
+      user.otp = otp;
+      user.otp_expires = otp_expires;
+      await user.save();
+    }
+
+    res.status(201).json({ message: 'OTP send successfully. Please check your inbox for the verification code sent to your email address.' });
+  } catch (error) {
+    console.error('Error sending otp:', error);
+    res.status(500).json({ message: 'Error sending otp' });
+  }
+}
 
 module.exports = {
-    registerAdminUserByEmail,
-    sendEmailAdminRegistrationOTP,
-    loginAdminUserByEmail
+  registerAdminUserByEmail,
+  sendEmailAdminRegistrationOTP,
+  loginAdminUserByEmail,
+  resetAdminPasswordByEmail,
+  sendOtpResetAdminPassword
 }
