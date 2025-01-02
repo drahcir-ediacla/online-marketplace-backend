@@ -70,6 +70,7 @@ app.use((req, res, next) => {
 
 //Routes
 app.use('/', authRoutes);
+app.use('/', adminAuthRoutes)
 app.use('/auth', passportRoutes);
 app.use('/', refreshRoutes);
 app.use('/', productRoutes);
@@ -82,7 +83,6 @@ app.use('/', reviewRoutes);
 app.use('/', notificationRoutes);
 app.use('/', forumRoutes);
 app.use('/', forumNotificationRoutes);
-app.use('/', adminAuthRoutes)
 // Middleware to set Cache-Control header
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');

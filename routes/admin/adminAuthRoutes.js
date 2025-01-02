@@ -5,5 +5,6 @@ const AdminAuthController = require('../../controllers/admin/adminAuthController
 // Define the '/users' route
 router.post('/api/admin/email-register', AdminAuthController.registerAdminUserByEmail);
 router.post('/api/admin/send-email-registration-otp', AdminAuthController.sendEmailAdminRegistrationOTP);
+router.post('/api/login-admin-email', AdminAuthController.loginAdminUserByEmail);
 
 module.exports = router;

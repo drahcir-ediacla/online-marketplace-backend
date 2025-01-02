@@ -3,11 +3,62 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtils')
-const { userModel, refreshTokenModel } = require('../config/sequelizeConfig')
+const { userModel, refreshTokenModel, userRoleModel, rolesModel } = require('../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 
+// ------------------------- ADMIN USER LOGIN BY EMAIL -------------------------------------//
+passport.use(
+  'local-admin-email',
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+      passwordField: 'password',
+    },
+    async (email, password, done) => {
+      try {
+        // Find the user with the provided email
+        const user = await userModel.findOne({
+          where: { email },
+          include: [
+            {
+              model: userRoleModel,
+              attributes: ['user_id', 'role_id'],
+              include: [rolesModel],
+            },
+          ],
+        });
+
+        if (!user) {
+          // User not found
+          return done(null, false, { message: 'User not found' });
+        }
+
+        // Compare the provided password with the stored hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (!isMatch) {
+          // Incorrect password
+          return done(null, false, { message: 'Incorrect password' });
+        }
+
+        // Check if the user has a role
+        if (!user.UserRole || !user.UserRole.Role) {
+          return done(null, false, { message: 'User does not have an assigned role' });
+        }
+
+        // Authentication successful, return the user
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+
+// ------------------------- REGULAR USER LOGIN BY EMAIL -------------------------------------//
 passport.use(
   'local-email',
   new LocalStrategy(
@@ -32,7 +83,7 @@ passport.use(
           // Incorrect password
           return done(null, false, { message: 'Incorrect password' });
         }
-
+        
         // Authentication successful, return the user
         return done(null, user);
       } catch (error) {
@@ -43,6 +94,7 @@ passport.use(
 );
 
 
+// ------------------------- REGULAR USER LOGIN BY PHONE -------------------------------------//
 passport.use(
   'local-phone',
   new LocalStrategy(

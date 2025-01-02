@@ -108,6 +108,11 @@ userModel.hasMany(refreshTokenModel, { foreignKey: 'user_id', as: 'refreshToken'
 userModel.hasMany(followersModel, { foreignKey: 'following_id', as: 'followers' });
 userModel.hasMany(followersModel, { foreignKey: 'follower_id', as: 'following' });
 
+userModel.hasOne(userRoleModel, { foreignKey: 'user_id' });
+userRoleModel.belongsTo(userModel, { foreignKey: 'user_id' });
+userRoleModel.belongsTo(rolesModel, { foreignKey: 'role_id' });
+rolesModel.hasOne(userRoleModel, { foreignKey: 'role_id' });
+
 
 
 // No FOREIGN KEY with products table in MySQL

@@ -1,5 +1,6 @@
 const { userModel, refreshTokenModel, userRoleModel, rolesModel } = require('../../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
+const passport = require('passport');
 const transPorter = require('../../config/emailConfig')
 
 
@@ -114,7 +115,82 @@ const sendEmailAdminRegistrationOTP = async (req, res) => {
 };
 
 
+const loginAdminUserByEmail = async (req, res) => {
+    passport.authenticate('local-admin-email', async (authErr, user, info) => {
+      if (authErr) {
+        console.error('Error during authentication:', authErr);
+        return res.status(500).json({ message: 'Internal server error Passport' });
+      }
+  
+      if (!user) {
+        // Authentication failed
+        return res.status(401).json({ message: 'Authentication failed. ' + info.message });
+      }
+  
+      req.logIn(user, async (loginErr) => {
+        if (loginErr) {
+          console.error('Error during login:', loginErr);
+          return res.status(500).json({ message: 'Internal server error Local' });
+        }
+  
+        // If the login is successful, create and return an access token and a refresh token
+        const accessToken = generateAccessToken(user.id);
+        const refreshToken = generateRefreshToken(user.id);
+        const expirationDate = new Date(Date.now() + 1 * 24 * 60 * 60 * 1000); // 1 day from now
+  
+        try {
+          // Store the refresh token using Sequelize
+          // Check if a refresh token already exists for the user
+          const existingToken = await refreshTokenModel.findOne({
+            where: { user_id: user.id },
+          });
+          if (existingToken) {
+            // Update the existing refresh token
+            await existingToken.update({
+              token: refreshToken,
+              expiration_date: expirationDate,
+            });
+          } else {
+            // Create a new refresh token entry
+            await refreshTokenModel.create({
+              user_id: user.id,
+              token: refreshToken,
+              expiration_date: expirationDate,
+            });
+          }
+  
+          // Set cookie with access token
+          res.cookie('refreshJWT', refreshToken, { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+          res.cookie('jwt', accessToken, { httpOnly: true, secure: false, maxAge: 15 * 60 * 1000, path: '/' });
+  
+          // // Update user status to 'online'
+          // await userModel.upsert({ id: user.id, status: 'online' });
+  
+          // // Emit user online event
+          // const io = req.io;
+          // io.emit('updateUserStatus', { id: user.id, status: 'online' });
+  
+          // Send success response
+          res.status(200).json({
+            success: true,
+            message: 'Successfully authenticated',
+            user,
+            accessToken,
+            refreshToken,
+          });
+  
+        } catch (storeErr) {
+          console.error('Error storing refresh token:', storeErr);
+          return res.status(500).json({ message: 'Error storing refresh token' });
+        }
+      });
+  
+    })(req, res); // Authenticate using the local strategy
+  };
+
+
 module.exports = {
     registerAdminUserByEmail,
-    sendEmailAdminRegistrationOTP
+    sendEmailAdminRegistrationOTP,
+    loginAdminUserByEmail
 }
