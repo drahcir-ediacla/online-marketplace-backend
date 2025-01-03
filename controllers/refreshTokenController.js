@@ -50,7 +50,7 @@ const handleRefreshToken = async (req, res) => {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
                 sameSite: 'none', 
-                maxAge: 15 * 60 * 1000, // 30 seconds
+                maxAge: 15 * 60 * 1000, // 15 mins
                 path: '/'
             });
 
