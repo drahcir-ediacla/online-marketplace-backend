@@ -9,6 +9,7 @@ const handleRefreshToken = async (req, res) => {
     }
 
     const refreshToken = cookies.refreshJWT;
+    const existingAccessToken = cookies.jwt;
 
     try {
         // Query the database to find the user associated with the refreshToken
@@ -26,12 +27,32 @@ const handleRefreshToken = async (req, res) => {
                 return res.sendStatus(403); // Forbidden
             }
 
-            // Generate a new access token
-            const accessToken = jwt.sign(
+
+            if (existingAccessToken) {
+                try {
+                    jwt.verify(existingAccessToken, process.env.ACCESS_TOKEN_SECRET);
+                    return res.json({ accessToken: existingAccessToken }); // Return existing valid token
+                } catch (accessErr) {
+                    if (accessErr.name !== 'TokenExpiredError') {
+                        return res.sendStatus(403); // Forbidden if invalid for other reasons
+                    }
+                }
+            }
+
+            // Generate a new access token since the existing one is expired or not provided
+            const newAccessToken = jwt.sign(
                 { userId: decoded.userId },
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: '15m' } // Adjust the expiration time as needed
             );
+
+            res.cookie('jwt', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
+                sameSite: 'none',
+                maxAge: 15 * 60 * 1000, // 15 mins
+                path: '/'
+            });
 
             // Generate a new refresh token (optional)
             // const newRefreshToken = jwt.sign(
@@ -44,16 +65,6 @@ const handleRefreshToken = async (req, res) => {
             // user.token = newRefreshToken;
             // await user.save();
 
-
-            // Set the new access token in the cookie
-            res.cookie('jwt', accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
-                sameSite: 'none', 
-                maxAge: 15 * 60 * 1000, // 15 mins
-                path: '/'
-            });
-
             // res.cookie('refreshJWT', newRefreshToken, {
             //     httpOnly: true,
             //     // secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
@@ -63,7 +74,7 @@ const handleRefreshToken = async (req, res) => {
             // });
 
             // Send the new access token in the response body if needed
-            res.json({ accessToken });
+            res.json({ accessToken: newAccessToken });
         });
     } catch (error) {
         console.error('Error handling refresh token:', error);

@@ -1,6 +1,7 @@
 const { userModel, refreshTokenModel, userRoleModel, rolesModel } = require('../../config/sequelizeConfig')
 const bcrypt = require('bcrypt');
 const passport = require('passport');
+const { generateAccessToken, generateRefreshToken } = require('../../utils/tokenUtils'); 
 const transPorter = require('../../config/emailConfig')
 
 

@@ -69,6 +69,12 @@ app.use((req, res, next) => {
   next();
 });
 
+// Middleware to set Cache-Control header
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
+
 //Routes
 app.use('/', authRoutes);
 app.use('/', adminAuthRoutes)
@@ -84,11 +90,7 @@ app.use('/', reviewRoutes);
 app.use('/', notificationRoutes);
 app.use('/', forumRoutes);
 app.use('/', forumNotificationRoutes);
-// Middleware to set Cache-Control header
-app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-  next();
-});
+
 
 app.use(verifyJWT)
 // Authenticated routes
