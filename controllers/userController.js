@@ -190,7 +190,8 @@ const updateUser = async (req, res) => {
         return res.status(404).json({ success: false, message: 'User not found in the database' });
       }
 
-      if (user.email === null || user.phone === null) {
+      // if (user.email === null || user.phone === null) 
+      if (user.email === null) {
         return res.status(401).json({ success: false, message: 'Email or Phone are null' });
       } else {
         // Update the user's profile data

@@ -3,8 +3,8 @@ const axios = require('axios');
 require('dotenv').config();
 
 const moviderConfig = {
-  apiKey: process.env.MOVIDER_API_KEY,
-  apiSecret: process.env.MOVIDER_API_SECRET,
+  apiKey: '2jxZEbJPQbTUAk8VJAN1oynqUhj',
+  apiSecret: 'QXY9UVsDHz7x6XFM7TKYGpNU1pY5VTY8bebeqFjm',
   apiUrl: 'https://api.movider.co/v1/sms',
   from: 'MOVIDER'
 };
