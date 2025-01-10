@@ -337,8 +337,8 @@ const loginUserByEmail = async (req, res) => {
         }
 
         // Set cookie with access token
-        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, secure: false, maxAge: 15 * 60 * 1000, path: '/' });
 
         // // Update user status to 'online'
         // await userModel.upsert({ id: user.id, status: 'online' });
@@ -491,7 +491,10 @@ const logoutUser = async (req, res) => {
   res.clearCookie('connect.sid', { path: '/', httpOnly: true }); // Adjust cookie name/path if necessary
 
   // Redirect or send response
-  res.redirect(process.env.CLIENT_URL || '/');
+  // res.redirect(process.env.CLIENT_URL || '/');
+
+  // Send a success response (no redirect)
+  res.status(200).json({ message: 'Logout successful' });
 };
 
 
