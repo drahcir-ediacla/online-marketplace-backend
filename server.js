@@ -25,6 +25,7 @@ const sessionStore = require('./config/sessionsConfig');
 const followerRoutes = require('./routes/followerRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
 const notificationRoutes = require('./routes/notificationRoutes');
+const contactUsRoutes = require('./routes/contactUsRoutes');
 const forumRoutes = require('./routes/forumRoutes');
 const forumNotificationRoutes = require('./routes/forumNotificationRoutes');
 const adminAuthRoutes = require('./routes/admin/adminAuthRoutes');
@@ -88,6 +89,7 @@ app.use('/', imagesRoutes);
 app.use('/', followerRoutes);
 app.use('/', reviewRoutes);
 app.use('/', notificationRoutes);
+app.use('/', contactUsRoutes);
 app.use('/', forumRoutes);
 app.use('/', forumNotificationRoutes);
 

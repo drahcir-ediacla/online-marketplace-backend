@@ -824,3 +824,4 @@ notNull Violation: User.longitude cannot be null
 20241205	11:27:14	f3389d21-e967-4ea7-aebe-de194c1888c6	TypeError: Cannot set properties of undefined (setting 'id')
 20241207	11:44:05	457f1af3-24f7-4894-a0bb-708f2e2e5782	SequelizeValidationError: string violation: token cannot be an array or an object
 20250106	09:12:45	7b0c92c3-8753-413d-a1cd-f36b6afaece0	SyntaxError: Expected ',' or '}' after property value in JSON at position 74
+20250114	13:29:18	91e2c928-8f23-479c-8db7-3eb35711a061	SyntaxError: Expected double-quoted property name in JSON at position 123
