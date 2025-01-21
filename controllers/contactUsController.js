@@ -56,4 +56,32 @@ const sendSupporRequest = async (req, res) => {
     }
 };
 
+
+const reportListing = async(req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Authentication is required to report a listing.' })
+      }
+
+      const userId = req.user.id;
+      const userEmail = req.user.email;
+
+    const { situation, message, product_id, product_name } = req.body;
+
+    // Debugging Step: Log request payload
+    console.log('Incoming support request:', req.body);
+
+    // Validate payload fields
+    if (!help_with || !message || !customer_email) {
+        return res.status(400).json({ 
+            message: 'Missing required fields: help_with, message, or customer_email' 
+        });
+    }
+
+try {
+    
+} catch (error) {
+    
+}
+}
+
 module.exports = { sendSupporRequest };
