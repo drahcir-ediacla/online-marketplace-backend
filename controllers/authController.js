@@ -337,8 +337,8 @@ const loginUserByEmail = async (req, res) => {
         }
 
         // Set cookie with access token
-        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, secure: false, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, secure: false, maxAge: 15 * 60 * 1000, path: '/' });
 
         // // Update user status to 'online'
         // await userModel.upsert({ id: user.id, status: 'online' });
@@ -451,12 +451,14 @@ const logoutUser = async (req, res) => {
     try {
 
       // Log the user out properly
-      await new Promise((resolve, reject) => {
-        req.logout(err => {
-          if (err) return reject(err);
-          resolve();
-        });
-      });
+      if (typeof req.logout === 'function') {
+        try {
+          await req.logout();
+        } catch (err) {
+          console.error('Error logging out:', err);
+          return res.status(500).json({ message: 'Logout failed' });
+        }
+      }
 
       // Delete refresh token using Sequelize
       const deleteResult = await refreshTokenModel.destroy({
