@@ -447,10 +447,17 @@ const logoutUser = async (req, res) => {
   if (req.isAuthenticated()) {
     const userId = req.user.id;
 
-    // Log the user out (asynchronous in newer Passport versions)
-    await req.logout();
 
     try {
+
+      // Log the user out properly
+      await new Promise((resolve, reject) => {
+        req.logout(err => {
+          if (err) return reject(err);
+          resolve();
+        });
+      });
+
       // Delete refresh token using Sequelize
       const deleteResult = await refreshTokenModel.destroy({
         where: {
