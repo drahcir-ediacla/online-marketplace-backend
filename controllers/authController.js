@@ -412,8 +412,8 @@ const loginUserByPhone = async (req, res) => {
         }
 
         // Set cookie with access token
-        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
-        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'none', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
+        res.cookie('refreshJWT', refreshToken, { httpOnly: true, sameSite: 'strict', secure: true, maxAge: 24 * 60 * 60 * 1000, path: '/' });
+        res.cookie('jwt', accessToken, { httpOnly: true, sameSite: 'strict', secure: true, maxAge: 15 * 60 * 1000, path: '/' });
 
         // // Update user status to 'online'
         // await userModel.upsert({ id: user.id, status: 'online' });
@@ -494,10 +494,17 @@ const logoutUser = async (req, res) => {
     }
   }
 
+  const cookieOptions = {
+    path: '/',
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+  };
+
   // Clear cookies
-  res.clearCookie('jwt', { path: '/' }); // Adjust cookie name/path if necessary
-  res.clearCookie('refreshJWT', { path: '/' }); // Adjust cookie name/path if necessary
-  res.clearCookie('connect.sid', { path: '/', httpOnly: true }); // Adjust cookie name/path if necessary
+  res.clearCookie('jwt', cookieOptions); // Adjust cookie name/path if necessary
+  res.clearCookie('refreshJWT', cookieOptions); // Adjust cookie name/path if necessary
+  res.clearCookie('connect.sid', cookieOptions); // Adjust cookie name/path if necessary
 
   // Redirect or send response
   // res.redirect(process.env.CLIENT_URL || '/');
