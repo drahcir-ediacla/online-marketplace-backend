@@ -49,7 +49,7 @@ const handleRefreshToken = async (req, res) => {
             res.cookie('jwt', newAccessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
-                sameSite: 'strict',
+                sameSite: 'none',
                 maxAge: 15 * 60 * 1000, // 15 mins
                 path: '/'
             });
