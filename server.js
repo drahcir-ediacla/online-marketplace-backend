@@ -53,7 +53,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: sessionStore,
-    cookie: { httpOnly: true, sameSite: 'none', secure: true, maxAge: 86400000 },
+    cookie: { httpOnly: true, sameSite: 'strict', secure: true, maxAge: 86400000 },
     proxy: true,
   })
 );
