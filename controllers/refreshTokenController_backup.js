@@ -9,6 +9,7 @@ const handleRefreshToken = async (req, res) => {
     }
 
     const refreshToken = cookies.refreshJWT;
+    const existingAccessToken = cookies.jwt;
 
     try {
         // Query the database to find the user associated with the refreshToken
@@ -27,12 +28,31 @@ const handleRefreshToken = async (req, res) => {
             }
 
 
+            if (existingAccessToken) {
+                try {
+                    jwt.verify(existingAccessToken, process.env.ACCESS_TOKEN_SECRET);
+                    return res.json({ accessToken: existingAccessToken }); // Return existing valid token
+                } catch (accessErr) {
+                    if (accessErr.name !== 'TokenExpiredError') {
+                        return res.sendStatus(403); // Forbidden if invalid for other reasons
+                    }
+                }
+            }
+
             // Generate a new access token since the existing one is expired or not provided
             const newAccessToken = jwt.sign(
                 { userId: decoded.userId },
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: '15m' } // Adjust the expiration time as needed
             );
+
+            res.cookie('jwt', newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production', // Use Secure flag in production
+                // sameSite: 'none',
+                maxAge: 15 * 60 * 1000, // 15 mins
+                path: '/'
+            });
 
             // Generate a new refresh token (optional)
             // const newRefreshToken = jwt.sign(

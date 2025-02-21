@@ -6,7 +6,7 @@ const verifyRole = require('../middleware/verifyRole')
 
 
 
-router.get('/api/get-all-test-categories', cacheMiddleware, verifyRole('Administrator'), ProductController.getAllCategories);
+router.get('/api/get-all-test-categories', cacheMiddleware, verifyRole('Editor'), ProductController.getAllCategories);
 
 
 module.exports = router;
